@@ -18,8 +18,8 @@ class CodeRewriter(cst.CSTTransformer):
         iid = self.iids.new(self.file_path, line, column)
         return iid
 
-    def __create_call(self, node, updated_node):
-        callee_name = cst.Name(value="_lexecutor_")
+    def __create_name_call(self, node, updated_node):
+        callee_name = cst.Name(value="_n_")
         lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
         value_arg = cst.Arg(value=lambada)
         iid = self.__create_iid(node)
@@ -27,9 +27,17 @@ class CodeRewriter(cst.CSTTransformer):
         call = cst.Call(func=callee_name, args=[value_arg, iid_arg])
         return call
 
-    def __create_import(self):
+    def __create_call_call(self, node, updated_node):
+        callee_name = cst.Name(value="_c_")
+        # TODO: iid
+        fct_arg = cst.Arg(value=updated_node.func)
+        call = cst.Call(func=callee_name, args=[
+                        fct_arg]+list(updated_node.args))
+        return call
+
+    def __create_import(self, name):
         module_name = cst.Name(value="lexecutor_runtime")
-        fct_name = cst.Name(value="_lexecutor_")
+        fct_name = cst.Name(value=name)
         imp_alias = cst.ImportAlias(name=fct_name)
         imp = cst.ImportFrom(module=module_name, names=[imp_alias])
         stmt = cst.SimpleStatementLine(body=[imp])
@@ -57,15 +65,23 @@ class CodeRewriter(cst.CSTTransformer):
 
     # add import of our runtime library to the file
     def leave_Module(self, node, updated_node):
-        import_stmt = self.__create_import()
-        print(f"Old body's type:\n {type(updated_node.body)}")
-        new_body = [import_stmt]+list(updated_node.body)
+        import_n = self.__create_import("_n_")
+        import_a = self.__create_import("_a_")
+        import_c = self.__create_import("_c_")
+        import_b = self.__create_import("_b_")
+        new_body = [import_n, import_a, import_c,
+                    import_b]+list(updated_node.body)
         return updated_node.with_changes(body=new_body)
+
+    # rewrite Call nodes to intercept function calls
+    def leave_Call(self, node, updated_node):
+        wrapped_call = self.__create_call_call(node, updated_node)
+        return wrapped_call
 
     # rewrite Name nodes to intercept values they resolve to
     def leave_Name(self, node, updated_node):
-        if node in self.used_names or self.__is_attribute_use(node):
-            wrapped_name = self.__create_call(node, updated_node)
+        if node in self.used_names:
+            wrapped_name = self.__create_name_call(node, updated_node)
             return wrapped_name
         else:
             return updated_node
