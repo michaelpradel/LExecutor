@@ -20,19 +20,42 @@ class CodeRewriter(cst.CSTTransformer):
 
     def __create_name_call(self, node, updated_node):
         callee_name = cst.Name(value="_n_")
-        lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
-        value_arg = cst.Arg(value=lambada)
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
-        call = cst.Call(func=callee_name, args=[value_arg, iid_arg])
+        lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
+        value_arg = cst.Arg(value=lambada)
+        call = cst.Call(func=callee_name, args=[iid_arg, value_arg])
         return call
 
     def __create_call_call(self, node, updated_node):
         callee_name = cst.Name(value="_c_")
-        # TODO: iid
+        iid = self.__create_iid(node)
+        iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         fct_arg = cst.Arg(value=updated_node.func)
+        call = cst.Call(func=callee_name, args=[iid_arg,
+                                                fct_arg]+list(updated_node.args))
+        return call
+
+    def __create_attribute_call(self, node, updated_node):
+        callee_name = cst.Name(value="_a_")
+        iid = self.__create_iid(node)
+        iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
+        value_arg = cst.Arg(updated_node.value)
+        assert type(node.attr) == cst.Name
+        attr_arg = cst.Arg(cst.SimpleString(value=f'"{node.attr.value}"'))
+        call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])
+        return call
+
+    def __create_binop_call(self, node, updated_node):
+        callee_name = cst.Name(value="_b_")
+        iid = self.__create_iid(node)
+        iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
+        left_arg = cst.Arg(updated_node.left)
+        operator_name = type(node.operator).__name__
+        operator_arg = cst.Arg(cst.SimpleString(value=f'"{operator_name}"'))
+        right_arg = cst.Arg(updated_node.right)
         call = cst.Call(func=callee_name, args=[
-                        fct_arg]+list(updated_node.args))
+                        iid_arg, left_arg, operator_arg, right_arg])
         return call
 
     def __create_import(self, name):
@@ -42,17 +65,6 @@ class CodeRewriter(cst.CSTTransformer):
         imp = cst.ImportFrom(module=module_name, names=[imp_alias])
         stmt = cst.SimpleStatementLine(body=[imp])
         return stmt
-
-    def __is_attribute_use(self, name_node):
-        parent = self.get_metadata(ParentNodeProvider, name_node)
-        if type(parent) == cst.Attribute:
-            # don't instrument right-most attribute on left-hand side of assignment
-            # (because that's a definition, not a use)
-            grand_parent = self.get_metadata(ParentNodeProvider, parent)
-            if type(grand_parent) == cst.AssignTarget:
-                return False
-            return True
-        return False
 
     # don't visit lines marked with special comment
     def visit_SimpleStatementLine(self, node):
@@ -85,3 +97,11 @@ class CodeRewriter(cst.CSTTransformer):
             return wrapped_name
         else:
             return updated_node
+
+    def leave_Attribute(self, node, updated_node):
+        wrapped_attribute = self.__create_attribute_call(node, updated_node)
+        return wrapped_attribute
+
+    def leave_BinaryOperation(self, node, updated_node):
+        wrapped_bin_op = self.__create_binop_call(node, updated_node)
+        return wrapped_bin_op
