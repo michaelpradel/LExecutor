@@ -22,9 +22,10 @@ class CodeRewriter(cst.CSTTransformer):
         callee_name = cst.Name(value="_n_")
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
+        name_arg = cst.Arg(cst.SimpleString(value=f'"{node.value}"'))
         lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
         value_arg = cst.Arg(value=lambada)
-        call = cst.Call(func=callee_name, args=[iid_arg, value_arg])
+        call = cst.Call(func=callee_name, args=[iid_arg, name_arg, value_arg])
         return call
 
     def __create_call_call(self, node, updated_node):

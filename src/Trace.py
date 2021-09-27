@@ -10,16 +10,36 @@ class Trace:
             os.remove(self.file_path)
         self.buffer = []
 
-    def append(self, raw_value, iid):
+    def append_name(self, iid, name, raw_value):
         value = abstract_value(raw_value)
-        self.buffer.append((value, iid))
-        if len(self.buffer) % 1000 == 0:
-            self.flush()
+        self.__append(f"name {iid} {name} {value}")
+
+    def append_call(self, iid, fct, raw_args, raw_value):
+        args = [abstract_value(r) for r in raw_args]
+        args = " ".join(args)
+        value = abstract_value(raw_value)
+        self.__append(f"call {iid} {fct.__name__} {args} {value}")
+
+    def append_attribute(self, iid, raw_base, attr_name, raw_value):
+        base = abstract_value(raw_base)
+        value = abstract_value(raw_value)
+        self.__append(f"attribute {iid} {base} {attr_name} {value}")
+
+    def append_binary_operator(self, iid, raw_left, operator, raw_right, raw_value):
+        left = abstract_value(raw_left)
+        right = abstract_value(raw_right)
+        value = abstract_value(raw_value)
+        self.__append(f"binary_operator {iid} {left} {operator} {right} {value}")
+
+    def __append(self, line):
+        self.buffer.append(line)
+        # if len(self.buffer) % 1000 == 0:
+        self.flush()
 
     def flush(self):
         trace_segment = ""
-        for value, iid in self.buffer:
-            trace_segment += f"{iid} {value}\n"
+        for line in self.buffer:
+            trace_segment += line + "\n"
         with open(self.file_path, "a") as file:
             file.write(trace_segment)
         self.buffer = []
