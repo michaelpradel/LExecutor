@@ -1,4 +1,8 @@
-a = 1 >> 3
+a = 1 + 1
 
-# x.x.m(x+x.x, x)
-# _c_(_a_(_a_(_n_(x), "x"), "m"), _b_(_n_(x), "+", _a_(_n_(x), "x")), _n_(x))
+class X:
+    p = "abc"
+
+x = X()
+s = x.p
+print(s) # don't instrument
