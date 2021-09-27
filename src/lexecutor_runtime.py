@@ -1,16 +1,20 @@
 from Trace import Trace
 from ValueAbstraction import restore_value
+from ValuePredictor import ValuePredictor
 import atexit
+
 
 # ------- begin: select mode -----
 # mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
-mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
+mode = "PREDICT"   # predict and inject values if missing in exeuction
+# mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
     trace = Trace("trace.out")
     atexit.register(lambda: trace.flush())
+elif mode == "PREDICT":
+    predictor = ValuePredictor()
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
@@ -21,19 +25,54 @@ print(f"### LExecutor running in {mode} mode ###")
 
 
 def _n_(iid, name, lambada):
-    return mode_branch(iid, lambada, lambda v: trace.append_name(iid, name, v))
+    perform_fct = lambada
+
+    def record_fct(v):
+        trace.append_name(iid, name, v)
+
+    def predict_fct():
+        return predictor.name(iid, name)
+
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
-def _c_(iid, fct, *args):
-    return mode_branch(iid, fct, lambda v: trace.append_call(iid, fct, args, v), *args)
+def _c_(iid, fct, *args, **kwargs):
+    def perform_fct():
+        return fct(*args, **kwargs)
+
+    def record_fct(v):
+        trace.append_call(iid, fct, args, kwargs, v)
+
+    def predict_fct():
+        return predictor.call(iid, fct, args, kwargs)
+
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def _a_(iid, base, attr_name):
-    return mode_branch(iid, getattr, lambda v: trace.append_attribute(iid, base, attr_name, v), base, attr_name)
+    def perform_fct():
+        return getattr(base, attr_name)
+
+    def record_fct(v):
+        trace.append_attribute(iid, base, attr_name, v)
+
+    def predict_fct():
+        return predictor.attribute(iid, base, attr_name)
+
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def _b_(iid, left, operator, right):
-    return mode_branch(iid, perform_binary_op, lambda v: trace.append_binary_operator(iid, left, operator, right, v), left, operator, right)
+    def perform_fct():
+        return perform_binary_op(left, operator, right)
+
+    def record_fct(v):
+        trace.append_binary_operation(iid, left, operator, right, v)
+
+    def predict_fct():
+        return predictor.binary_operation(iid, left, operator, right)
+
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def perform_binary_op(left, operator, right):
@@ -95,17 +134,20 @@ def perform_binary_op(left, operator, right):
     return v
 
 
-def mode_branch(iid, perform_fct, record_fct, *perform_fct_args):
+def mode_branch(iid, perform_fct, record_fct, predict_fct):
+    print("~~~")
     if mode in ("RECORD", "PREDICT"):
         try:
-            v = perform_fct(*perform_fct_args)
+            print(f"Trying to perform an operation")
+            v = perform_fct()
             if mode == "RECORD":
                 record_fct(v)
             return v
         except Exception as e:
+            print(f"Catching exception {type(e)} and calling predictor instead")
             if mode == "PREDICT":
-                # TODO: inject based in trained model
-                return 23
+                v = predict_fct()
+                return v
             else:
                 raise e
     elif mode == "REPLAY":

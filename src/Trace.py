@@ -14,8 +14,8 @@ class Trace:
         value = abstract_value(raw_value)
         self.__append(f"{iid} name {name} {value}")
 
-    def append_call(self, iid, fct, raw_args, raw_value):
-        args = [abstract_value(r) for r in raw_args]
+    def append_call(self, iid, fct, raw_args, raw_kwargs, raw_value):
+        args = [abstract_value(r) for r in raw_args+raw_kwargs]
         args = " ".join(args)
         value = abstract_value(raw_value)
         self.__append(f"{iid} call {fct.__name__} {args} {value}")
@@ -25,11 +25,12 @@ class Trace:
         value = abstract_value(raw_value)
         self.__append(f"{iid} attribute {base} {attr_name} {value}")
 
-    def append_binary_operator(self, iid, raw_left, operator, raw_right, raw_value):
+    def append_binary_operation(self, iid, raw_left, operator, raw_right, raw_value):
         left = abstract_value(raw_left)
         right = abstract_value(raw_right)
         value = abstract_value(raw_value)
-        self.__append(f"{iid} binary_operator {left} {operator} {right} {value}")
+        self.__append(
+            f"{iid} binary_operation {left} {operator} {right} {value}")
 
     def __append(self, line):
         self.buffer.append(line)

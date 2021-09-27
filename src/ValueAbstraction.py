@@ -43,7 +43,7 @@ def restore_value(abstract_value):
             return {}
         # functions and methods
         elif kind == "callable":
-            return lambda *args: ()
+            return lambda *a, **b: ()
         # other object types
         else:
             return object()
