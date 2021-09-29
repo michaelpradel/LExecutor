@@ -67,6 +67,10 @@ class CodeRewriter(cst.CSTTransformer):
         stmt = cst.SimpleStatementLine(body=[imp])
         return stmt
 
+    def __is_l_value(self, node):
+        parent = self.get_metadata(ParentNodeProvider, node)
+        return type(parent) == cst.AssignTarget
+
     # don't visit lines marked with special comment
     def visit_SimpleStatementLine(self, node):
         c = node.trailing_whitespace.comment
@@ -100,6 +104,8 @@ class CodeRewriter(cst.CSTTransformer):
             return updated_node
 
     def leave_Attribute(self, node, updated_node):
+        if self.__is_l_value(node):
+            return updated_node
         wrapped_attribute = self.__create_attribute_call(node, updated_node)
         return wrapped_attribute
 
