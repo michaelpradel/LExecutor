@@ -1,20 +1,22 @@
 class ValuePredictor:
     def name(self, iid, name):
-        if name == "nodes":
-            v = [1,2,3]
-        elif name == "makeTerm":
-            v = lambda *a, **b: "foo"
-        elif name == "title":
-            v = "bar"
-        elif name == "term":
-            v = "baz"
+        if name == "backend":
+            v = object()
+        elif name == "layers":
+            v = []
+        elif name == "name":
+            v = "abc"
+        elif name == "x":
+            v = 5
+        elif name == "reduction":
+            v = 0.5
         else:
             raise Exception(f"{iid}: Predicting for name {name}: ???")
         print(f"{iid}: Predicting for name {name}: {v}")
         return v
 
     def call(self, iid, fct, *args, **kwargs):
-        if iid == 11111:
+        if iid in [12, 19, 36, 43]:
             v = 5
         else:
             raise Exception(f"{iid}: Predicting for call: ???")
@@ -22,8 +24,18 @@ class ValuePredictor:
         return v
 
     def attribute(self, iid, base, attr_name):
-        if attr_name == "xxxx":
-            v = lambda *a, **b: "foo"
+        if attr_name == "image_data_format":
+            v = lambda *a, **b: "jpeg"
+        elif attr_name == "BatchNormalization":
+            v = lambda *a, **b: object()
+        elif attr_name == "Activation":
+            v = lambda *a, **b: object()
+        elif attr_name == "Conv2D":
+            v = lambda *a, **b: object()
+        elif attr_name == "AveragePooling2D":
+            v = lambda *a, **b: object()
+        elif attr_name == "int_shape":
+            v = lambda *a, **b: [5, 3]
         else:
             raise Exception(
                 f"{iid}: Predicting for attribute {attr_name}: ???")

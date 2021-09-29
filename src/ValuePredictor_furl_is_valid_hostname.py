@@ -1,13 +1,9 @@
 class ValuePredictor:
     def name(self, iid, name):
-        if name == "nodes":
-            v = [1,2,3]
-        elif name == "makeTerm":
-            v = lambda *a, **b: "foo"
-        elif name == "title":
-            v = "bar"
-        elif name == "term":
-            v = "baz"
+        if name == "hostname":
+            v = "foo.de"
+        elif name == "is_valid_host":
+            v = object()
         else:
             raise Exception(f"{iid}: Predicting for name {name}: ???")
         print(f"{iid}: Predicting for name {name}: {v}")
@@ -22,8 +18,10 @@ class ValuePredictor:
         return v
 
     def attribute(self, iid, base, attr_name):
-        if attr_name == "xxxx":
-            v = lambda *a, **b: "foo"
+        if attr_name == "regex":
+            v = r"^abc.*$"
+        elif attr_name == "search":
+            v = lambda *a, **b: None
         else:
             raise Exception(
                 f"{iid}: Predicting for attribute {attr_name}: ???")

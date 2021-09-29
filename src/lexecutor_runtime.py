@@ -25,6 +25,9 @@ print(f"### LExecutor running in {mode} mode ###")
 
 
 def _n_(iid, name, lambada):
+    print("~~~")
+    print(f"At iid={iid}, looking up name '{name}'")
+
     perform_fct = lambada
 
     def record_fct(v):
@@ -37,6 +40,9 @@ def _n_(iid, name, lambada):
 
 
 def _c_(iid, fct, *args, **kwargs):
+    print("~~~")
+    print(f"At iid={iid}, calling function {fct}")
+
     def perform_fct():
         return fct(*args, **kwargs)
 
@@ -50,6 +56,9 @@ def _c_(iid, fct, *args, **kwargs):
 
 
 def _a_(iid, base, attr_name):
+    print("~~~")
+    print(f"At iid={iid}, looking up attribute '{attr_name}'")
+
     def perform_fct():
         return getattr(base, attr_name)
 
@@ -63,6 +72,9 @@ def _a_(iid, base, attr_name):
 
 
 def _b_(iid, left, operator, right):
+    print("~~~")
+    print(f"At iid={iid}, performing binary {operator} operation")
+
     def perform_fct():
         return perform_binary_op(left, operator, right)
 
@@ -135,10 +147,8 @@ def perform_binary_op(left, operator, right):
 
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct):
-    print("~~~")
     if mode in ("RECORD", "PREDICT"):
         try:
-            print(f"Trying to perform an operation")
             v = perform_fct()
             if mode == "RECORD":
                 record_fct(v)
