@@ -1,6 +1,7 @@
 from Trace import Trace
 from ValueAbstraction import restore_value
 from ValuePredictor import ValuePredictor
+from RuntimeStats import RuntimeStats
 import atexit
 
 
@@ -15,6 +16,8 @@ if mode == "RECORD":
     atexit.register(lambda: trace.flush())
 elif mode == "PREDICT":
     predictor = ValuePredictor()
+    runtime_stats = RuntimeStats()
+    atexit.register(runtime_stats.print)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
@@ -27,6 +30,8 @@ print(f"### LExecutor running in {mode} mode ###")
 def _n_(iid, name, lambada):
     print("~~~")
     print(f"At iid={iid}, looking up name '{name}'")
+    runtime_stats.total_uses += 1
+    runtime_stats.cover_iid(iid)
 
     perform_fct = lambada
 
@@ -36,12 +41,16 @@ def _n_(iid, name, lambada):
     def predict_fct():
         return predictor.name(iid, name)
 
-    return mode_branch(iid, perform_fct, record_fct, predict_fct)
+    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
+    print("---")
+    return r
 
 
 def _c_(iid, fct, *args, **kwargs):
     print("~~~")
     print(f"At iid={iid}, calling function {fct}")
+    runtime_stats.total_uses += 1
+    runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return fct(*args, **kwargs)
@@ -52,12 +61,16 @@ def _c_(iid, fct, *args, **kwargs):
     def predict_fct():
         return predictor.call(iid, fct, args, kwargs)
 
-    return mode_branch(iid, perform_fct, record_fct, predict_fct)
+    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
+    print("---")
+    return r
 
 
 def _a_(iid, base, attr_name):
     print("~~~")
     print(f"At iid={iid}, looking up attribute '{attr_name}'")
+    runtime_stats.total_uses += 1
+    runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return getattr(base, attr_name)
@@ -68,12 +81,16 @@ def _a_(iid, base, attr_name):
     def predict_fct():
         return predictor.attribute(iid, base, attr_name)
 
-    return mode_branch(iid, perform_fct, record_fct, predict_fct)
+    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
+    print("---")
+    return r
 
 
 def _b_(iid, left, operator, right):
     print("~~~")
     print(f"At iid={iid}, performing binary {operator} operation")
+    runtime_stats.total_uses += 1
+    runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return perform_binary_op(left, operator, right)
@@ -84,7 +101,9 @@ def _b_(iid, left, operator, right):
     def predict_fct():
         return predictor.binary_operation(iid, left, operator, right)
 
-    return mode_branch(iid, perform_fct, record_fct, predict_fct)
+    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
+    print("---")
+    return r
 
 
 def perform_binary_op(left, operator, right):
@@ -154,9 +173,11 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
                 record_fct(v)
             return v
         except Exception as e:
-            print(f"Catching exception {type(e)} and calling predictor instead")
+            print(
+                f"Catching exception {type(e)} and calling predictor instead")
             if mode == "PREDICT":
                 v = predict_fct()
+                runtime_stats.guided_uses += 1
                 return v
             else:
                 raise e
@@ -176,3 +197,7 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
         return v
     else:
         raise Exception(f"Unexpected mode {mode}")
+
+
+def print_prediction_stats():
+    pass
