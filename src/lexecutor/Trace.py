@@ -15,7 +15,8 @@ class Trace:
         self.__append(f"{iid} name {name} {value}")
 
     def append_call(self, iid, fct, raw_args, raw_kwargs, raw_value):
-        args = [abstract_value(r) for r in raw_args+raw_kwargs]
+        all_raw_args = list(raw_args) + list(raw_kwargs.values())
+        args = [abstract_value(r) for r in all_raw_args]
         args = " ".join(args)
         value = abstract_value(raw_value)
         self.__append(f"{iid} call {fct.__name__} {args} {value}")

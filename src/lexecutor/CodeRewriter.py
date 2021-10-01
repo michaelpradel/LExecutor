@@ -77,7 +77,6 @@ class CodeRewriter(cst.CSTTransformer):
         if c is not None and c.value == "# don't instrument":
             print(f"Ignoring line with comment")
             return False
-        print(f"Will consider line")
         return True
 
     # add import of our runtime library to the file

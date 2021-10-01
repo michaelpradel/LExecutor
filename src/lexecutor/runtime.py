@@ -6,14 +6,15 @@ import atexit
 
 
 # ------- begin: select mode -----
-# mode = "RECORD"    # record values and write into a trace file
-mode = "PREDICT"   # predict and inject values if missing in exeuction
+mode = "RECORD"    # record values and write into a trace file
+# mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
     trace = Trace("trace.out")
     atexit.register(lambda: trace.flush())
+    runtime_stats = None
 elif mode == "PREDICT":
     predictor = ValuePredictor()
     runtime_stats = RuntimeStats()
@@ -30,8 +31,10 @@ print(f"### LExecutor running in {mode} mode ###")
 def _n_(iid, name, lambada):
     print("~~~")
     print(f"At iid={iid}, looking up name '{name}'")
-    runtime_stats.total_uses += 1
-    runtime_stats.cover_iid(iid)
+    
+    if runtime_stats is not None:
+        runtime_stats.total_uses += 1
+        runtime_stats.cover_iid(iid)
 
     perform_fct = lambada
 
@@ -49,8 +52,10 @@ def _n_(iid, name, lambada):
 def _c_(iid, fct, *args, **kwargs):
     print("~~~")
     print(f"At iid={iid}, calling function {fct}")
-    runtime_stats.total_uses += 1
-    runtime_stats.cover_iid(iid)
+    
+    if runtime_stats is not None:
+        runtime_stats.total_uses += 1
+        runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return fct(*args, **kwargs)
@@ -69,8 +74,10 @@ def _c_(iid, fct, *args, **kwargs):
 def _a_(iid, base, attr_name):
     print("~~~")
     print(f"At iid={iid}, looking up attribute '{attr_name}'")
-    runtime_stats.total_uses += 1
-    runtime_stats.cover_iid(iid)
+
+    if runtime_stats is not None:
+        runtime_stats.total_uses += 1
+        runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return getattr(base, attr_name)
@@ -89,8 +96,10 @@ def _a_(iid, base, attr_name):
 def _b_(iid, left, operator, right):
     print("~~~")
     print(f"At iid={iid}, performing binary {operator} operation")
-    runtime_stats.total_uses += 1
-    runtime_stats.cover_iid(iid)
+
+    if runtime_stats is not None:
+        runtime_stats.total_uses += 1
+        runtime_stats.cover_iid(iid)
 
     def perform_fct():
         return perform_binary_op(left, operator, right)
