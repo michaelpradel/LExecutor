@@ -1,7 +1,7 @@
-from Trace import Trace
-from ValueAbstraction import restore_value
-from ValuePredictor import ValuePredictor
-from RuntimeStats import RuntimeStats
+from .Trace import Trace
+from .ValueAbstraction import restore_value
+from .ValuePredictor import ValuePredictor
+from .RuntimeStats import RuntimeStats
 import atexit
 
 

@@ -9,7 +9,7 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--files", help="Python files to instrument", required=True, nargs="+")
+    "--files", help="Python files to instrument", nargs="+")
 parser.add_argument(
     "--iids", help="JSON file with instruction IDs (will create iids.json if nothing given)")
 

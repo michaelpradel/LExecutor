@@ -1,6 +1,6 @@
 import os
 from os import path
-from ValueAbstraction import abstract_value
+from .ValueAbstraction import abstract_value
 
 
 class Trace:

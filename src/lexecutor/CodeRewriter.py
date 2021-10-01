@@ -60,7 +60,7 @@ class CodeRewriter(cst.CSTTransformer):
         return call
 
     def __create_import(self, name):
-        module_name = cst.Name(value="lexecutor_runtime")
+        module_name = cst.Attribute(value=cst.Name(value="lexecutor"), attr=cst.Name(value="runtime"))
         fct_name = cst.Name(value=name)
         imp_alias = cst.ImportAlias(name=fct_name)
         imp = cst.ImportFrom(module=module_name, names=[imp_alias])

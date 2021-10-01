@@ -6,3 +6,6 @@ trace.out
 __pycache__
 workspace.code-workspace
 *_instr.py
+/data
+/dist
+*.egg-info
