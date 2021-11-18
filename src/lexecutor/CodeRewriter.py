@@ -81,12 +81,21 @@ class CodeRewriter(cst.CSTTransformer):
 
     # add import of our runtime library to the file
     def leave_Module(self, node, updated_node):
+        imports_index = -1
+        for i in range(len(updated_node.body)):
+            if isinstance(updated_node.body[i].body, tuple):
+                if isinstance(updated_node.body[i].body[0], (cst.Import, cst.ImportFrom)):
+                    imports_index = i
+                else:
+                    break
+            else:
+                break
         import_n = self.__create_import("_n_")
         import_a = self.__create_import("_a_")
         import_c = self.__create_import("_c_")
         import_b = self.__create_import("_b_")
-        new_body = [import_n, import_a, import_c,
-                    import_b]+list(updated_node.body)
+        new_body = list(updated_node.body[:imports_index+1]) + [import_n, import_a, import_c,
+                    import_b] + list(updated_node.body[imports_index+1:])
         return updated_node.with_changes(body=new_body)
 
     # rewrite Call nodes to intercept function calls
