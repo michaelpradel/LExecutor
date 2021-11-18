@@ -83,9 +83,11 @@ class CodeRewriter(cst.CSTTransformer):
     def leave_Module(self, node, updated_node):
         imports_index = -1
         for i in range(len(updated_node.body)):
-            if isinstance(updated_node.body[i].body, tuple):
+            if isinstance(updated_node.body[i].body, (tuple, list)):
                 if isinstance(updated_node.body[i].body[0], (cst.Import, cst.ImportFrom)):
                     imports_index = i
+                elif i == 0:
+                    continue
                 else:
                     break
             else:
