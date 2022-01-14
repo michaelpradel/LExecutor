@@ -19,7 +19,8 @@ class Trace:
         args = [abstract_value(r) for r in all_raw_args]
         args = " ".join(args)
         value = abstract_value(raw_value)
-        self.__append(f"{iid} call {fct.__name__} {args} {value}")
+        fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
+        self.__append(f"{iid} call {fct_name} {args} {value}")
 
     def append_attribute(self, iid, raw_base, attr_name, raw_value):
         base = abstract_value(raw_base)

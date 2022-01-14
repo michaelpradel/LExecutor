@@ -1,1 +1,4 @@
-from a.b import c
+def foo():
+    pass
+
+foo()
