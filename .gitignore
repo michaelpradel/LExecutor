@@ -9,3 +9,5 @@ workspace.code-workspace
 /data
 /dist
 *.egg-info
+.vscode/launch.json
+*.orig
