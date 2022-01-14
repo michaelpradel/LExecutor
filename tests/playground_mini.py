@@ -1,4 +1,1 @@
-def foo():
-    pass
-
-foo()
+f"aa{bb}"

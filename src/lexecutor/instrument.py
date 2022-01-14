@@ -67,7 +67,9 @@ def instrument_file(file_path, iids):
 if __name__ == "__main__":
     args = parser.parse_args()
     files = gather_files(args.files)
+    print(f"Found {len(files)} file to instrument")
     iids = IIDs(args.iids)
     for file_path in files:
+        print(f"Instrumenting {file_path}")
         instrument_file(file_path, iids)
     iids.store()

@@ -11,6 +11,8 @@ class CodeRewriter(cst.CSTTransformer):
         self.used_names = used_names
         self.iids = iids
 
+        self.quotation_char = '"'  # flipped to "'" when inside an f-string
+
     def __create_iid(self, node):
         location = self.get_metadata(PositionProvider, node)
         line = location.start.line
@@ -22,7 +24,8 @@ class CodeRewriter(cst.CSTTransformer):
         callee_name = cst.Name(value="_n_")
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
-        name_arg = cst.Arg(cst.SimpleString(value=f'"{node.value}"'))
+        name_arg = cst.Arg(cst.SimpleString(
+            value=f"{self.quotation_char}{node.value}{self.quotation_char}"))
         lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
         value_arg = cst.Arg(value=lambada)
         call = cst.Call(func=callee_name, args=[iid_arg, name_arg, value_arg])
@@ -43,7 +46,8 @@ class CodeRewriter(cst.CSTTransformer):
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         value_arg = cst.Arg(updated_node.value)
         assert type(node.attr) == cst.Name
-        attr_arg = cst.Arg(cst.SimpleString(value=f'"{node.attr.value}"'))
+        attr_arg = cst.Arg(cst.SimpleString(
+            value=f"{self.quotation_char}{node.attr.value}{self.quotation_char}"))
         call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])
         return call
 
@@ -53,7 +57,8 @@ class CodeRewriter(cst.CSTTransformer):
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         left_arg = cst.Arg(updated_node.left)
         operator_name = type(node.operator).__name__
-        operator_arg = cst.Arg(cst.SimpleString(value=f'"{operator_name}"'))
+        operator_arg = cst.Arg(cst.SimpleString(
+            value=f"{self.quotation_char}{operator_name}{self.quotation_char}"))
         right_arg = cst.Arg(updated_node.right)
         call = cst.Call(func=callee_name, args=[
                         iid_arg, left_arg, operator_arg, right_arg])
@@ -96,6 +101,13 @@ class CodeRewriter(cst.CSTTransformer):
         # don't instrument imports, as we'll wrap them in try-except
         return False
 
+    def visit_FormattedString(self, node):
+        if node.start == 'f"':
+            self.quotation_char = "'"
+        elif node.start == "f'":
+            self.quotation_char = '"'
+        return True
+
     def leave_Call(self, node, updated_node):
         # rewrite Call nodes to intercept function calls
         wrapped_call = self.__create_call_call(node, updated_node)
@@ -123,7 +135,8 @@ class CodeRewriter(cst.CSTTransformer):
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
         if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
-            wrapped_import = self.__wrap_import(node.body[0], updated_node.body[0])
+            wrapped_import = self.__wrap_import(
+                node.body[0], updated_node.body[0])
             return wrapped_import
         return updated_node
 
