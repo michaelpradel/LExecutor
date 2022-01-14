@@ -31,13 +31,31 @@ class CodeRewriter(cst.CSTTransformer):
         call = cst.Call(func=callee_name, args=[iid_arg, name_arg, value_arg])
         return call
 
+    def __ensure_generator_expr_have_parens(self, args):
+        # make sure that generator expressions have parentheses if not the only argument
+        updated_args = []
+        for arg in args:
+            if (isinstance(arg.value, cst.GeneratorExp)
+                    and len(arg.value.lpar) == 0
+                    and len(arg.value.rpar) == 0):
+                g = arg.value
+                g_new = cst.GeneratorExp(elt=g.elt,
+                                         for_in=g.for_in,
+                                         lpar=[cst.LeftParen()],
+                                         rpar=[cst.RightParen()])
+                updated_args.append(cst.Arg(value=g_new))
+            else:
+                updated_args.append(arg)
+        return updated_args
+
     def __create_call_call(self, node, updated_node):
         callee_name = cst.Name(value="_c_")
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         fct_arg = cst.Arg(value=updated_node.func)
-        call = cst.Call(func=callee_name, args=[iid_arg,
-                                                fct_arg]+list(updated_node.args))
+        all_args = [iid_arg, fct_arg] + \
+            self.__ensure_generator_expr_have_parens(updated_node.args)
+        call = cst.Call(func=callee_name, args=all_args)
         return call
 
     def __create_attribute_call(self, node, updated_node):
