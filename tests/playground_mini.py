@@ -1,1 +1,1 @@
-x=y
+from a.b import c

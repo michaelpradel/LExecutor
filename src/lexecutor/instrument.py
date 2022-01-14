@@ -59,7 +59,7 @@ def instrument_file(file_path, iids):
     copied_file_path = re.sub(r"\.py$", ".py.orig", file_path)
     copyfile(file_path, copied_file_path)
 
-    rewritten_code = "# LExecutor: DO NOT INSTRUMENT\n\n" +  rewritten_ast.code
+    rewritten_code = "# LExecutor: DO NOT INSTRUMENT\n\n" + rewritten_ast.code
     with open(file_path, "w") as file:
         file.write(rewritten_code)
 

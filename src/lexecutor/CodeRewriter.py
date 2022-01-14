@@ -60,27 +60,75 @@ class CodeRewriter(cst.CSTTransformer):
         return call
 
     def __create_import(self, name):
-        module_name = cst.Attribute(value=cst.Name(value="lexecutor"), attr=cst.Name(value="runtime"))
+        module_name = cst.Attribute(value=cst.Name(
+            value="lexecutor"), attr=cst.Name(value="runtime"))
         fct_name = cst.Name(value=name)
         imp_alias = cst.ImportAlias(name=fct_name)
         imp = cst.ImportFrom(module=module_name, names=[imp_alias])
         stmt = cst.SimpleStatementLine(body=[imp])
         return stmt
 
+    def __wrap_import(self, node, updated_node):
+        try_stmt = cst.Try(body=cst.IndentedBlock(
+            body=[cst.SimpleStatementLine(body=[updated_node])]),
+            handlers=[cst.ExceptHandler(body=cst.IndentedBlock(
+                body=[cst.SimpleStatementLine(body=[cst.Pass()])]),
+                type=cst.Name(value="ImportError"))])
+        return try_stmt
+
     def __is_l_value(self, node):
         parent = self.get_metadata(ParentNodeProvider, node)
         return type(parent) == cst.AssignTarget
 
-    # don't visit lines marked with special comment
     def visit_SimpleStatementLine(self, node):
+        # don't visit lines marked with special comment
         c = node.trailing_whitespace.comment
         if c is not None and c.value == "# don't instrument":
             print(f"Ignoring line with comment")
             return False
         return True
 
-    # add import of our runtime library to the file
+    def visit_Import(self, node):
+        # don't instrument imports, as we'll wrap them in try-except
+        return False
+
+    def visit_ImportFrom(self, node):
+        # don't instrument imports, as we'll wrap them in try-except
+        return False
+
+    def leave_Call(self, node, updated_node):
+        # rewrite Call nodes to intercept function calls
+        wrapped_call = self.__create_call_call(node, updated_node)
+        return wrapped_call
+
+    def leave_Name(self, node, updated_node):
+        # rewrite Name nodes to intercept values they resolve to
+        if node in self.used_names:
+            wrapped_name = self.__create_name_call(node, updated_node)
+            return wrapped_name
+        else:
+            return updated_node
+
+    def leave_Attribute(self, node, updated_node):
+        if self.__is_l_value(node):
+            return updated_node
+        wrapped_attribute = self.__create_attribute_call(node, updated_node)
+        return wrapped_attribute
+
+    def leave_BinaryOperation(self, node, updated_node):
+        wrapped_bin_op = self.__create_binop_call(node, updated_node)
+        return wrapped_bin_op
+
+    def leave_SimpleStatementLine(self, node, updated_node):
+        # surround imports with try-except;
+        # cannot do this in leave_Import because we need to replace the import's parent node
+        if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
+            wrapped_import = self.__wrap_import(node.body[0], updated_node.body[0])
+            return wrapped_import
+        return updated_node
+
     def leave_Module(self, node, updated_node):
+        # add import of our runtime library to the file
         imports_index = -1
         for i in range(len(updated_node.body)):
             if isinstance(updated_node.body[i].body, (tuple, list)):
@@ -97,28 +145,5 @@ class CodeRewriter(cst.CSTTransformer):
         import_c = self.__create_import("_c_")
         import_b = self.__create_import("_b_")
         new_body = list(updated_node.body[:imports_index+1]) + [import_n, import_a, import_c,
-                    import_b] + list(updated_node.body[imports_index+1:])
+                                                                import_b] + list(updated_node.body[imports_index+1:])
         return updated_node.with_changes(body=new_body)
-
-    # rewrite Call nodes to intercept function calls
-    def leave_Call(self, node, updated_node):
-        wrapped_call = self.__create_call_call(node, updated_node)
-        return wrapped_call
-
-    # rewrite Name nodes to intercept values they resolve to
-    def leave_Name(self, node, updated_node):
-        if node in self.used_names:
-            wrapped_name = self.__create_name_call(node, updated_node)
-            return wrapped_name
-        else:
-            return updated_node
-
-    def leave_Attribute(self, node, updated_node):
-        if self.__is_l_value(node):
-            return updated_node
-        wrapped_attribute = self.__create_attribute_call(node, updated_node)
-        return wrapped_attribute
-
-    def leave_BinaryOperation(self, node, updated_node):
-        wrapped_bin_op = self.__create_binop_call(node, updated_node)
-        return wrapped_bin_op
