@@ -135,28 +135,30 @@ class CodeRewriter(cst.CSTTransformer):
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
         if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
-            wrapped_import = self.__wrap_import(
-                node.body[0], updated_node.body[0])
-            return wrapped_import
+            if not (isinstance(node.body[0], cst.ImportFrom) and node.body[0].module.value == "__future__"):
+                wrapped_import = self.__wrap_import(
+                    node.body[0], updated_node.body[0])
+                return wrapped_import
         return updated_node
 
     def leave_Module(self, node, updated_node):
-        # add import of our runtime library to the file
-        imports_index = -1
+        # check for "__future__" imports; they must remain at beginning of file
+        target_idx = 0  # index to add our imports at
         for i in range(len(updated_node.body)):
-            if isinstance(updated_node.body[i].body, (tuple, list)):
-                if isinstance(updated_node.body[i].body[0], (cst.Import, cst.ImportFrom)):
-                    imports_index = i
-                elif i == 0:
-                    continue
-                else:
-                    break
-            else:
-                break
+            stmt = updated_node.body[i]
+            if (isinstance(stmt, cst.SimpleStatementLine)
+               and isinstance(stmt.body[0], cst.ImportFrom)
+               and stmt.body[0].module.value == "__future__"):
+                target_idx = i + 1
+
+        # add our imports
         import_n = self.__create_import("_n_")
         import_a = self.__create_import("_a_")
         import_c = self.__create_import("_c_")
         import_b = self.__create_import("_b_")
-        new_body = list(updated_node.body[:imports_index+1]) + [import_n, import_a, import_c,
-                                                                import_b] + list(updated_node.body[imports_index+1:])
+
+        new_body = (list(updated_node.body[:target_idx])
+                    + [import_n, import_a, import_c, import_b]
+                    + list(updated_node.body[target_idx:]))
+
         return updated_node.with_changes(body=new_body)
