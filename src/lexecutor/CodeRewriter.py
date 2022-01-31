@@ -6,7 +6,8 @@ class CodeRewriter(cst.CSTTransformer):
 
     METADATA_DEPENDENCIES = (ParentNodeProvider, PositionProvider,)
 
-    ignored_calls = ["super"]  # special names to not instrument
+    ignored_names = ["True", "False", "None"]
+    ignored_calls = ["super"]  # special function names to not instrument
 
     def __init__(self, file_path, iids, used_names):
         self.file_path = file_path
@@ -26,9 +27,14 @@ class CodeRewriter(cst.CSTTransformer):
         callee_name = cst.Name(value="_n_")
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
+
+        # create a lambda like "lambda a=a: a" to avoid refering to undefined class variables
+        param = cst.Param(name=updated_node, default=updated_node)
+
         name_arg = cst.Arg(cst.SimpleString(
             value=f"{self.quotation_char}{node.value}{self.quotation_char}"))
-        lambada = cst.Lambda(params=cst.Parameters(), body=updated_node)
+        lambada = cst.Lambda(params=cst.Parameters(
+            params=[param]), body=updated_node)
         value_arg = cst.Arg(value=lambada)
         call = cst.Call(func=callee_name, args=[iid_arg, name_arg, value_arg])
         return call
@@ -144,7 +150,7 @@ class CodeRewriter(cst.CSTTransformer):
 
     def leave_Name(self, node, updated_node):
         # rewrite Name nodes to intercept values they resolve to
-        if node in self.used_names:
+        if node in self.used_names and node.value not in self.ignored_names:
             wrapped_name = self.__create_name_call(node, updated_node)
             return wrapped_name
         else:
