@@ -15,6 +15,7 @@ class CodeRewriter(cst.CSTTransformer):
         self.iids = iids
 
         self.quotation_char = '"'  # flipped to "'" when inside an f-string
+        self.formatted_string_stack = []  # f-strings where we flip the quotation char
 
     def __create_iid(self, node):
         location = self.get_metadata(PositionProvider, node)
@@ -136,9 +137,21 @@ class CodeRewriter(cst.CSTTransformer):
     def visit_FormattedString(self, node):
         if node.start == 'f"':
             self.quotation_char = "'"
+            self.formatted_string_stack.append(node)
         elif node.start == "f'":
             self.quotation_char = '"'
+            self.formatted_string_stack.append(node)
         return True
+
+    def leave_FormattedString(self, node, updated_node):
+        if node == self.formatted_string_stack[-1]:
+            # flip quotation character back
+            if self.quotation_char == "'":
+                self.quotation_char = '"'
+            elif self.quotation_char == '"':
+                self.quotation_char = "'"
+            self.formatted_string_stack.pop()
+        return updated_node
 
     def leave_Call(self, node, updated_node):
         # rewrite Call nodes to intercept function calls
