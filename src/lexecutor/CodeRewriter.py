@@ -109,7 +109,7 @@ class CodeRewriter(cst.CSTTransformer):
 
     def __is_l_value(self, node):
         parent = self.get_metadata(ParentNodeProvider, node)
-        return type(parent) == cst.AssignTarget
+        return type(parent) == cst.AssignTarget or type(parent) == cst.AnnAssign
 
     def __is_ignored_call(self, call_node):
         if type(call_node.func) == cst.Name:
