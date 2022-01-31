@@ -6,6 +6,8 @@ class CodeRewriter(cst.CSTTransformer):
 
     METADATA_DEPENDENCIES = (ParentNodeProvider, PositionProvider,)
 
+    ignored_calls = ["super"]  # special names to not instrument
+
     def __init__(self, file_path, iids, used_names):
         self.file_path = file_path
         self.used_names = used_names
@@ -103,6 +105,12 @@ class CodeRewriter(cst.CSTTransformer):
         parent = self.get_metadata(ParentNodeProvider, node)
         return type(parent) == cst.AssignTarget
 
+    def __is_ignored_call(self, call_node):
+        if type(call_node.func) == cst.Name:
+            return call_node.func.value in self.ignored_calls
+        else:
+            return False
+
     def visit_SimpleStatementLine(self, node):
         # don't visit lines marked with special comment
         c = node.trailing_whitespace.comment
@@ -128,8 +136,11 @@ class CodeRewriter(cst.CSTTransformer):
 
     def leave_Call(self, node, updated_node):
         # rewrite Call nodes to intercept function calls
-        wrapped_call = self.__create_call_call(node, updated_node)
-        return wrapped_call
+        if not self.__is_ignored_call(node):
+            wrapped_call = self.__create_call_call(node, updated_node)
+            return wrapped_call
+        else:
+            return updated_node
 
     def leave_Name(self, node, updated_node):
         # rewrite Name nodes to intercept values they resolve to

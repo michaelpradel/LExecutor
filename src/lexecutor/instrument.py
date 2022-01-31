@@ -4,7 +4,7 @@ import libcst as cst
 from .CodeRewriter import CodeRewriter
 from .IIDs import IIDs
 import re
-from shutil import copyfile
+from shutil import copyfile, move
 
 
 parser = argparse.ArgumentParser()
@@ -12,6 +12,8 @@ parser.add_argument(
     "--files", help="Python files to instrument or .txt file with all file paths", nargs="+")
 parser.add_argument(
     "--iids", help="JSON file with instruction IDs (will create iids.json if nothing given)")
+parser.add_argument(
+    "--restore", help="Restores uninstrumented files from .py.orig files", action="store_true")
 
 
 def gather_files(files_arg):
@@ -64,12 +66,28 @@ def instrument_file(file_path, iids):
         file.write(rewritten_code)
 
 
+def restore_file(file_path):
+    orig_file_path = re.sub(r"\.py$", ".py.orig", file_path)
+    if path.isfile(orig_file_path):
+        move(orig_file_path, file_path)
+        return True
+    else:
+        return False
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
     files = gather_files(args.files)
-    print(f"Found {len(files)} file to instrument")
-    iids = IIDs(args.iids)
-    for file_path in files:
-        print(f"Instrumenting {file_path}")
-        instrument_file(file_path, iids)
-    iids.store()
+    if not args.restore:
+        print(f"Found {len(files)} file to instrument")
+        iids = IIDs(args.iids)
+        for file_path in files:
+            print(f"Instrumenting {file_path}")
+            instrument_file(file_path, iids)
+        iids.store()
+    else:
+        nb_restored = 0
+        for file_path in files:
+            if restore_file(file_path):
+                nb_restored += 1
+        print(f"Have restored {nb_restored} out of {len(files)} files")
