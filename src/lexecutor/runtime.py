@@ -194,7 +194,7 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
     elif mode == "REPLAY":
         # replay mode
         global next_trace_idx
-        trace_line = trace[next_trace_idx]
+        trace_line = trace[next_trace_idx].rstrip()
         next_trace_idx += 1
         segments = trace_line.split(" ")
         trace_iid = int(segments[0])
