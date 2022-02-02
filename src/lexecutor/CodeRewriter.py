@@ -14,8 +14,10 @@ class CodeRewriter(cst.CSTTransformer):
         self.used_names = used_names
         self.iids = iids
 
-        self.quotation_char = '"'  # flipped to "'" when inside an f-string
-        self.formatted_string_stack = []  # f-strings where we flip the quotation char
+        self.instrument = True  # turned off in special cases, e.g., inside nested f-strings
+
+        self.quotation_char = '"'  # flipped to "'" when inside an f-string with double quotes
+        self.fstring_stack = []
 
     def __create_iid(self, node):
         location = self.get_metadata(PositionProvider, node)
@@ -122,7 +124,6 @@ class CodeRewriter(cst.CSTTransformer):
         # don't visit lines marked with special comment
         c = node.trailing_whitespace.comment
         if c is not None and c.value == "# don't instrument":
-            print(f"Ignoring line with comment")
             return False
         return True
 
@@ -137,20 +138,24 @@ class CodeRewriter(cst.CSTTransformer):
     def visit_FormattedString(self, node):
         if node.start == 'f"':
             self.quotation_char = "'"
-            self.formatted_string_stack.append(node)
+            self.fstring_stack.append(node)
         elif node.start == "f'":
             self.quotation_char = '"'
-            self.formatted_string_stack.append(node)
+            self.fstring_stack.append(node)
+        if len(self.fstring_stack) > 1:
+            self.instrument = False
         return True
 
     def leave_FormattedString(self, node, updated_node):
-        if node == self.formatted_string_stack[-1]:
+        if node == self.fstring_stack[-1]:
             # flip quotation character back
             if self.quotation_char == "'":
                 self.quotation_char = '"'
             elif self.quotation_char == '"':
                 self.quotation_char = "'"
-            self.formatted_string_stack.pop()
+            self.fstring_stack.pop()
+            if len(self.fstring_stack) < 2:
+                self.instrument = True
         return updated_node
 
     def leave_Call(self, node, updated_node):
@@ -162,6 +167,9 @@ class CodeRewriter(cst.CSTTransformer):
             return updated_node
 
     def leave_Name(self, node, updated_node):
+        if not self.instrument:
+            return updated_node
+
         # rewrite Name nodes to intercept values they resolve to
         if node in self.used_names and node.value not in self.ignored_names:
             wrapped_name = self.__create_name_call(node, updated_node)
@@ -170,16 +178,25 @@ class CodeRewriter(cst.CSTTransformer):
             return updated_node
 
     def leave_Attribute(self, node, updated_node):
+        if not self.instrument:
+            return updated_node
+
         if self.__is_l_value(node):
             return updated_node
         wrapped_attribute = self.__create_attribute_call(node, updated_node)
         return wrapped_attribute
 
     def leave_BinaryOperation(self, node, updated_node):
+        if not self.instrument:
+            return updated_node
+
         wrapped_bin_op = self.__create_binop_call(node, updated_node)
         return wrapped_bin_op
 
     def leave_SimpleStatementLine(self, node, updated_node):
+        if not self.instrument:
+            return updated_node
+
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
         if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
@@ -190,6 +207,9 @@ class CodeRewriter(cst.CSTTransformer):
         return updated_node
 
     def leave_Module(self, node, updated_node):
+        if not self.instrument:
+            return updated_node
+
         # check for "__future__" imports; they must remain at beginning of file
         target_idx = 0  # index to add our imports at
         for i in range(len(updated_node.body)):
