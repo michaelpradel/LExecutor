@@ -14,10 +14,21 @@ def abstract_value(value):
         return f"@@@{t.__name__}"
     # functions and methods
     elif callable(value):
-        return f"@@@callable"
+        if hasattr(value, "__enter__") and hasattr(value, "__exit__"):
+            return f"@@@resource"
+        else:
+            return f"@@@callable"
     # all other types
     else:
         return f"@@@object"
+
+
+class MyResource(object):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, trace):
+        return True
 
 
 def restore_value(abstract_value):
@@ -44,6 +55,9 @@ def restore_value(abstract_value):
         # functions and methods
         elif kind == "callable":
             return lambda *a, **b: ()
+        # resources (to be used in 'with' statements)
+        elif kind == "resource":
+            return MyResource()
         # other object types
         else:
             return object()
