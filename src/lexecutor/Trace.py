@@ -36,8 +36,8 @@ class Trace:
 
     def __append(self, line):
         self.buffer.append(line)
-        # if len(self.buffer) % 1000 == 0:
-        self.flush()
+        if len(self.buffer) % 100000 == 0:
+            self.flush()
 
     def flush(self):
         trace_segment = ""
