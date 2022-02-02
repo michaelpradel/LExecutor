@@ -6,9 +6,9 @@ import atexit
 
 
 # ------- begin: select mode -----
-mode = "RECORD"    # record values and write into a trace file
+# mode = "RECORD"    # record values and write into a trace file
 # mode = "PREDICT"   # predict and inject values if missing in exeuction
-# mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
+mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
@@ -23,14 +23,15 @@ elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
     next_trace_idx = 0
+    runtime_stats = None
 
 
 print(f"### LExecutor running in {mode} mode ###")
 
 
 def _n_(iid, name, lambada):
-    print("~~~")
-    print(f"At iid={iid}, looking up name '{name}'")
+    # print("~~~")
+    # print(f"At iid={iid}, looking up name '{name}'")
     
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -45,13 +46,13 @@ def _n_(iid, name, lambada):
         return predictor.name(iid, name)
 
     r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    print("---")
+    # print("---")
     return r
 
 
 def _c_(iid, fct, *args, **kwargs):
-    print("~~~")
-    print(f"At iid={iid}, calling function {fct}")
+    # print("~~~")
+    # print(f"At iid={iid}, calling function {fct}")
     
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -67,13 +68,13 @@ def _c_(iid, fct, *args, **kwargs):
         return predictor.call(iid, fct, args, kwargs)
 
     r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    print("---")
+    # print("---")
     return r
 
 
 def _a_(iid, base, attr_name):
-    print("~~~")
-    print(f"At iid={iid}, looking up attribute '{attr_name}'")
+    # print("~~~")
+    # print(f"At iid={iid}, looking up attribute '{attr_name}'")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -89,13 +90,13 @@ def _a_(iid, base, attr_name):
         return predictor.attribute(iid, base, attr_name)
 
     r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    print("---")
+    # print("---")
     return r
 
 
 def _b_(iid, left, operator, right):
-    print("~~~")
-    print(f"At iid={iid}, performing binary {operator} operation")
+    # print("~~~")
+    # print(f"At iid={iid}, performing binary {operator} operation")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -111,7 +112,7 @@ def _b_(iid, left, operator, right):
         return predictor.binary_operation(iid, left, operator, right)
 
     r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    print("---")
+    # print("---")
     return r
 
 
@@ -182,8 +183,8 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
                 record_fct(v)
             return v
         except Exception as e:
-            print(
-                f"Catching exception {type(e)} and calling predictor instead")
+            # print(
+            #     f"Catching exception {type(e)} and calling predictor instead")
             if mode == "PREDICT":
                 v = predict_fct()
                 runtime_stats.guided_uses += 1
@@ -202,7 +203,6 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
             raise Exception(
                 f"trace_iid={trace_iid} doesn't match execution iid={iid}")
         v = restore_value(abstract_value)
-        print(f"At {iid} returning replay value: {v}")  # TODO RAD
         return v
     else:
         raise Exception(f"Unexpected mode {mode}")
