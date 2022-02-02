@@ -135,6 +135,10 @@ class CodeRewriter(cst.CSTTransformer):
         # don't instrument imports, as we'll wrap them in try-except
         return False
 
+    def visit_Del(self, node):
+        # don't instrument delete statements, as "del" on call on allowed
+        return False
+
     def visit_FormattedString(self, node):
         if node.start == 'f"':
             self.quotation_char = "'"
