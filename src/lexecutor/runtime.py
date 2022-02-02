@@ -1,22 +1,22 @@
-from .Trace import Trace
+from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
-from .ValuePredictor import ValuePredictor
+from .NaiveValuePredictor import NaiveValuePredictor
 from .RuntimeStats import RuntimeStats
 import atexit
 
 
 # ------- begin: select mode -----
 # mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
-mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
+mode = "PREDICT"   # predict and inject values if missing in exeuction
+# mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
-    trace = Trace("trace.out")
+    trace = TraceWriter("trace.out")
     atexit.register(lambda: trace.flush())
     runtime_stats = None
 elif mode == "PREDICT":
-    predictor = ValuePredictor()
+    predictor = NaiveValuePredictor()
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
 elif mode == "REPLAY":
@@ -32,7 +32,7 @@ print(f"### LExecutor running in {mode} mode ###")
 def _n_(iid, name, lambada):
     # print("~~~")
     # print(f"At iid={iid}, looking up name '{name}'")
-    
+
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
         runtime_stats.cover_iid(iid)
@@ -53,7 +53,7 @@ def _n_(iid, name, lambada):
 def _c_(iid, fct, *args, **kwargs):
     # print("~~~")
     # print(f"At iid={iid}, calling function {fct}")
-    
+
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
         runtime_stats.cover_iid(iid)

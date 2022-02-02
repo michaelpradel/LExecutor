@@ -3,7 +3,7 @@ from os import path
 from .ValueAbstraction import abstract_value
 
 
-class Trace:
+class TraceWriter:
     def __init__(self, file_path):
         self.file_path = file_path
         if path.exists(self.file_path):
