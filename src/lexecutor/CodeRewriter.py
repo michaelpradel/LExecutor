@@ -30,14 +30,10 @@ class CodeRewriter(cst.CSTTransformer):
         callee_name = cst.Name(value="_n_")
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
-
-        # create a lambda like "lambda a=a: a" to avoid refering to undefined class variables
-        param = cst.Param(name=updated_node, default=updated_node)
-
         name_arg = cst.Arg(cst.SimpleString(
             value=f"{self.quotation_char}{node.value}{self.quotation_char}"))
         lambada = cst.Lambda(params=cst.Parameters(
-            params=[param]), body=updated_node)
+            params=[]), body=updated_node)
         value_arg = cst.Arg(value=lambada)
         call = cst.Call(func=callee_name, args=[iid_arg, name_arg, value_arg])
         return call
