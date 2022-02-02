@@ -25,13 +25,14 @@ elif mode == "REPLAY":
     next_trace_idx = 0
     runtime_stats = None
 
+verbose = True
 
 print(f"### LExecutor running in {mode} mode ###")
 
 
 def _n_(iid, name, lambada):
-    # print("~~~")
-    # print(f"At iid={iid}, looking up name '{name}'")
+    if verbose:
+        print(f"\nAt iid={iid}, looking up name '{name}'")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -45,14 +46,12 @@ def _n_(iid, name, lambada):
     def predict_fct():
         return predictor.name(iid, name)
 
-    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    # print("---")
-    return r
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def _c_(iid, fct, *args, **kwargs):
-    # print("~~~")
-    # print(f"At iid={iid}, calling function {fct}")
+    if verbose:
+        print(f"\nAt iid={iid}, calling function {fct}")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -67,14 +66,12 @@ def _c_(iid, fct, *args, **kwargs):
     def predict_fct():
         return predictor.call(iid, fct, args, kwargs)
 
-    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    # print("---")
-    return r
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def _a_(iid, base, attr_name):
-    # print("~~~")
-    # print(f"At iid={iid}, looking up attribute '{attr_name}'")
+    if verbose:
+        print(f"\nAt iid={iid}, looking up attribute '{attr_name}'")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -89,14 +86,12 @@ def _a_(iid, base, attr_name):
     def predict_fct():
         return predictor.attribute(iid, base, attr_name)
 
-    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    # print("---")
-    return r
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def _b_(iid, left, operator, right):
-    # print("~~~")
-    # print(f"At iid={iid}, performing binary {operator} operation")
+    if verbose:
+        print(f"\nAt iid={iid}, performing binary {operator} operation")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -111,9 +106,7 @@ def _b_(iid, left, operator, right):
     def predict_fct():
         return predictor.binary_operation(iid, left, operator, right)
 
-    r = mode_branch(iid, perform_fct, record_fct, predict_fct)
-    # print("---")
-    return r
+    return mode_branch(iid, perform_fct, record_fct, predict_fct)
 
 
 def perform_binary_op(left, operator, right):
@@ -181,10 +174,13 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
             v = perform_fct()
             if mode == "RECORD":
                 record_fct(v)
+            if verbose:
+                print("Found/computed/returned regular value")
             return v
         except Exception as e:
-            # print(
-            #     f"Catching exception {type(e)} and calling predictor instead")
+            if verbose:
+                print(
+                    f"Catching exception {type(e)} and calling predictor instead")
             if mode == "PREDICT":
                 v = predict_fct()
                 runtime_stats.guided_uses += 1
