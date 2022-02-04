@@ -1,13 +1,14 @@
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
+from .FrequencyValuePredictor import FrequencyValuePredictor
 from .RuntimeStats import RuntimeStats
 import atexit
 
 
 # ------- begin: select mode -----
-mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
+# mode = "RECORD"    # record values and write into a trace file
+mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
@@ -16,7 +17,8 @@ if mode == "RECORD":
     atexit.register(lambda: trace.flush())
     runtime_stats = None
 elif mode == "PREDICT":
-    predictor = NaiveValuePredictor()
+    predictor = FrequencyValuePredictor("data/repos/pandas/trace.out")
+    atexit.register(predictor.print_stats)
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
 elif mode == "REPLAY":
@@ -25,7 +27,7 @@ elif mode == "REPLAY":
     next_trace_idx = 0
     runtime_stats = None
 
-verbose = False
+verbose = True
 
 print(f"### LExecutor running in {mode} mode ###")
 
