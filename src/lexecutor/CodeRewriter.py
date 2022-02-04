@@ -186,12 +186,12 @@ class CodeRewriter(cst.CSTTransformer):
         wrapped_attribute = self.__create_attribute_call(node, updated_node)
         return wrapped_attribute
 
-    def leave_BinaryOperation(self, node, updated_node):
-        if not self.instrument:
-            return updated_node
+    # def leave_BinaryOperation(self, node, updated_node):
+    #     if not self.instrument:
+    #         return updated_node
 
-        wrapped_bin_op = self.__create_binop_call(node, updated_node)
-        return wrapped_bin_op
+    #     wrapped_bin_op = self.__create_binop_call(node, updated_node)
+    #     return wrapped_bin_op
 
     def leave_SimpleStatementLine(self, node, updated_node):
         if not self.instrument:
