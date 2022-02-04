@@ -17,8 +17,9 @@ if mode == "RECORD":
     atexit.register(lambda: trace.flush())
     runtime_stats = None
 elif mode == "PREDICT":
-    predictor = FrequencyValuePredictor("data/repos/pandas/trace.out")
-    atexit.register(predictor.print_stats)
+    # predictor = FrequencyValuePredictor("data/repos/pandas/trace.out")
+    # atexit.register(predictor.print_stats)
+    predictor = NaiveValuePredictor()
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
 elif mode == "REPLAY":
