@@ -24,13 +24,11 @@ def gather_accessed_names(ast_wrapper):
     for scope in scopes:
         for access in scope.accesses:
             name = access.node
-            if name.value == ("self"):
-                continue
-            
+
             # check for reads of class variables defined in the same class
             # (we cannot wrap them into a lambda)
             if isinstance(scope, cst.metadata.ClassScope) and (all(ref.scope == scope for ref in access.referents)):
-                continue                
+                continue
 
             used_names.add(name)
 

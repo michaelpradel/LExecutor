@@ -25,7 +25,7 @@ elif mode == "REPLAY":
     next_trace_idx = 0
     runtime_stats = None
 
-verbose = True
+verbose = False
 
 print(f"### LExecutor running in {mode} mode ###")
 
