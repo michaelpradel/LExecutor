@@ -20,6 +20,8 @@ class TraceWriter:
         args = " ".join(args)
         value = abstract_value(raw_value)
         fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
+        if " " in fct_name:  # some fcts that don't have a proper name
+            fct_name = fct_name.split(" ")[0]
         self.__append(f"{iid} call {fct_name} {args} {value}")
 
     def append_attribute(self, iid, raw_base, attr_name, raw_value):
