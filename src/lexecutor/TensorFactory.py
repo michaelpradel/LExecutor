@@ -1,5 +1,5 @@
 from unicodedata import name
-import torch
+import os
 import numpy as np
 from .TraceReader import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from .Hyperparams import Hyperparams as p
@@ -12,6 +12,9 @@ class TensorFactory(object):
         # for building vocab of values
         self.value_to_index = {}
         self.next_value_index = 0
+
+        # for storing in multiple .npz files
+        self.next_npz_idx = 0
 
     def __value_to_one_hot(self, value: str):
         v = np.zeros(p.value_emb_len)
@@ -26,7 +29,14 @@ class TensorFactory(object):
             self.next_value_index += 1
         return v
 
-    def traces_to_tensors(self, trace_paths, npz_path):
+    def __store_tensors(self, dest_dir, xs_kind, xs_name, xs_args, xs_base, xs_left, xs_right, xs_operator, ys_value):
+        npz_path = os.path.join(dest_dir, f"{self.next_npz_idx}.npz")
+        self.next_npz_idx += 1
+        print(f"Storing tensors to {npz_path}")
+        np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
+                 xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
+
+    def traces_to_tensors(self, trace_paths, npz_dest_dir):
         print(f"Transforming {len(trace_paths)} trace files to tensors")
 
         # x consists of
@@ -74,6 +84,7 @@ class TensorFactory(object):
                     base = self.__value_to_one_hot(entry.base)
                 elif type(entry) is BinOpEntry:
                     kind[3] = 1
+                    name = np.zeros(p.token_emb_len)
                     left = self.__value_to_one_hot(entry.left)
                     right = self.__value_to_one_hot(entry.right)
                     operator = self.token_embedding.get(entry.operator)
@@ -87,9 +98,20 @@ class TensorFactory(object):
                 xs_operator.append(operator)
                 ys_value.append(self.__value_to_one_hot(entry.value))
 
-        np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
-                 xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
+                if len(ys_value) == 100000:
+                    self.__store_tensors(
+                        npz_dest_dir, xs_kind, xs_name, xs_args, xs_base, xs_left, xs_right, xs_operator, ys_value)
+                    xs_kind = []
+                    xs_name = []
+                    xs_args = []
+                    xs_base = []
+                    xs_left = []
+                    xs_right = []
+                    xs_operator = []
+                    ys_value = []
 
+        self.__store_tensors(npz_dest_dir, xs_kind, xs_name, xs_args,
+                             xs_base, xs_left, xs_right, xs_operator, ys_value)
 
 
 class Embedding():
@@ -102,5 +124,5 @@ class Embedding():
             return self.cache[token]
         else:
             vec = self.embedding.wv[token]
-            self.cache[token] = vec 
+            self.cache[token] = vec
             return vec

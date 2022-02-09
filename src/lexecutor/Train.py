@@ -5,7 +5,9 @@ from gensim.models.fasttext import FastText
 from .TraceReader import read_trace
 from .Hyperparams import Hyperparams as p
 from .TensorFactory import TensorFactory
-
+from .Training import Training
+from .Validation import Validation
+from .Model import ValuePredictionModel
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -47,5 +49,22 @@ if __name__ == "__main__":
     embedding = load_FastText(args.embedding)
     tensor_factory = TensorFactory(embedding)
     if args.traces is not None:
-        tensor_factory.traces_to_tensors(args.traces, "tensors.npz")
-    # TODO: use .npz file, if given
+        tensor_factory.traces_to_tensors(args.traces, "data/tensors")
+    elif args.tensors is not None:
+        
+        model = ValuePredictionModel().to(device)
+        criterion = BCELoss()
+        optimizer = Adam(model.parameters())
+
+        # dataset = ToyDataset(10000, 20, 10) # for testing only
+
+        train_loader = create_dataloader(
+            json_train_dataset, embedding, embedding_size)
+        training = Training(model, criterion, optimizer,
+                            train_loader, batch_size, epochs)
+
+        validate_loader = create_dataloader(
+            json_validate_dataset, embedding, embedding_size)
+        validation = Validation(model, criterion, validate_loader, batch_size)
+        
+        training.run(args.store_model, validation)
