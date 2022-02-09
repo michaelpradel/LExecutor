@@ -7,8 +7,8 @@ import atexit
 
 
 # ------- begin: select mode -----
-# mode = "RECORD"    # record values and write into a trace file
-mode = "PREDICT"   # predict and inject values if missing in exeuction
+mode = "RECORD"    # record values and write into a trace file
+# mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
@@ -28,7 +28,7 @@ elif mode == "REPLAY":
     next_trace_idx = 0
     runtime_stats = None
 
-verbose = True
+verbose = False
 
 print(f"### LExecutor running in {mode} mode ###")
 

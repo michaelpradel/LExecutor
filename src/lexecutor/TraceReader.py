@@ -42,7 +42,7 @@ def read_trace(file):
                     NameEntry(segments[0], segments[2], segments[3]))
             elif kind == "call":
                 entries.append(
-                    CallEntry(segments[0], segments[2], segments[3], segments[4]))
+                    CallEntry(segments[0], segments[2], segments[3:-1], segments[-1]))
             elif kind == "attribute":
                 entries.append(AttributeEntry(
                     segments[0], segments[2], segments[3], segments[4]))

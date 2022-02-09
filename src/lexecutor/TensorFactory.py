@@ -1,0 +1,91 @@
+from unicodedata import name
+import torch
+import numpy as np
+from .TraceReader import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from .Hyperparams import Hyperparams as p
+
+
+class TensorFactory(object):
+    def __init__(self, token_embedding):
+        self.token_embedding = token_embedding
+
+        # for building vocab of values
+        self.value_to_index = {}
+        self.next_value_index = 0
+
+    def __value_to_one_hot(self, value: str):
+        v = np.zeros(p.value_emb_len)
+        if value in self.value_to_index:
+            v[self.value_to_index[value]] = 1
+        else:
+            # out-of-bounds exception here means we need to
+            #  - increase Hyperprams.value_emb_len or
+            #  - use stronger abstraction in ValueAbstraction.abstract_value()
+            v[self.next_value_index] = 1
+            self.value_to_index[value] = self.next_value_index
+            self.next_value_index += 1
+        return v
+
+    def traces_to_tensors(self, trace_paths, npz_path):
+        print(f"Transforming {len(trace_paths)} trace files to tensors")
+
+        # x consists of
+        #  - kind (name/call/attr/binOp)
+        #  - name of var, fct, or attr
+        #  - args of call
+        #  - base of attr
+        #  - left operand
+        #  - right operand
+        #  - operator
+        xs_kind = []
+        xs_name = []
+        xs_args = []
+        xs_base = []
+        xs_left = []
+        xs_right = []
+        xs_operator = []
+
+        # y consists of
+        #  - value
+        ys_value = []
+
+        for file_path in trace_paths:
+            entries = read_trace(file_path)
+
+            for entry in entries:
+                args = np.zeros((p.max_call_args, p.value_emb_len))
+                base = np.zeros(p.value_emb_len)
+                left = np.zeros(p.value_emb_len)
+                right = np.zeros(p.value_emb_len)
+                operator = np.zeros(p.token_emb_len)
+
+                kind = np.zeros(4)
+                if type(entry) is NameEntry:
+                    kind[0] = 1
+                    name = self.token_embedding(entry.name)
+                elif type(entry) is CallEntry:
+                    kind[1] = 1
+                    name = self.token_embedding(entry.fct_name)
+                    for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
+                        args[arg_idx] = self.__value_to_one_hot(arg)
+                elif type(entry) is AttributeEntry:
+                    kind[2] = 1
+                    name = self.token_embedding(entry.attr_name)
+                    base = self.__value_to_one_hot(entry.base)
+                elif type(entry) is BinOpEntry:
+                    kind[3] = 1
+                    left = self.__value_to_one_hot(entry.left)
+                    right = self.__value_to_one_hot(entry.right)
+                    operator = self.token_embedding(entry.operator)
+
+                xs_kind.append(kind)
+                xs_name.append(name)
+                xs_args.append(args)
+                xs_base.append(base)
+                xs_left.append(left)
+                xs_right.append(right)
+                xs_operator.append(operator)
+                ys_value.append(self.__value_to_one_hot(entry.value))
+
+        np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
+                 xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
