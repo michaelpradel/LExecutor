@@ -7,7 +7,7 @@ from .Hyperparams import Hyperparams as p
 
 class TensorFactory(object):
     def __init__(self, token_embedding):
-        self.token_embedding = token_embedding
+        self.token_embedding = Embedding(token_embedding)
 
         # for building vocab of values
         self.value_to_index = {}
@@ -62,21 +62,21 @@ class TensorFactory(object):
                 kind = np.zeros(4)
                 if type(entry) is NameEntry:
                     kind[0] = 1
-                    name = self.token_embedding(entry.name)
+                    name = self.token_embedding.get(entry.name)
                 elif type(entry) is CallEntry:
                     kind[1] = 1
-                    name = self.token_embedding(entry.fct_name)
+                    name = self.token_embedding.get(entry.fct_name)
                     for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
                         args[arg_idx] = self.__value_to_one_hot(arg)
                 elif type(entry) is AttributeEntry:
                     kind[2] = 1
-                    name = self.token_embedding(entry.attr_name)
+                    name = self.token_embedding.get(entry.attr_name)
                     base = self.__value_to_one_hot(entry.base)
                 elif type(entry) is BinOpEntry:
                     kind[3] = 1
                     left = self.__value_to_one_hot(entry.left)
                     right = self.__value_to_one_hot(entry.right)
-                    operator = self.token_embedding(entry.operator)
+                    operator = self.token_embedding.get(entry.operator)
 
                 xs_kind.append(kind)
                 xs_name.append(name)
@@ -89,3 +89,18 @@ class TensorFactory(object):
 
         np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
                  xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
+
+
+
+class Embedding():
+    def __init__(self, embedding):
+        self.embedding = embedding
+        self.cache = {}
+
+    def get(self, token):
+        if token in self.cache:
+            return self.cache[token]
+        else:
+            vec = self.embedding.wv[token]
+            self.cache[token] = vec 
+            return vec
