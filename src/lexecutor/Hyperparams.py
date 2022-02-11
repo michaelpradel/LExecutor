@@ -8,3 +8,7 @@ class Hyperparams(object):
     joined_layer_len = 200
     intermediate_layer_len = 200
 
+    # training
+    epochs = 10
+    batch_size = 100
+

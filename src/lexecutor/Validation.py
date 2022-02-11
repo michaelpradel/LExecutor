@@ -11,20 +11,25 @@ class Validation():
         self.batch_size = batch_size
 
     def run(self):
-        accuracies = t.empty(len(self.data_loader))
-        losses = t.empty(len(self.data_loader))
+        # TODO: get nb from dataset (using non-iterable dataset?)
+        accuracies = t.empty(100000)
+        losses = t.empty(100000)
+        ctr = 0
         with t.no_grad():
             self.model.eval()
             for batch_idx, batch in enumerate(self.data_loader):
-                xs = batch[0]
-                ys = batch[1]
+                xs = batch[0:-1]
+                ys = batch[-1]
+
+                ctr += ys.shape[0]
 
                 ys_pred = self.model(xs)
                 losses_batch = self.criterion(ys_pred, ys)
-                ys_pred_boolean = ys_pred > 0.5
-                ys_boolean = ys > 0.5
-                accuracies_batch = (
-                    ys_boolean == ys_pred_boolean).sum().item() / ys.size(0)
+                ys_pred_winners = ys_pred.argmax(dim=1)
+                ys_winners = ys.argmax(dim=1)
+
+                ys_corrects = (ys_pred_winners == ys_winners)
+                accuracies_batch = ys_corrects.sum().float() / ys.size(0)
 
                 accuracies[batch_idx *
                            self.batch_size: (batch_idx + 1) * self.batch_size] = accuracies_batch
@@ -35,3 +40,4 @@ class Validation():
         val_loss = losses.mean().item()
         print(
             f"val_loss = {round(val_loss, 4)}, val_accuracy = {round(val_accuracy, 4)}")
+        print(f"CTR = {ctr}")

@@ -1,19 +1,24 @@
 import argparse
 import torch
+from torch.nn import CrossEntropyLoss
+from torch.optim import Adam
+from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 from gensim.models.fasttext import FastText
-from .TraceReader import read_trace
 from .Hyperparams import Hyperparams as p
 from .TensorFactory import TensorFactory
 from .Training import Training
 from .Validation import Validation
 from .Model import ValuePredictionModel
+from .Util import device
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--traces", help="Trace files", nargs="+", required=False)
 parser.add_argument(
-    "--tensors", help=".npz file with pre-computed tensors", required=False)
+    "--train_tensors", help="Directory with .npz files with pre-computed tensors to use for training", required=False)
+parser.add_argument(
+    "--validate_tensors", help="Directory with .npz files with pre-computed tensors to use for validation", required=False)
 parser.add_argument(
     "--embedding", help="Pre-trained FastText token embedding", required=True)
 
@@ -46,25 +51,25 @@ def name_to_vectors(name, tokenizer, model):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    embedding = load_FastText(args.embedding)
-    tensor_factory = TensorFactory(embedding)
+    
+    tensor_factory = TensorFactory()
+
     if args.traces is not None:
-        tensor_factory.traces_to_tensors(args.traces, "data/tensors")
-    elif args.tensors is not None:
-        
+        embedding = load_FastText(args.embedding)
+        tensor_factory.traces_to_tensors(args.traces, embedding, "data/tensors")
+    elif args.train_tensors is not None:
         model = ValuePredictionModel().to(device)
-        criterion = BCELoss()
+        criterion = CrossEntropyLoss()
         optimizer = Adam(model.parameters())
 
-        # dataset = ToyDataset(10000, 20, 10) # for testing only
-
-        train_loader = create_dataloader(
-            json_train_dataset, embedding, embedding_size)
+        train_dataset = tensor_factory.tensors_as_dataset(args.train_tensors)
+        train_loader = DataLoader(train_dataset, batch_size=p.batch_size)
         training = Training(model, criterion, optimizer,
-                            train_loader, batch_size, epochs)
+                            train_loader, p.batch_size, p.epochs)
 
-        validate_loader = create_dataloader(
-            json_validate_dataset, embedding, embedding_size)
-        validation = Validation(model, criterion, validate_loader, batch_size)
-        
-        training.run(args.store_model, validation)
+        validate_dataset = tensor_factory.tensors_as_dataset(args.validate_tensors)
+        validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size)
+        validation = Validation(
+            model, criterion, validate_loader, p.batch_size)
+
+        training.run(validation=validation)

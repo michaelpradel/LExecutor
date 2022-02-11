@@ -2,6 +2,7 @@
 # Author: Michael Pradel
 
 import torch as t
+from .Validation import Validation
 
 
 class Training():
@@ -20,8 +21,8 @@ class Training():
             print(f"Epoch {epoch}")
             self.model.train()
             for batch_idx, batch in enumerate(self.data_loader):
-                xs = batch[0]
-                ys = batch[1]
+                xs = batch[0:-1]
+                ys = batch[-1]
 
                 self.optimizer.zero_grad()
                 ys_pred = self.model(xs)

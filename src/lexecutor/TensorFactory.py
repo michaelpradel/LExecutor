@@ -1,14 +1,15 @@
 from unicodedata import name
 import os
 import numpy as np
+import torch as t
+from torch.utils.data import IterableDataset, Dataset
 from .TraceReader import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from .Hyperparams import Hyperparams as p
+from .Util import dtype, device
 
 
 class TensorFactory(object):
-    def __init__(self, token_embedding):
-        self.token_embedding = Embedding(token_embedding)
-
+    def __init__(self):
         # for building vocab of values
         self.value_to_index = {}
         self.next_value_index = 0
@@ -36,8 +37,10 @@ class TensorFactory(object):
         np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
                  xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
 
-    def traces_to_tensors(self, trace_paths, npz_dest_dir):
+    def traces_to_tensors(self, trace_paths, token_embedding, npz_dest_dir):
         print(f"Transforming {len(trace_paths)} trace files to tensors")
+
+        token_embedding = Embedding(token_embedding)
 
         # x consists of
         #  - kind (name/call/attr/binOp)
@@ -72,22 +75,22 @@ class TensorFactory(object):
                 kind = np.zeros(4)
                 if type(entry) is NameEntry:
                     kind[0] = 1
-                    name = self.token_embedding.get(entry.name)
+                    name = token_embedding.get(entry.name)
                 elif type(entry) is CallEntry:
                     kind[1] = 1
-                    name = self.token_embedding.get(entry.fct_name)
+                    name = token_embedding.get(entry.fct_name)
                     for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
                         args[arg_idx] = self.__value_to_one_hot(arg)
                 elif type(entry) is AttributeEntry:
                     kind[2] = 1
-                    name = self.token_embedding.get(entry.attr_name)
+                    name = token_embedding.get(entry.attr_name)
                     base = self.__value_to_one_hot(entry.base)
                 elif type(entry) is BinOpEntry:
                     kind[3] = 1
                     name = np.zeros(p.token_emb_len)
                     left = self.__value_to_one_hot(entry.left)
                     right = self.__value_to_one_hot(entry.right)
-                    operator = self.token_embedding.get(entry.operator)
+                    operator = token_embedding.get(entry.operator)
 
                 xs_kind.append(kind)
                 xs_name.append(name)
@@ -113,6 +116,9 @@ class TensorFactory(object):
         self.__store_tensors(npz_dest_dir, xs_kind, xs_name, xs_args,
                              xs_base, xs_left, xs_right, xs_operator, ys_value)
 
+    def tensors_as_dataset(self, npz_dir):
+        return DiskDataset(npz_dir)
+
 
 class Embedding():
     def __init__(self, embedding):
@@ -126,3 +132,27 @@ class Embedding():
             vec = self.embedding.wv[token]
             self.cache[token] = vec
             return vec
+
+
+class DiskDataset(IterableDataset):
+    def __init__(self, npz_dir):
+        self.files = [os.path.join(npz_dir, f)
+                      for f in os.listdir(npz_dir) if f.endswith(".npz")]
+
+    def __iter__(self):
+        for f in self.files:
+            with np.load(f) as data:
+                xs_kind = t.tensor(data['xs_kind'], dtype=dtype, device=device)
+                xs_name = t.tensor(data['xs_name'], dtype=dtype, device=device)
+                xs_args = t.tensor(data['xs_args'], dtype=dtype, device=device)
+                xs_base = t.tensor(data['xs_base'], dtype=dtype, device=device)
+                xs_left = t.tensor(data['xs_left'], dtype=dtype, device=device)
+                xs_right = t.tensor(
+                    data['xs_right'], dtype=dtype, device=device)
+                xs_operator = t.tensor(
+                    data['xs_operator'], dtype=dtype, device=device)
+                ys_value = t.tensor(
+                    data['ys_value'], dtype=dtype, device=device)
+
+                for i in range(xs_kind.shape[0]):
+                    yield xs_kind[i], xs_name[i], xs_args[i], xs_base[i], xs_left[i], xs_right[i], xs_operator[i], ys_value[i]
