@@ -72,4 +72,4 @@ if __name__ == "__main__":
         validation = Validation(
             model, criterion, validate_loader, p.batch_size)
 
-        training.run(validation=validation)
+        training.run(validation=validation, store_model_path="data/models/latest")
