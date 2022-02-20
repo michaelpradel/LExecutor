@@ -1,5 +1,6 @@
 from unicodedata import name
 import os
+import json
 import numpy as np
 import torch as t
 from torch.utils.data import IterableDataset, Dataset
@@ -37,6 +38,39 @@ class TensorFactory(object):
         np.savez(npz_path, xs_kind=xs_kind, xs_name=xs_name, xs_args=xs_args, xs_base=xs_base,
                  xs_left=xs_left, xs_right=xs_right, xs_operator=xs_operator, ys_value=ys_value)
 
+    def __store_value_map(self, dest_dir):
+        with open(os.path.join(dest_dir, "value_map.json"), "w") as f:
+            json.dump(self.value_to_index, f)
+
+    def entry_to_tensors(self, entry, token_embedding):
+        args = np.zeros((p.max_call_args, p.value_emb_len))
+        base = np.zeros(p.value_emb_len)
+        left = np.zeros(p.value_emb_len)
+        right = np.zeros(p.value_emb_len)
+        operator = np.zeros(p.token_emb_len)
+
+        kind = np.zeros(4)
+        if type(entry) is NameEntry:
+            kind[0] = 1
+            name = token_embedding.get(entry.name)
+        elif type(entry) is CallEntry:
+            kind[1] = 1
+            name = token_embedding.get(entry.fct_name)
+            for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
+                args[arg_idx] = self.__value_to_one_hot(arg)
+        elif type(entry) is AttributeEntry:
+            kind[2] = 1
+            name = token_embedding.get(entry.attr_name)
+            base = self.__value_to_one_hot(entry.base)
+        elif type(entry) is BinOpEntry:
+            kind[3] = 1
+            name = np.zeros(p.token_emb_len)
+            left = self.__value_to_one_hot(entry.left)
+            right = self.__value_to_one_hot(entry.right)
+            operator = token_embedding.get(entry.operator)
+
+        return kind, name, args, base, left, right, operator
+
     def traces_to_tensors(self, trace_paths, token_embedding, npz_dest_dir):
         print(f"Transforming {len(trace_paths)} trace files to tensors")
 
@@ -66,31 +100,8 @@ class TensorFactory(object):
             entries = read_trace(file_path)
 
             for entry in entries:
-                args = np.zeros((p.max_call_args, p.value_emb_len))
-                base = np.zeros(p.value_emb_len)
-                left = np.zeros(p.value_emb_len)
-                right = np.zeros(p.value_emb_len)
-                operator = np.zeros(p.token_emb_len)
-
-                kind = np.zeros(4)
-                if type(entry) is NameEntry:
-                    kind[0] = 1
-                    name = token_embedding.get(entry.name)
-                elif type(entry) is CallEntry:
-                    kind[1] = 1
-                    name = token_embedding.get(entry.fct_name)
-                    for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
-                        args[arg_idx] = self.__value_to_one_hot(arg)
-                elif type(entry) is AttributeEntry:
-                    kind[2] = 1
-                    name = token_embedding.get(entry.attr_name)
-                    base = self.__value_to_one_hot(entry.base)
-                elif type(entry) is BinOpEntry:
-                    kind[3] = 1
-                    name = np.zeros(p.token_emb_len)
-                    left = self.__value_to_one_hot(entry.left)
-                    right = self.__value_to_one_hot(entry.right)
-                    operator = token_embedding.get(entry.operator)
+                kind, name, args, base, left, right, operator = self.entry_to_tensors(
+                    entry, token_embedding)
 
                 xs_kind.append(kind)
                 xs_name.append(name)
@@ -115,6 +126,7 @@ class TensorFactory(object):
 
         self.__store_tensors(npz_dest_dir, xs_kind, xs_name, xs_args,
                              xs_base, xs_left, xs_right, xs_operator, ys_value)
+        self.__store_value_map(npz_dest_dir)
 
     def tensors_as_dataset(self, npz_dir):
         return DiskDataset(npz_dir)

@@ -51,12 +51,13 @@ def name_to_vectors(name, tokenizer, model):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    
+
     tensor_factory = TensorFactory()
 
     if args.traces is not None:
         embedding = load_FastText(args.embedding)
-        tensor_factory.traces_to_tensors(args.traces, embedding, "data/tensors")
+        tensor_factory.traces_to_tensors(
+            args.traces, embedding, "data/tensors")
     elif args.train_tensors is not None:
         model = ValuePredictionModel().to(device)
         criterion = CrossEntropyLoss()
@@ -67,9 +68,11 @@ if __name__ == "__main__":
         training = Training(model, criterion, optimizer,
                             train_loader, p.batch_size, p.epochs)
 
-        validate_dataset = tensor_factory.tensors_as_dataset(args.validate_tensors)
+        validate_dataset = tensor_factory.tensors_as_dataset(
+            args.validate_tensors)
         validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size)
         validation = Validation(
             model, criterion, validate_loader, p.batch_size)
 
-        training.run(validation=validation, store_model_path="data/models/latest")
+        training.run(validation=validation,
+                     store_model_path="data/models/latest")
