@@ -14,8 +14,8 @@ mode = "RECORD"    # record values and write into a trace file
 # ------- end: select mode -------
 
 if mode == "RECORD":
-    trace = TraceWriter("trace.out")
-    atexit.register(lambda: trace.flush())
+    trace = TraceWriter("trace.h5")
+    atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
     # predictor = FrequencyValuePredictor("data/repos/pandas/trace.out")
