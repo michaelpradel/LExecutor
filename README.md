@@ -1,7 +1,5 @@
 # LExecutor
 
-## Running the tool during development
-
 Create and enter a virtual environment:
 
 `virtualenv -p /usr/bin/python3.8 myenv`
@@ -19,3 +17,9 @@ Locally install the package in development/editable mode:
 Run the commands, e.g.,:
 
 `python -m lexecutor.instrument --help`
+
+Run the test suite of benchmark projects, e.g.,:
+
+`cd data/repos/pandas`
+`source myenv/bin/activate`
+`pytest pandas/core/arrays/boolean.py`

@@ -65,15 +65,17 @@ class NeuralValuePredictor(ValuePredictor):
         entry = BinOpEntry(iid, left, operator, right, None)
         return self.__query_model(entry)
 
+
 # for testing
 if __name__ == "__main__":
     vp = NeuralValuePredictor()
-    
+
     v = vp.name(23, "first_name")
     print(f"Predicted value for name 'first_name': {v}")
 
     v = vp.call(23, "is_list_like", "@object")
-    print(f"Predicted value for call to 'is_list_like' with '@object' argument: {v}")
+    print(
+        f"Predicted value for call to 'is_list_like' with '@object' argument: {v}")
 
     v = vp.attribute(23, "@object", "aslist")
     print(f"Predicted value for attribute 'aslist' of '@object' argument: {v}")
