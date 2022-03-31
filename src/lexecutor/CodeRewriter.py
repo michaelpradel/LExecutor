@@ -108,9 +108,25 @@ class CodeRewriter(cst.CSTTransformer):
 
     def __is_l_value(self, node):
         parent = self.get_metadata(ParentNodeProvider, node)
-        return (type(parent) == cst.AssignTarget or
+
+        # assignments to a single value
+        if (type(parent) == cst.AssignTarget or
                 type(parent) == cst.AnnAssign or
-                type(parent) == cst.AugAssign)
+                type(parent) == cst.AugAssign):
+            return True
+
+        # multi-assignments
+        if type(parent) == cst.Element:
+            grand_parent = self.get_metadata(ParentNodeProvider, parent)
+            if type(grand_parent) == cst.Tuple:
+                grand_grand_parent = self.get_metadata(
+                    ParentNodeProvider, grand_parent)
+                if (type(grand_grand_parent) == cst.AssignTarget or
+                    type(grand_grand_parent) == cst.AnnAssign or
+                        type(grand_grand_parent) == cst.AugAssign):
+                    return True
+
+        return False
 
     def __is_ignored_call(self, call_node):
         if type(call_node.func) == cst.Name:
