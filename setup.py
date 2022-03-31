@@ -27,5 +27,6 @@ setuptools.setup(
         'libcst',
         'pandas',
         'torch',
+        'tables',
     ],
 )
