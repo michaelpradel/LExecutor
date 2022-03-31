@@ -1,6 +1,6 @@
 class C:
     def m(self):
-        self.b = 23
+        self.b += 23
         print("Got here")
 
 c=C()
