@@ -200,7 +200,9 @@ class CodeRewriter(cst.CSTTransformer):
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
         if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
-            if not (isinstance(node.body[0], cst.ImportFrom) and node.body[0].module.value == "__future__"):
+            if not (isinstance(node.body[0], cst.ImportFrom) and
+                    node.body[0].module is not None and
+                    node.body[0].module.value == "__future__"):
                 wrapped_import = self.__wrap_import(
                     node.body[0], updated_node.body[0])
                 return wrapped_import
