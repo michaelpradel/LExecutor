@@ -1,6 +1,6 @@
 from .ValuePredictor import ValuePredictor
 from .NaiveValuePredictor import NaiveValuePredictor
-from .TraceReader import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from .TraceEntries import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from collections import Counter
 from random import choices
 
