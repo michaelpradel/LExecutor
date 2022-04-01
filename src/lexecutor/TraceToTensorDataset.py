@@ -1,7 +1,7 @@
 from torch.utils.data import IterableDataset
 import pandas as pd
 from random import shuffle
-from .TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from .TraceEntries import NameEntry, CallEntry, AttributeEntry
 
 
 class TraceToTensorDataset(IterableDataset):
