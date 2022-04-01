@@ -4,6 +4,7 @@ from .NaiveValuePredictor import NaiveValuePredictor
 from .FrequencyValuePredictor import FrequencyValuePredictor
 from .RuntimeStats import RuntimeStats
 from .ValuePredictor import ValuePredictor
+from .Util import timestamp
 import atexit
 
 
@@ -14,7 +15,7 @@ mode = "RECORD"    # record values and write into a trace file
 # ------- end: select mode -------
 
 if mode == "RECORD":
-    trace = TraceWriter("trace.h5")
+    trace = TraceWriter(f"trace_{timestamp()}.h5")
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":

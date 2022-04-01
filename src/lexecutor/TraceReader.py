@@ -1,3 +1,5 @@
+import pandas as pd
+
 class NameEntry(object):
     def __init__(self, iid, name, value):
         self.iid = iid
@@ -33,6 +35,7 @@ class BinOpEntry(object):
 def read_trace(file):
     print(f"Reading trace file {file}")
     entries = []
+    name_trace = pd.read_hdf(file, key="name")
     with open(file) as fp:
         for line in fp.readlines():
             segments = line.rstrip().split(" ")

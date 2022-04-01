@@ -10,7 +10,9 @@ from .Util import dtype, device
 
 
 class TensorFactory(object):
-    def __init__(self):
+    def __init__(self, token_embedding):
+        self.token_embedding = token_embedding
+
         # for building vocab of values
         self.value_to_index = {}
         self.next_value_index = 0
@@ -42,7 +44,15 @@ class TensorFactory(object):
         with open(os.path.join(dest_dir, "value_map.json"), "w") as f:
             json.dump(self.value_to_index, f)
 
-    def entry_to_tensors(self, entry, token_embedding):
+    def entry_to_tensors(self, entry):
+        # x consists of
+        #  - kind (name/call/attr/binOp)
+        #  - name of var, fct, or attr
+        #  - args of call
+        #  - base of attr
+        #  - left operand
+        #  - right operand
+        #  - operator
         args = np.zeros((p.max_call_args, p.value_emb_len))
         base = np.zeros(p.value_emb_len)
         left = np.zeros(p.value_emb_len)
@@ -52,24 +62,38 @@ class TensorFactory(object):
         kind = np.zeros(4)
         if type(entry) is NameEntry:
             kind[0] = 1
-            name = token_embedding.get(entry.name)
+            name = self.token_embedding.wv[entry.name]
         elif type(entry) is CallEntry:
             kind[1] = 1
-            name = token_embedding.get(entry.fct_name)
+            name = self.token_embedding.wv[entry.fct_name]
             for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
                 args[arg_idx] = self.__value_to_one_hot(arg)
         elif type(entry) is AttributeEntry:
             kind[2] = 1
-            name = token_embedding.get(entry.attr_name)
+            name = self.token_embedding.wv[entry.attr_name]
             base = self.__value_to_one_hot(entry.base)
         elif type(entry) is BinOpEntry:
             kind[3] = 1
             name = np.zeros(p.token_emb_len)
             left = self.__value_to_one_hot(entry.left)
             right = self.__value_to_one_hot(entry.right)
-            operator = token_embedding.get(entry.operator)
+            operator = self.token_embedding.wv[entry.operator]
 
-        return kind, name, args, base, left, right, operator
+        # y consists of
+        #  - value
+        value = self.__value_to_one_hot(entry.value)
+
+        # move to target device (TODO: merge with the above?)
+        x_kind = t.tensor(kind, dtype=dtype, device=device)
+        x_name = t.tensor(name, dtype=dtype, device=device)
+        x_args = t.tensor(args, dtype=dtype, device=device)
+        x_base = t.tensor(base, dtype=dtype, device=device)
+        x_left = t.tensor(left, dtype=dtype, device=device)
+        x_right = t.tensor(right, dtype=dtype, device=device)
+        x_operator = t.tensor(operator, dtype=dtype, device=device)
+        y_value = t.tensor(value, dtype=dtype, device=device)
+
+        return x_kind, x_name, x_args, x_base, x_left, x_right, x_operator, y_value
 
     def traces_to_tensors(self, trace_paths, token_embedding, npz_dest_dir):
         print(f"Transforming {len(trace_paths)} trace files to tensors")

@@ -1,5 +1,5 @@
 import torch as t
-
+from datetime import datetime
 
 dtype = t.cuda.float if t.cuda.is_available() else t.float
 device = "cuda" if t.cuda.is_available() else "cpu"
@@ -17,3 +17,9 @@ def gather_files(files_arg):
                 raise Exception(f"Incorrect argument, expected .py file: {f}")
         files = files_arg
     return files
+
+
+def timestamp():
+    epoch = datetime.utcfromtimestamp(0)
+    now = datetime.now()
+    return round((now-epoch).total_seconds()*1000000.0)

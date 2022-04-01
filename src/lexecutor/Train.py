@@ -11,14 +11,13 @@ from .Training import Training
 from .Validation import Validation
 from .Model import ValuePredictionModel
 from .Util import device
+from .TraceToTensorDataset import TraceToTensorDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--traces", help="Trace files", nargs="+", required=False)
+    "--train_trace", help="Trace file to use for training", required=True)
 parser.add_argument(
-    "--train_tensors", help="Directory with .npz files with pre-computed tensors to use for training", required=False)
-parser.add_argument(
-    "--validate_tensors", help="Directory with .npz files with pre-computed tensors to use for validation", required=False)
+    "--validate_trace", help="Trace file to use for validation", required=True)
 parser.add_argument(
     "--embedding", help="Pre-trained FastText token embedding", required=True)
 
@@ -52,27 +51,26 @@ def name_to_vectors(name, tokenizer, model):
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    tensor_factory = TensorFactory()
+    embedding = load_FastText(args.embedding)
+    print(embedding)
 
-    if args.traces is not None:
-        embedding = load_FastText(args.embedding)
-        tensor_factory.traces_to_tensors(
-            args.traces, embedding, "data/tensors")
-    elif args.train_tensors is not None:
-        model = ValuePredictionModel().to(device)
-        criterion = CrossEntropyLoss()
-        optimizer = Adam(model.parameters())
+    model = ValuePredictionModel().to(device)
+    criterion = CrossEntropyLoss()
+    optimizer = Adam(model.parameters())
 
-        train_dataset = tensor_factory.tensors_as_dataset(args.train_tensors)
-        train_loader = DataLoader(train_dataset, batch_size=p.batch_size)
-        training = Training(model, criterion, optimizer,
-                            train_loader, p.batch_size, p.epochs)
+    tensor_factory = TensorFactory(embedding)
+    train_dataset = TraceToTensorDataset(args.train_trace, tensor_factory)
+    train_loader = DataLoader(train_dataset, batch_size=p.batch_size, drop_last=True)
+    print(f"Training on   {len(train_dataset)} examples")
+    training = Training(model, criterion, optimizer,
+                        train_loader, p.batch_size, p.epochs)
 
-        validate_dataset = tensor_factory.tensors_as_dataset(
-            args.validate_tensors)
-        validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size)
-        validation = Validation(
-            model, criterion, validate_loader, p.batch_size)
+    validate_dataset = TraceToTensorDataset(
+        args.validate_trace, tensor_factory)
+    validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size, drop_last=True)
+    print(f"Validating on {len(validate_dataset)} examples")
+    validation = Validation(
+        model, criterion, validate_loader, p.batch_size)
 
-        training.run(validation=validation,
-                     store_model_path="data/models/latest")
+    training.run(validation=validation,
+                 store_model_path="data/models/latest")
