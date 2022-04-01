@@ -204,6 +204,8 @@ class CodeRewriter(cst.CSTTransformer):
         wrapped_attribute = self.__create_attribute_call(node, updated_node)
         return wrapped_attribute
 
+    # tracking and prediction for binary operations turned off for now, as predicting the values might be enough
+    #
     # def leave_BinaryOperation(self, node, updated_node):
     #     if not self.instrument:
     #         return updated_node

@@ -2,7 +2,7 @@ myenv
 *.swp
 *~
 iids.json
-trace.out
+trace_*.h5
 __pycache__
 workspace.code-workspace
 *_instr.py

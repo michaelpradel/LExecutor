@@ -31,7 +31,7 @@ class BinOpEntry(object):
         self.right = right
         self.value = value
 
-
+# TODO: remove?
 def read_trace(file):
     print(f"Reading trace file {file}")
     entries = []

@@ -11,6 +11,7 @@ class TraceToTensorDataset(IterableDataset):
     def __iter__(self):
         for _, row in self.df.iterrows():
             entry = NameEntry(row[0], row[1], row[2])
+            # TODO: for CallEntry, split args by space
             yield self.tensor_factory.entry_to_tensors(entry)
 
     def __len__(self):
