@@ -16,7 +16,7 @@ Locally install the package in development/editable mode:
 
 Run the commands, e.g.,:
 
-`python -m lexecutor.instrument --help`
+`python -m lexecutor.Instrument --help`
 
 Run the test suite of benchmark projects, e.g.,:
 

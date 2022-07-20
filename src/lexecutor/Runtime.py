@@ -1,7 +1,7 @@
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
-from .FrequencyValuePredictor import FrequencyValuePredictor
+# from .FrequencyValuePredictor import FrequencyValuePredictor
 from .RuntimeStats import RuntimeStats
 from .ValuePredictor import ValuePredictor
 from .Util import timestamp
