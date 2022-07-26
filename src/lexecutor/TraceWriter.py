@@ -51,20 +51,32 @@ class TraceWriter:
                 self.attribute_buffer, self.attribute_df)
 
     def write_to_file(self):
-        self.name_df = self.__flush_buffer(self.name_buffer, self.name_df)
-        self.name_df[2].astype("category")
-        self.name_df.to_hdf(self.file_path, key="name",
+        try:
+            self.name_df = self.__flush_buffer(self.name_buffer, self.name_df)
+            self.name_df[2].astype("category")
+        except:
+            pass
+        finally:
+            self.name_df.to_hdf(self.file_path, key="name",
                             complevel=9, complib="bzip2")
 
-        self.call_df = self.__flush_buffer(self.call_buffer, self.call_df)
-        self.call_df[2].astype("category")
-        self.call_df[3].astype("category")
-        self.call_df.to_hdf(self.file_path, key="call",
-                            complevel=9, complib="bzip2")
+        try:
+            self.call_df = self.__flush_buffer(self.call_buffer, self.call_df)
+            self.call_df[2].astype("category")
+            self.call_df[3].astype("category")
+        except:
+            pass
+        finally:
+            self.call_df.to_hdf(self.file_path, key="call",
+                                complevel=9, complib="bzip2")
 
-        self.attribute_df = self.__flush_buffer(
-            self.attribute_buffer, self.attribute_df)
-        self.attribute_df[1].astype("category")
-        self.attribute_df[3].astype("category")
-        self.attribute_df.to_hdf(self.file_path, key="attribute",
-                                 complevel=9, complib="bzip2")
+        try:
+            self.attribute_df = self.__flush_buffer(
+                self.attribute_buffer, self.attribute_df)
+            self.attribute_df[1].astype("category")
+            self.attribute_df[3].astype("category")
+        except:
+            pass
+        finally:
+            self.attribute_df.to_hdf(self.file_path, key="attribute",
+                                    complevel=9, complib="bzip2")
