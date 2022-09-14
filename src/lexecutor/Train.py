@@ -15,9 +15,9 @@ from .TraceToTensorDataset import TraceToTensorDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--train_trace", help="Trace file to use for training", required=True)
+    "--train_trace", help="Trace file or .txt file with all trace file paths to use for training", nargs="+", required=True)
 parser.add_argument(
-    "--validate_trace", help="Trace file to use for validation", required=True)
+    "--validate_trace", help="Trace file or .txt file with all trace file paths to use for validation", nargs="+", required=True)
 parser.add_argument(
     "--embedding", help="Pre-trained FastText token embedding", required=True)
 

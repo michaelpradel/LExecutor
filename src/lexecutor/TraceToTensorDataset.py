@@ -2,14 +2,25 @@ from torch.utils.data import IterableDataset
 import pandas as pd
 from random import shuffle
 from .TraceEntries import NameEntry, CallEntry, AttributeEntry
+from .Util import gather_files
 
 
 class TraceToTensorDataset(IterableDataset):
-    def __init__(self, trace_file, tensor_factory):
+    def __init__(self, trace_files, tensor_factory):
         # load traces
-        self.name_df = pd.read_hdf(trace_file, key="name")
-        self.call_df = pd.read_hdf(trace_file, key="call")
-        self.attribute_df = pd.read_hdf(trace_file, key="attribute")
+        self.name_df = pd.DataFrame(data=None)
+        self.call_df = pd.DataFrame(data=None)
+        self.attribute_df = pd.DataFrame(data=None)
+
+        trace_files = gather_files(trace_files)
+        for trace_file in trace_files:
+            current_name_df = pd.read_hdf(trace_file, key="name")
+            current_call_df = pd.read_hdf(trace_file, key="call")
+            current_attribute_df = pd.read_hdf(trace_file, key="attribute")
+
+            self.name_df = pd.concat([self.name_df, current_name_df])
+            self.call_df = pd.concat([self.call_df, current_call_df])
+            self.attribute_df = pd.concat([self.attribute_df, current_attribute_df])
 
         # prepare shuffled list of (frame, index) pairs
         self.frame_index_pairs = []
