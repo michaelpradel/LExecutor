@@ -74,3 +74,6 @@ if __name__ == "__main__":
 
     training.run(validation=validation,
                  store_model_path="data/models/latest")
+
+    tensor_factory.save_value_map()
+
