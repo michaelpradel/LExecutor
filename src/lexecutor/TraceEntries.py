@@ -1,6 +1,5 @@
 import pandas as pd
 from typing import List
-from .Util import gather_files
 
 
 class NameEntry(object):
