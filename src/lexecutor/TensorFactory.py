@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import torch as t
 from .TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
@@ -76,6 +77,10 @@ class TensorFactory(object):
         y_value = t.tensor(value, dtype=dtype, device=device)
 
         return x_kind, x_name, x_args, x_base, x_left, x_right, x_operator, y_value
+
+    def save_value_map(self):
+        with open('data/tensors/value_map.json', 'w') as fp:
+            json.dump(self.value_to_index, fp)
 
 
 class Embedding():

@@ -165,7 +165,7 @@ class CodeRewriter(cst.CSTTransformer):
         return True
 
     def leave_FormattedString(self, node, updated_node):
-        if node == self.fstring_stack[-1]:
+        if self.fstring_stack and node == self.fstring_stack[-1]:
             # flip quotation character back
             if self.quotation_char == "'":
                 self.quotation_char = '"'
