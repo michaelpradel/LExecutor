@@ -1,12 +1,12 @@
 from .ValuePredictor import ValuePredictor
 from .NaiveValuePredictor import NaiveValuePredictor
-from .TraceEntries import read_trace, NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from .TraceEntries import read_traces, NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from collections import Counter
 from random import choices
 
 
 class FrequencyValuePredictor(ValuePredictor):
-    def __init__(self, trace_file):
+    def __init__(self, trace_files):
         self.name_to_values = {}
         self.call_to_values = {}
         self.attribute_to_values = {}
@@ -17,7 +17,7 @@ class FrequencyValuePredictor(ValuePredictor):
         self.total_predictions = 0
         self.frequency_based_predictions = 0
 
-        entries = read_trace(trace_file)
+        entries = read_traces(trace_files)
         for entry in entries:
             if isinstance(entry, NameEntry):
                 key = entry.name
@@ -38,6 +38,7 @@ class FrequencyValuePredictor(ValuePredictor):
 
     def name(self, iid, name):
         counter = self.name_to_values.get(name)
+        print(f"name counter: {counter}")
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.name(iid, name)
@@ -47,7 +48,8 @@ class FrequencyValuePredictor(ValuePredictor):
 
     def call(self, iid, fct, *args, **kwargs):
         key = f"{fct}--{args}"
-        counter = self.name_to_values.get(key)
+        counter = self.call_to_values.get(key)
+        print(f"call counter: {counter}")
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.call(iid, fct, *args, **kwargs)
@@ -57,7 +59,8 @@ class FrequencyValuePredictor(ValuePredictor):
 
     def attribute(self, iid, base, attr_name):
         key = f"{base}--{attr_name}"
-        counter = self.name_to_values.get(key)
+        counter = self.attribute_to_values.get(key)
+        print(f"attribute counter: {counter}")
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.attribute(iid, base, attr_name)
@@ -67,7 +70,8 @@ class FrequencyValuePredictor(ValuePredictor):
 
     def binary_operation(self, iid, left, operator, right):
         key = f"{left}--{operator}--{right}"
-        counter = self.name_to_values.get(key)
+        counter = self.binop_to_values.get(key)
+        print(f"binop counter: {counter}")
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.binary_operation(iid, left, operator, right)
