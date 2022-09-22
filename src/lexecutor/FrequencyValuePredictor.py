@@ -76,4 +76,4 @@ class FrequencyValuePredictor(ValuePredictor):
             return choices(list(counter.keys()), list(counter.values()))[0]
 
     def print_stats(self):
-        print(f"{self.frequency_based_predictions}/{self.total_predictions} ({self.frequency_based_predictions/self.total_predictions}) predictions were frequency based")
+        print(f"{self.frequency_based_predictions}/{self.total_predictions} ({self.frequency_based_predictions/self.total_predictions if self.total_predictions > 0 else 0}) predictions were frequency based")
