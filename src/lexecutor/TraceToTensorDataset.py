@@ -14,9 +14,20 @@ class TraceToTensorDataset(IterableDataset):
 
         trace_files = gather_files(trace_files)
         for trace_file in trace_files:
-            current_name_df = pd.read_hdf(trace_file, key="name")
-            current_call_df = pd.read_hdf(trace_file, key="call")
-            current_attribute_df = pd.read_hdf(trace_file, key="attribute")
+            try:
+                current_name_df = pd.read_hdf(trace_file, key="name")
+            except:
+                current_name_df = pd.DataFrame(data=None)
+
+            try:
+                current_call_df = pd.read_hdf(trace_file, key="call")
+            except:
+                current_call_df = pd.DataFrame(data=None)
+
+            try:
+                current_attribute_df = pd.read_hdf(trace_file, key="attribute")
+            except:
+                current_attribute_df = pd.DataFrame(data=None)
 
             self.name_df = pd.concat([self.name_df, current_name_df])
             self.call_df = pd.concat([self.call_df, current_call_df])
