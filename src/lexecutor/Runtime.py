@@ -1,17 +1,21 @@
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
-# from .FrequencyValuePredictor import FrequencyValuePredictor
+from .FrequencyValuePredictor import FrequencyValuePredictor
+from .NeuralValuePredictor import NeuralValuePredictor
 from .RuntimeStats import RuntimeStats
-from .ValuePredictor import ValuePredictor
 from .Util import timestamp
+from .ValuePredictor import ValuePredictor
+from .AsIs import AsIs
+
 import atexit
+import sys
 
 
 # ------- begin: select mode -----
 mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
-# mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
+#mode = "PREDICT"   # predict and inject values if missing in exeuction
+#mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
@@ -19,19 +23,21 @@ if mode == "RECORD":
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
-    # predictor = FrequencyValuePredictor("data/repos/pandas/trace.out")
-    # atexit.register(predictor.print_stats)
-    # predictor = NaiveValuePredictor()
-    predictor = ValuePredictor()
+    file = sys.argv[0]
+    predictor = AsIs()
+   # predictor = NaiveValuePredictor()
+   # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/data/repos/rich/rich_traces.txt")
+   # predictor = NeuralValuePredictor()
     runtime_stats = RuntimeStats()
-    atexit.register(runtime_stats.print)
+   # atexit.register(runtime_stats.print)
+    atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
     next_trace_idx = 0
     runtime_stats = None
 
-verbose = False
+verbose = True
 
 print(f"### LExecutor running in {mode} mode ###")
 
@@ -212,3 +218,6 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
 
 def print_prediction_stats():
     pass
+
+
+
