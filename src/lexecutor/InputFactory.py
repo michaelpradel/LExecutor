@@ -22,6 +22,7 @@ class InputFactory(object):
             line = file_content[info[1]-1]
             name = entry[1]
 
+            # TODO this always finds the first match, which is incorrect if the name appears multiple times in the line
             match = (re.search(name, line[info[2]:]))
 
             if not match:
@@ -31,12 +32,15 @@ class InputFactory(object):
                 start_index = match.span()[0] + info[2]
                 end_index = start_index + len(name)
 
+            # TODO shouldn't we add <target> and <target/> as custom separator tokens to the tokenizer?
+            # (see "Custom special tokens" on https://github.com/huggingface/transformers/issues/7199)
             modified_line = line[:start_index] + '<target>' + name + '</target>' + line[end_index:]
             file_content[info[1]-1] = modified_line
 
             # Get at most 512 tokens around the target token
 
             tokens = self.tokenizer.tokenize(''.join(file_content))
+            # TODO why "target" and not "<target> or <target/>"?
             target_index = tokens.index('target')
 
             # fewer context before target
