@@ -11,9 +11,9 @@ class CodeT5ValuePredictor(ValuePredictor):
 
         # load model
         self.tokenizer, self.model = load_CodeT5()
-        self.model.load_state_dict(t.load("data/codeT5_models/checkpoint-last/pytorch_model_epoch_1_without_name-value-duplicates.bin", map_location=device))
+        self.model.load_state_dict(t.load("/home/beatriz/LExecutor/data/codeT5_models/checkpoint-last/pytorch_model_epoch_1_without_name-value-duplicates.bin", map_location=device))
 
-        self.input_factory = InputFactory(self.tokenizer, './iids_original.json')
+        self.input_factory = InputFactory(self.tokenizer, '/home/beatriz/LExecutor/iids_original.json')
 
     def __query_model(self, entry):
         input_ids = self.input_factory.entry_to_inputs(
