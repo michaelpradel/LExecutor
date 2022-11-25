@@ -1,7 +1,7 @@
 import torch as t
 from datetime import datetime
 
-dtype = t.cuda.float if t.cuda.is_available() else t.float
+dtype = t.float
 device = "cuda" if t.cuda.is_available() else "cpu"
 
 
