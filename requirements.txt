@@ -2,3 +2,7 @@ libcst
 torch
 pandas
 tables
+pytest
+pytest-xdist
+transformers
+gensim
