@@ -1,5 +1,4 @@
 from .TraceWriter import TraceWriter
-from .ContextTraceWriter import ContextTraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
 from .FrequencyValuePredictor import FrequencyValuePredictor
@@ -21,8 +20,7 @@ mode = "PREDICT"   # predict and inject values if missing in exeuction
 # ------- end: select mode -------
 
 if mode == "RECORD":
-   # trace = TraceWriter(f"trace_{timestamp()}.h5")
-    trace= ContextTraceWriter(f"context_trace_{timestamp()}.h5", './iids_original.json')
+    trace = TraceWriter(f"trace_{timestamp()}.h5")
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
