@@ -2,6 +2,7 @@ myenv
 *.swp
 *~
 iids.json
+iids_original.json
 trace_*.h5
 __pycache__
 workspace.code-workspace
