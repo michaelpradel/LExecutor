@@ -1,8 +1,10 @@
 from .TraceWriter import TraceWriter
+from .ContextTraceWriter import ContextTraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
 from .FrequencyValuePredictor import FrequencyValuePredictor
 from .NeuralValuePredictor import NeuralValuePredictor
+from .CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .Util import timestamp
 from .ValuePredictor import ValuePredictor
@@ -13,24 +15,28 @@ import sys
 
 
 # ------- begin: select mode -----
-mode = "RECORD"    # record values and write into a trace file
-#mode = "PREDICT"   # predict and inject values if missing in exeuction
+#mode = "RECORD"    # record values and write into a trace file
+mode = "PREDICT"   # predict and inject values if missing in exeuction
 #mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
-    trace = TraceWriter(f"trace_{timestamp()}.h5")
+   # trace = TraceWriter(f"trace_{timestamp()}.h5")
+    trace= ContextTraceWriter(f"context_trace_{timestamp()}.h5", './iids_original.json')
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
-    file = sys.argv[0]
-    predictor = AsIs()
+   # predictor = AsIs()
    # predictor = NaiveValuePredictor()
-   # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/data/repos/rich/rich_traces.txt")
+   # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
    # predictor = NeuralValuePredictor()
+    predictor = CodeT5ValuePredictor()
     runtime_stats = RuntimeStats()
-   # atexit.register(runtime_stats.print)
-    atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
+    atexit.register(runtime_stats.print)
+
+   # for running experiments 
+   # file = sys.argv[0]
+   # atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
