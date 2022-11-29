@@ -22,7 +22,6 @@ class InputFactory(object):
             line = file_content[info[1]-1]
             name = entry[1]
 
-            # TODO this always finds the first match, which is incorrect if the name appears multiple times in the line
             match = (re.search(name, line[info[2]:]))
 
             if not match:
