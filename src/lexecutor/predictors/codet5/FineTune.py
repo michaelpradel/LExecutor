@@ -145,7 +145,7 @@ if __name__ == "__main__":
                 'loss': [round(loss.item(), 4)],
                 'epoch': [epoch]
             })
-            df = df.append(df_new_data)
+            df = pd.concat([df, df_new_data])
             df.to_csv(f'./training_loss.csv', index=False)
 
     logger.info('Terminating training')
