@@ -58,7 +58,7 @@ class TraceWriter:
             pass
         finally:
             self.name_df.to_hdf(self.file_path, key="name",
-                            complevel=9, complib="bzip2")
+                                complevel=9, complib="bzip2")
 
         try:
             self.call_df = self.__flush_buffer(self.call_buffer, self.call_df)
@@ -79,4 +79,4 @@ class TraceWriter:
             pass
         finally:
             self.attribute_df.to_hdf(self.file_path, key="attribute",
-                                    complevel=9, complib="bzip2")
+                                     complevel=9, complib="bzip2")

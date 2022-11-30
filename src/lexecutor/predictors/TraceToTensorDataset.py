@@ -31,7 +31,8 @@ class TraceToTensorDataset(IterableDataset):
 
             self.name_df = pd.concat([self.name_df, current_name_df])
             self.call_df = pd.concat([self.call_df, current_call_df])
-            self.attribute_df = pd.concat([self.attribute_df, current_attribute_df])
+            self.attribute_df = pd.concat(
+                [self.attribute_df, current_attribute_df])
 
         # prepare shuffled list of (frame, index) pairs
         self.frame_index_pairs = []

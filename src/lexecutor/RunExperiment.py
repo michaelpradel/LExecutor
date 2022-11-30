@@ -16,4 +16,3 @@ if __name__ == "__main__":
     for file in files:
         process = subprocess.Popen(f"python {file}", shell=True)
         process.wait()
-

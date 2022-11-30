@@ -4,7 +4,7 @@ import argparse
 import torch
 import csv
 import pandas as pd
-import numpy as np 
+import numpy as np
 from torch.utils.data import DataLoader
 from .InputFactory import InputFactory
 from .MaskedValueDataset import MaskedValueDataset
@@ -26,20 +26,25 @@ parser.add_argument(
 parser.add_argument(
     "--save_last_checkpoints", help="True if the model should be saved after every batch and False otherwise", required=True)
 
+
 def load_CodeT5():
     print("Loading pre-trained codet5-small")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-small')
-    model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-small')
+    model = T5ForConditionalGeneration.from_pretrained(
+        'Salesforce/codet5-small')
     model.to(device)
     return tokenizer, model
 
+
 def evaluate(args, model, tokenizer, input_factory):
     validate_dataset = MaskedValueDataset(args.validate_trace, input_factory)
-    validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size, drop_last=True)
+    validate_loader = DataLoader(
+        validate_dataset, batch_size=p.batch_size, drop_last=True)
 
     # Eval!
-    print("Starting evaluation: {}".format(datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+    print("Starting evaluation: {}".format(
+        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
     print("  Num examples = {}".format(len(validate_dataset)))
     print("  Num batches = {}".format(len(validate_loader)))
     print("  Batch size = {}".format(p.batch_size))
@@ -52,12 +57,15 @@ def evaluate(args, model, tokenizer, input_factory):
         for batch_idx, batch in enumerate(validate_loader):
             input_ids = batch['input_ids'].to(device)
             labels_ids = batch['labels'].to(device)
-            labels = [tokenizer.decode(ids, skip_special_tokens=True) for ids in labels_ids]
+            labels = [tokenizer.decode(ids, skip_special_tokens=True)
+                      for ids in labels_ids]
 
             generated_ids = model.generate(input_ids, max_length=7)
-            predictions = [tokenizer.decode(ids, skip_special_tokens=True) for ids in generated_ids]
+            predictions = [tokenizer.decode(
+                ids, skip_special_tokens=True) for ids in generated_ids]
 
-            corrects = [1 for i in range(len(labels)) if labels[i] == predictions[i]]
+            corrects = [1 for i in range(
+                len(labels)) if labels[i] == predictions[i]]
 
             accuracies_batch = float(len(corrects)) / len(labels)
 
@@ -67,7 +75,8 @@ def evaluate(args, model, tokenizer, input_factory):
     print(
         f"val_accuracy = {round(val_accuracy, 4)}")
 
-    print('Terminating evaluation: {}'.format(datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+    print('Terminating evaluation: {}'.format(
+        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
 
 
 if __name__ == "__main__":
@@ -78,11 +87,13 @@ if __name__ == "__main__":
     input_factory = InputFactory(tokenizer, args.iids)
 
     train_dataset = MaskedValueDataset(args.train_trace, input_factory)
-    train_loader = DataLoader(train_dataset, batch_size=p.batch_size, drop_last=True)
+    train_loader = DataLoader(
+        train_dataset, batch_size=p.batch_size, drop_last=True)
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
-    print("Starting training: {}".format(datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+    print("Starting training: {}".format(
+        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
     print("  Num examples = {}".format(len(train_dataset)))
     print("  Batch size = {}".format(p.batch_size))
     print("  Batch num = {}".format(len(train_dataset) / p.batch_size))
@@ -94,16 +105,16 @@ if __name__ == "__main__":
         for batch_idx, batch in enumerate(train_loader):
             model.train()
             input_ids = batch['input_ids'].to(device)
-            labels = batch['labels'].to(device)    
+            labels = batch['labels'].to(device)
 
-            optim.zero_grad() 
+            optim.zero_grad()
 
             outputs = model(input_ids, labels=labels)
 
             loss = outputs.loss
             loss.backward()
             optim.step()
-            
+
             print(
                 f"  Training loss of batch {batch_idx}: {round(loss.item(), 4)}")
 
@@ -115,15 +126,17 @@ if __name__ == "__main__":
                 os.makedirs(last_output_dir)
 
             if args.save_last_checkpoints:
-                model_to_save = model.module if hasattr(model, 'module') else model
-                output_model_file = os.path.join(last_output_dir, "pytorch_model.bin")
+                model_to_save = model.module if hasattr(
+                    model, 'module') else model
+                output_model_file = os.path.join(
+                    last_output_dir, "pytorch_model.bin")
                 torch.save(model_to_save.state_dict(), output_model_file)
                 print("Saved the last model into %s", output_model_file)
 
             # save last training loss
             if not os.path.isfile(f'./training_loss.csv'):
                 columns = ['batch', 'loss']
-            
+
                 with open(f'./training_loss.csv', 'a') as csvFile:
                     writer = csv.writer(csvFile)
                     writer.writerow(columns)
@@ -133,12 +146,9 @@ if __name__ == "__main__":
                 'batch': [batch_idx],
                 'loss': [round(loss.item(), 4)],
                 'epoch': [epoch]
-                })
+            })
             df = df.append(df_new_data)
             df.to_csv(f'./training_loss.csv', index=False)
 
-    print('Terminating training: {}'.format(datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
-
-
-
-
+    print('Terminating training: {}'.format(
+        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))

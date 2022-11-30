@@ -18,7 +18,8 @@ class NeuralValuePredictor(ValuePredictor):
         # load model
         print("Loading value prediction model")
         self.model = ValuePredictionModel()
-        self.model.load_state_dict(t.load("data/models/default", map_location=device))
+        self.model.load_state_dict(
+            t.load("data/models/default", map_location=device))
         print(f"Loaded model: {self.model}")
 
         # load embedding
@@ -48,12 +49,13 @@ class NeuralValuePredictor(ValuePredictor):
         xs_base = t.tensor(np.array([base]), dtype=dtype, device=device)
         xs_left = t.tensor(np.array([left]), dtype=dtype, device=device)
         xs_right = t.tensor(np.array([right]), dtype=dtype, device=device)
-        xs_operator = t.tensor(np.array([operator]), dtype=dtype, device=device)
+        xs_operator = t.tensor(
+            np.array([operator]), dtype=dtype, device=device)
 
         with t.no_grad():
             self.model.eval()
             pred_ys = self.model((xs_kind, xs_name, xs_args,
-                             xs_base, xs_left, xs_right, xs_operator))
+                                  xs_base, xs_left, xs_right, xs_operator))
         max_index = t.argmax(pred_ys[0]).item()
         predicted_value = restore_value(self.index_to_value[max_index])
         return predicted_value

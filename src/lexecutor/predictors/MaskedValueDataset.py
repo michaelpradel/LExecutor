@@ -4,6 +4,7 @@ from random import shuffle
 from torch.utils.data import IterableDataset
 from ..Util import gather_files
 
+
 class MaskedValueDataset(IterableDataset):
     def __init__(self, trace_files, input_factory):
         # load traces
@@ -30,21 +31,28 @@ class MaskedValueDataset(IterableDataset):
 
             self.name_df = pd.concat([self.name_df, current_name_df])
             self.call_df = pd.concat([self.call_df, current_call_df])
-            self.attribute_df = pd.concat([self.attribute_df, current_attribute_df])
+            self.attribute_df = pd.concat(
+                [self.attribute_df, current_attribute_df])
 
         # remove name-value duplicates
-        self.name_df['pair_id'] = self.name_df[1].astype(str) + self.name_df[2].astype(str)
-        self.name_df = self.name_df.drop_duplicates(subset='pair_id', keep="first")
+        self.name_df['pair_id'] = self.name_df[1].astype(
+            str) + self.name_df[2].astype(str)
+        self.name_df = self.name_df.drop_duplicates(
+            subset='pair_id', keep="first")
         self.name_df = self.name_df.drop(columns=['pair_id'])
         self.name_df = self.name_df.reset_index()
 
-        self.call_df['pair_id'] = self.call_df[1].astype(str) + self.call_df[2].astype(str) + self.call_df[3].astype(str)
-        self.call_df = self.call_df.drop_duplicates(subset='pair_id', keep="first")
+        self.call_df['pair_id'] = self.call_df[1].astype(
+            str) + self.call_df[2].astype(str) + self.call_df[3].astype(str)
+        self.call_df = self.call_df.drop_duplicates(
+            subset='pair_id', keep="first")
         self.call_df = self.call_df.drop(columns=['pair_id'])
         self.call_df = self.call_df.reset_index()
 
-        self.attribute_df['pair_id'] = self.attribute_df[1].astype(str) + self.attribute_df[2].astype(str) + self.attribute_df[3].astype(str)
-        self.attribute_df = self.attribute_df.drop_duplicates(subset='pair_id', keep="first")
+        self.attribute_df['pair_id'] = self.attribute_df[1].astype(
+            str) + self.attribute_df[2].astype(str) + self.attribute_df[3].astype(str)
+        self.attribute_df = self.attribute_df.drop_duplicates(
+            subset='pair_id', keep="first")
         self.attribute_df = self.attribute_df.drop(columns=['pair_id'])
         self.attribute_df = self.attribute_df.reset_index()
 

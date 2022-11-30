@@ -60,14 +60,16 @@ if __name__ == "__main__":
 
     tensor_factory = TensorFactory(embedding)
     train_dataset = TraceToTensorDataset(args.train_trace, tensor_factory)
-    train_loader = DataLoader(train_dataset, batch_size=p.batch_size, drop_last=True)
+    train_loader = DataLoader(
+        train_dataset, batch_size=p.batch_size, drop_last=True)
     print(f"Training on   {len(train_dataset)} examples")
     training = Training(model, criterion, optimizer,
                         train_loader, p.batch_size, p.epochs)
 
     validate_dataset = TraceToTensorDataset(
         args.validate_trace, tensor_factory)
-    validate_loader = DataLoader(validate_dataset, batch_size=p.batch_size, drop_last=True)
+    validate_loader = DataLoader(
+        validate_dataset, batch_size=p.batch_size, drop_last=True)
     print(f"Validating on {len(validate_dataset)} examples")
     validation = Validation(
         model, criterion, validate_loader, p.batch_size)
@@ -76,4 +78,3 @@ if __name__ == "__main__":
                  store_model_path="data/models/latest")
 
     tensor_factory.save_value_map()
-

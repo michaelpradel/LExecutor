@@ -6,12 +6,14 @@ from .FineTune import load_CodeT5
 from .InputFactory import InputFactory
 from ..ValueAbstraction import restore_value
 
+
 class CodeT5ValuePredictor(ValuePredictor):
     def __init__(self):
 
         # load model
         self.tokenizer, self.model = load_CodeT5()
-        self.model.load_state_dict(t.load("data/codeT5_models/checkpoint-last/pytorch_model_epoch_1_without_name-value-duplicates.bin", map_location=device))
+        self.model.load_state_dict(t.load(
+            "data/codeT5_models/checkpoint-last/pytorch_model_epoch_1_without_name-value-duplicates.bin", map_location=device))
 
         self.iids_file = 'iids_original.json'
 
@@ -24,9 +26,11 @@ class CodeT5ValuePredictor(ValuePredictor):
 
         with t.no_grad():
             self.model.eval()
-            generated_ids = self.model.generate(t.tensor(np.array([input_ids]), device=device), max_length=7)
-          
-        predicted_value = self.tokenizer.decode(generated_ids[0][5], skip_special_tokens=True)
+            generated_ids = self.model.generate(
+                t.tensor(np.array([input_ids]), device=device), max_length=7)
+
+        predicted_value = self.tokenizer.decode(
+            generated_ids[0][5], skip_special_tokens=True)
         return restore_value(predicted_value)
 
     def name(self, iid, name):

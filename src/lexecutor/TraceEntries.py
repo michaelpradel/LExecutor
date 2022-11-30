@@ -33,6 +33,7 @@ class BinOpEntry(object):
         self.right = right
         self.value = value
 
+
 def read_traces(trace_files):
     print(f"Reading trace file {trace_files}")
     entries = []

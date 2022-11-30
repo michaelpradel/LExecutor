@@ -33,7 +33,8 @@ class InputFactory(object):
 
             # TODO shouldn't we add <target> and <target/> as custom separator tokens to the tokenizer?
             # (see "Custom special tokens" on https://github.com/huggingface/transformers/issues/7199)
-            modified_line = line[:start_index] + '<target>' + name + '</target>' + line[end_index:]
+            modified_line = line[:start_index] + '<target>' + \
+                name + '</target>' + line[end_index:]
             file_content[info[1]-1] = modified_line
 
             # Get at most 512 tokens around the target token
@@ -45,11 +46,13 @@ class InputFactory(object):
             # fewer context before target
             if target_index < 255:
                 previous_target_tokens = tokens[0:target_index]
-                after_target_tokens = tokens[target_index:target_index + (512 - len(previous_target_tokens))]
+                after_target_tokens = tokens[target_index:target_index +
+                                             (512 - len(previous_target_tokens))]
             # fewer context after target
             elif target_index + 255 > len(tokens):
                 after_target_tokens = tokens[target_index:]
-                previous_target_tokens = tokens[target_index - (512 - len(after_target_tokens)):target_index]
+                previous_target_tokens = tokens[target_index -
+                                                (512 - len(after_target_tokens)):target_index]
             # equal context before and after target
             else:
                 previous_target_tokens = tokens[target_index-255:target_index]
@@ -67,14 +70,15 @@ class InputFactory(object):
             if len(input_ids) < 512:
                 input_ids = input_ids + (512 - len(input_ids)) * [0]
 
-            # Create labels 
+            # Create labels
             if not entry[2] or '@' not in entry[2]:
                 value = entry[2]
             else:
                 value = entry[2][1:]
 
             # labels: <s><target>value</s>
-            labels_ids = [1, 32, 3299, 34] + self.tokenizer.convert_tokens_to_ids([value]) + [2]
+            labels_ids = [1, 32, 3299, 34] + \
+                self.tokenizer.convert_tokens_to_ids([value]) + [2]
 
             input_ids = t.tensor(input_ids, device='cpu')
             labels = t.tensor(labels_ids, device='cpu')

@@ -32,7 +32,6 @@ def gather_accessed_names(ast_wrapper):
 
             used_names.add(name)
 
-            
     return used_names
 
 

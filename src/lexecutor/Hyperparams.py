@@ -11,4 +11,3 @@ class Hyperparams(object):
     # training
     epochs = 2
     batch_size = 100
-

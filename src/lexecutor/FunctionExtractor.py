@@ -6,13 +6,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--files", help="Python files or .txt file with all file paths to extract functions", nargs="+")
 
+
 class FunctionExtractorTransformer(libcst.CSTTransformer):
 
     def leave_FunctionDef(
         self, original_node: libcst.FunctionDef, updated_node: libcst.FunctionDef
     ) -> libcst.CSTNode:
         code = f"{libcst.Module([]).code_for_node(updated_node.with_changes(params=libcst.Parameters()))}\n\nif __name__ == '__main__':\n\t{updated_node.name.value}()"
-        
+
         with open(f"./functions_under_test/{updated_node.name.value}.py", "w") as file:
             file.write(code)
 
@@ -30,4 +31,3 @@ if __name__ == "__main__":
 
             ast = libcst.parse_module(src)
             ast.visit(FunctionExtractorTransformer())
-

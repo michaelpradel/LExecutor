@@ -14,9 +14,9 @@ import sys
 
 
 # ------- begin: select mode -----
-#mode = "RECORD"    # record values and write into a trace file
+# mode = "RECORD"    # record values and write into a trace file
 mode = "PREDICT"   # predict and inject values if missing in exeuction
-#mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
+# mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 if mode == "RECORD":
@@ -32,7 +32,7 @@ elif mode == "PREDICT":
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
 
-   # for running experiments 
+   # for running experiments
    # file = sys.argv[0]
    # atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
 elif mode == "REPLAY":
@@ -222,6 +222,3 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct):
 
 def print_prediction_stats():
     pass
-
-
-

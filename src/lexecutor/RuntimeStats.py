@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import csv
 
+
 class RuntimeStats:
     total_uses = 0
     guided_uses = 0
@@ -17,9 +18,10 @@ class RuntimeStats:
         print(f"Guided uses : {self.guided_uses}/{self.total_uses}")
 
     def save(self, file, predictor_name):
-        # Create CSV file and add header if it doesn't exist 
+        # Create CSV file and add header if it doesn't exist
         if not os.path.isfile('./metrics.csv'):
-            columns = ['file', 'predictor', 'covered_iids', 'total_uses', 'guided_uses']
+            columns = ['file', 'predictor', 'covered_iids',
+                       'total_uses', 'guided_uses']
 
             with open('./metrics.csv', 'a') as csvFile:
                 writer = csv.writer(csvFile)
@@ -35,6 +37,3 @@ class RuntimeStats:
         })
         df = df.append(df_new_data)
         df.to_csv('./metrics.csv', index=False)
-
-
-

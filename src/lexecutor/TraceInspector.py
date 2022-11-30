@@ -19,5 +19,6 @@ if __name__ == "__main__":
             elif kind == "attribute":
                 names.add(segments[3])
             elif kind == "binary_operation":
-                bin_op_combinations.add(f"{segments[2]} {segments[3]} {segments[4]}")
+                bin_op_combinations.add(
+                    f"{segments[2]} {segments[3]} {segments[4]}")
     print(f"{len(names)} unique names and {len(bin_op_combinations)} unique combinations of binary operation")

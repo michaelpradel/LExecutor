@@ -10,4 +10,3 @@ class AsIs():
 
     def binary_operation(self, iid, left, operator, right):
         raise
-
