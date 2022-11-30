@@ -12,3 +12,4 @@ workspace.code-workspace
 *.egg-info
 .vscode/launch.json
 *.orig
+training_loss.csv
