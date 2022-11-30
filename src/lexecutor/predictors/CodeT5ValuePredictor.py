@@ -1,10 +1,10 @@
 import torch as t
 import numpy as np
-from .ValuePredictor import ValuePredictor
-from .Util import device
+from ..ValuePredictor import ValuePredictor
+from ..Util import device
 from .FineTune import load_CodeT5
 from .InputFactory import InputFactory
-from .ValueAbstraction import restore_value
+from ..ValueAbstraction import restore_value
 
 class CodeT5ValuePredictor(ValuePredictor):
     def __init__(self):

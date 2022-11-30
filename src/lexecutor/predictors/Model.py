@@ -1,7 +1,7 @@
 import torch as t
 from torch import nn
 import torch.nn.functional as F
-from .Hyperparams import Hyperparams as p
+from ..Hyperparams import Hyperparams as p
 
 
 class ValuePredictionModel(nn.Module):

@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 from random import shuffle
 from torch.utils.data import IterableDataset
-from .Util import gather_files
+from ..Util import gather_files
 
 class MaskedValueDataset(IterableDataset):
     def __init__(self, trace_files, input_factory):

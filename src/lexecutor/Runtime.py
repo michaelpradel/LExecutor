@@ -1,13 +1,13 @@
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .NaiveValuePredictor import NaiveValuePredictor
-from .FrequencyValuePredictor import FrequencyValuePredictor
+from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
 from .NeuralValuePredictor import NeuralValuePredictor
-from .CodeT5ValuePredictor import CodeT5ValuePredictor
+from .predictors.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .Util import timestamp
 from .ValuePredictor import ValuePredictor
-from .AsIs import AsIs
+from .predictors.AsIs import AsIs
 
 import atexit
 import sys

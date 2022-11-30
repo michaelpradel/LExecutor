@@ -1,7 +1,7 @@
 import json
 import re
 import torch as t
-from .Util import dtype, device
+from ..Util import dtype, device
 
 
 class InputFactory(object):

@@ -6,10 +6,10 @@ from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 from gensim.models.fasttext import FastText
 from .Hyperparams import Hyperparams as p
-from .TensorFactory import TensorFactory
+from .predictors.TensorFactory import TensorFactory
 from .Training import Training
 from .Validation import Validation
-from .Model import ValuePredictionModel
+from .predictors.Model import ValuePredictionModel
 from .Util import device
 from .TraceToTensorDataset import TraceToTensorDataset
 
