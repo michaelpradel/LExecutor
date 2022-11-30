@@ -1,14 +1,14 @@
 import torch as t
 import numpy as np
 import json
-from .ValuePredictor import ValuePredictor
+from ..ValuePredictor import ValuePredictor
 from .Train import load_FastText
 from .Model import ValuePredictionModel
-from ..TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from ...TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from .TensorFactory import TensorFactory, Embedding
-from ..Util import dtype, device
-from ..Hyperparams import Hyperparams as p
-from ..ValueAbstraction import restore_value
+from ...Util import dtype, device
+from ...Hyperparams import Hyperparams as p
+from ...ValueAbstraction import restore_value
 
 
 class NeuralValuePredictor(ValuePredictor):

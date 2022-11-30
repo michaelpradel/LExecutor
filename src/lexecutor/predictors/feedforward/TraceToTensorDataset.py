@@ -1,12 +1,12 @@
-import pandas as pd
-import torch
-from random import shuffle
 from torch.utils.data import IterableDataset
-from ..Util import gather_files
+import pandas as pd
+from random import shuffle
+from ...TraceEntries import NameEntry, CallEntry, AttributeEntry
+from ...Util import gather_files
 
 
-class MaskedValueDataset(IterableDataset):
-    def __init__(self, trace_files, input_factory):
+class TraceToTensorDataset(IterableDataset):
+    def __init__(self, trace_files, tensor_factory):
         # load traces
         self.name_df = pd.DataFrame(data=None)
         self.call_df = pd.DataFrame(data=None)
@@ -34,28 +34,6 @@ class MaskedValueDataset(IterableDataset):
             self.attribute_df = pd.concat(
                 [self.attribute_df, current_attribute_df])
 
-        # remove name-value duplicates
-        self.name_df['pair_id'] = self.name_df[1].astype(
-            str) + self.name_df[2].astype(str)
-        self.name_df = self.name_df.drop_duplicates(
-            subset='pair_id', keep="first")
-        self.name_df = self.name_df.drop(columns=['pair_id'])
-        self.name_df = self.name_df.reset_index()
-
-        self.call_df['pair_id'] = self.call_df[1].astype(
-            str) + self.call_df[2].astype(str) + self.call_df[3].astype(str)
-        self.call_df = self.call_df.drop_duplicates(
-            subset='pair_id', keep="first")
-        self.call_df = self.call_df.drop(columns=['pair_id'])
-        self.call_df = self.call_df.reset_index()
-
-        self.attribute_df['pair_id'] = self.attribute_df[1].astype(
-            str) + self.attribute_df[2].astype(str) + self.attribute_df[3].astype(str)
-        self.attribute_df = self.attribute_df.drop_duplicates(
-            subset='pair_id', keep="first")
-        self.attribute_df = self.attribute_df.drop(columns=['pair_id'])
-        self.attribute_df = self.attribute_df.reset_index()
-
         # prepare shuffled list of (frame, index) pairs
         self.frame_index_pairs = []
         for i in self.name_df.index.values:
@@ -66,21 +44,19 @@ class MaskedValueDataset(IterableDataset):
             self.frame_index_pairs.append((self.attribute_df, i))
         shuffle(self.frame_index_pairs)
 
-        self.input_factory = input_factory
+        self.tensor_factory = tensor_factory
 
     def __iter__(self):
         for frame, index in self.frame_index_pairs:
             row = frame.iloc[index]
             if frame is self.name_df:
-                entry = row
+                entry = NameEntry(row[0], row[1], row[2])
             elif frame is self.call_df:
-                # TO DO: Check the root of the problem during data collection and fix it
-                if '(' in row[1]:
-                    continue
-                entry = [row[0], row[1], row[3]]
+                args = row[2].split(" ")
+                entry = CallEntry(row[0], row[1], args, row[3])
             elif frame is self.attribute_df:
-                entry = [row[0], row[2], row[3]]
-            yield self.input_factory.entry_to_inputs(entry)
+                entry = AttributeEntry(row[0], row[1], row[2], row[3])
+            yield self.tensor_factory.entry_to_tensors(entry)
 
     def __len__(self):
         return len(self.name_df) + len(self.call_df) + len(self.attribute_df)

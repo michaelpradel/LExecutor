@@ -1,9 +1,9 @@
 import json
 import numpy as np
 import torch as t
-from ..TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
-from ..Hyperparams import Hyperparams as p
-from ..Util import dtype, device
+from ...TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from ...Hyperparams import Hyperparams as p
+from ...Util import dtype, device
 
 
 class TensorFactory(object):

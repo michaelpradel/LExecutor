@@ -1,4 +1,4 @@
-from predictors.Train import load_FastText
+from lexecutor.predictors.feedforward.FeedForwardTrain import load_FastText
 
 if __name__ == "__main__":
     embedding = load_FastText("data/embeddings/default/embedding")

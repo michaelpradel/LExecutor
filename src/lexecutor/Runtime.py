@@ -2,8 +2,8 @@ from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .predictors.NaiveValuePredictor import NaiveValuePredictor
 from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
-from .predcitors.NeuralValuePredictor import NeuralValuePredictor
-from .predictors.CodeT5ValuePredictor import CodeT5ValuePredictor
+from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
+from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .Util import timestamp
 from .predictors.ValuePredictor import ValuePredictor
