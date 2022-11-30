@@ -1,4 +1,4 @@
-from .Train import load_FastText
+from predictors.Train import load_FastText
 
 if __name__ == "__main__":
     embedding = load_FastText("data/embeddings/default/embedding")

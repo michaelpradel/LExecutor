@@ -1,6 +1,6 @@
 import torch as t
 import numpy as np
-from ..ValuePredictor import ValuePredictor
+from .ValuePredictor import ValuePredictor
 from ..Util import device
 from .FineTune import load_CodeT5
 from .InputFactory import InputFactory
