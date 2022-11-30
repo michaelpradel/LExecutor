@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
-    logger.info("Starting training")
+    logger.info(f"Starting training on {device}")
     logger.info("  Num examples = {}".format(len(train_dataset)))
     logger.info("  Batch size = {}".format(p.batch_size))
     logger.info("  Batch num = {}".format(len(train_dataset) / p.batch_size))
