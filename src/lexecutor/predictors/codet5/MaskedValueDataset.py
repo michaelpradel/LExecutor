@@ -3,11 +3,13 @@ import torch
 from random import shuffle
 from torch.utils.data import IterableDataset
 from ...Util import gather_files
+from ...Logging import logger
 
 
 class MaskedValueDataset(IterableDataset):
     def __init__(self, trace_files, input_factory):
         # load traces
+        logger.info("Loading trace files")
         self.name_df = pd.DataFrame(data=None)
         self.call_df = pd.DataFrame(data=None)
         self.attribute_df = pd.DataFrame(data=None)
@@ -17,16 +19,19 @@ class MaskedValueDataset(IterableDataset):
             try:
                 current_name_df = pd.read_hdf(trace_file, key="name")
             except:
+                logger.warning(f"Warning: Could not read trace file {trace_file}")
                 current_name_df = pd.DataFrame(data=None)
 
             try:
                 current_call_df = pd.read_hdf(trace_file, key="call")
             except:
+                logger.warning(f"Warning: Could not read trace file {trace_file}")
                 current_call_df = pd.DataFrame(data=None)
 
             try:
                 current_attribute_df = pd.read_hdf(trace_file, key="attribute")
             except:
+                logger.warning(f"Warning: Could not read trace file {trace_file}")
                 current_attribute_df = pd.DataFrame(data=None)
 
             self.name_df = pd.concat([self.name_df, current_name_df])
@@ -35,6 +40,7 @@ class MaskedValueDataset(IterableDataset):
                 [self.attribute_df, current_attribute_df])
 
         # remove name-value duplicates
+        logger.info("De-duplicating name-value pairs")
         self.name_df['pair_id'] = self.name_df[1].astype(
             str) + self.name_df[2].astype(str)
         self.name_df = self.name_df.drop_duplicates(
@@ -67,6 +73,8 @@ class MaskedValueDataset(IterableDataset):
         shuffle(self.frame_index_pairs)
 
         self.input_factory = input_factory
+        
+        logger.info("Done with initializing MaskedValueDataset")
 
     def __iter__(self):
         for frame, index in self.frame_index_pairs:

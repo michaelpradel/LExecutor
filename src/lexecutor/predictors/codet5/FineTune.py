@@ -11,8 +11,9 @@ from .MaskedValueDataset import MaskedValueDataset
 from transformers import RobertaTokenizer, T5ForConditionalGeneration, AdamW
 from ...Hyperparams import Hyperparams as p
 from datetime import datetime
-
 from ...Util import device
+from ...Logging import logger
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -28,7 +29,7 @@ parser.add_argument(
 
 
 def load_CodeT5():
-    print("Loading pre-trained codet5-small")
+    logger.info("Loading pre-trained codet5-small")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-small')
     model = T5ForConditionalGeneration.from_pretrained(
@@ -43,11 +44,10 @@ def evaluate(args, model, tokenizer, input_factory):
         validate_dataset, batch_size=p.batch_size, drop_last=True)
 
     # Eval!
-    print("Starting evaluation: {}".format(
-        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
-    print("  Num examples = {}".format(len(validate_dataset)))
-    print("  Num batches = {}".format(len(validate_loader)))
-    print("  Batch size = {}".format(p.batch_size))
+    logger.info("Starting evaluation")
+    logger.info("  Num examples = {}".format(len(validate_dataset)))
+    logger.info("  Num batches = {}".format(len(validate_loader)))
+    logger.info("  Batch size = {}".format(p.batch_size))
 
     accuracies = []
 
@@ -72,11 +72,10 @@ def evaluate(args, model, tokenizer, input_factory):
             accuracies.append(accuracies_batch)
 
     val_accuracy = np.array(accuracies).mean().item()
-    print(
+    logger.info(
         f"val_accuracy = {round(val_accuracy, 4)}")
 
-    print('Terminating evaluation: {}'.format(
-        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+    logger.info('Terminating evaluation')
 
 
 if __name__ == "__main__":
@@ -92,15 +91,14 @@ if __name__ == "__main__":
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
-    print("Starting training: {}".format(
-        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
-    print("  Num examples = {}".format(len(train_dataset)))
-    print("  Batch size = {}".format(p.batch_size))
-    print("  Batch num = {}".format(len(train_dataset) / p.batch_size))
-    print("  Num epoch = {}".format(p.epochs))
+    logger.info("Starting training")
+    logger.info("  Num examples = {}".format(len(train_dataset)))
+    logger.info("  Batch size = {}".format(p.batch_size))
+    logger.info("  Batch num = {}".format(len(train_dataset) / p.batch_size))
+    logger.info("  Num epoch = {}".format(p.epochs))
 
     for epoch in range(p.epochs):
-        print(f"Epoch {epoch}")
+        logger.info(f"Epoch {epoch}")
 
         for batch_idx, batch in enumerate(train_loader):
             model.train()
@@ -115,7 +113,7 @@ if __name__ == "__main__":
             loss.backward()
             optim.step()
 
-            print(
+            logger.info(
                 f"  Training loss of batch {batch_idx}: {round(loss.item(), 4)}")
 
            # evaluate(args, model)
@@ -131,7 +129,7 @@ if __name__ == "__main__":
                 output_model_file = os.path.join(
                     last_output_dir, "pytorch_model.bin")
                 torch.save(model_to_save.state_dict(), output_model_file)
-                print("Saved the last model into %s", output_model_file)
+                logger.info("Saved the last model into %s", output_model_file)
 
             # save last training loss
             if not os.path.isfile(f'./training_loss.csv'):
@@ -150,5 +148,4 @@ if __name__ == "__main__":
             df = df.append(df_new_data)
             df.to_csv(f'./training_loss.csv', index=False)
 
-    print('Terminating training: {}'.format(
-        datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+    logger.info('Terminating training')
