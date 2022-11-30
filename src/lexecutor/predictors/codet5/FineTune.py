@@ -25,7 +25,7 @@ parser.add_argument(
 parser.add_argument(
     "--output_dir", help="directory to store models", required=True)
 parser.add_argument(
-    "--save_last_checkpoints", help="True if the model should be saved after every batch and False otherwise", required=True)
+    "--save_last_checkpoints", help="Save checkpoint after every batch", action="store_true")
 
 
 def load_CodeT5():
