@@ -5,6 +5,7 @@ from ...Util import device
 from .FineTune import load_CodeT5
 from .InputFactory import InputFactory
 from ...ValueAbstraction import restore_value
+from ...IIDs import IIDs
 
 
 class CodeT5ValuePredictor(ValuePredictor):
@@ -15,13 +16,12 @@ class CodeT5ValuePredictor(ValuePredictor):
         self.model.load_state_dict(t.load(
             "data/codeT5_models/checkpoint-last/pytorch_model_epoch_1_without_name-value-duplicates.bin", map_location=device))
 
-        self.iids_file = 'iids_original.json'
+        self.iids = IIDs('iids_original.json')
 
-        self.input_factory = InputFactory(self.tokenizer, self.iids_file)
+        self.input_factory = InputFactory(self.iids, self.tokenizer)
 
     def __query_model(self, entry):
-        input_ids = self.input_factory.entry_to_inputs(
-            entry)['input_ids']
+        input_ids, _ = self.input_factory.entry_to_inputs(entry)
         input_ids = [tensor.cpu() for tensor in input_ids]
 
         with t.no_grad():
@@ -34,7 +34,7 @@ class CodeT5ValuePredictor(ValuePredictor):
         return restore_value(predicted_value)
 
     def name(self, iid, name):
-        entry = [iid, name, '']
+        entry = {"iid": iid, "name": name}
         v = self.__query_model(entry)
         print(f"{iid}: Predicting for name {name}: {v}")
         return v
@@ -43,13 +43,13 @@ class CodeT5ValuePredictor(ValuePredictor):
         fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
         if " " in fct_name:  # some fcts that don't have a proper name
             fct_name = fct_name.split(" ")[0]
-        entry = [iid, fct_name, '']
+        entry = {"iid": iid, "name": fct_name}
         v = self.__query_model(entry)
         print(f"{iid}: Predicting for call: {v}")
         return v
 
     def attribute(self, iid, base, attr_name):
-        entry = [iid, attr_name, '']
+        entry = {"iid": iid, "name": attr_name}
         v = self.__query_model(entry)
         print(f"{iid}: Predicting for attribute {attr_name}: {v}")
         return v

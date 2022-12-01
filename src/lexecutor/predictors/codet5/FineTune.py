@@ -1,49 +1,33 @@
 import os
-import math
 import argparse
-import torch
+import torch as t
 import csv
 import pandas as pd
 import numpy as np
-from torch.utils.data import DataLoader
-from .InputFactory import InputFactory
-from .MaskedValueDataset import MaskedValueDataset
-from transformers import RobertaTokenizer, T5ForConditionalGeneration, AdamW
+from torch.utils.data import DataLoader, TensorDataset
+from transformers import AdamW
+from .CodeT5 import load_CodeT5
 from ...Hyperparams import Hyperparams as p
-from datetime import datetime
 from ...Util import device
 from ...Logging import logger
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--train_trace", help="Trace file or .txt file with all trace file paths to use for training", nargs="+", required=True)
+    "--train_tensors", help=".pt files for training", default="train.pt")
 parser.add_argument(
-    "--validate_trace", help="Trace file or .txt file with all trace file paths to use for validation", nargs="+", required=True)
-parser.add_argument(
-    "--iids", help="JSON file with instruction IDs", required=True)
+    "--validate_tensors", help=".pt files for validation", default="validate.pt")
 parser.add_argument(
     "--output_dir", help="directory to store models", required=True)
 parser.add_argument(
     "--save_last_checkpoints", help="Save checkpoint after every batch", action="store_true")
 
 
-def load_CodeT5():
-    logger.info("Loading pre-trained codet5-small")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-small')
-    model = T5ForConditionalGeneration.from_pretrained(
-        'Salesforce/codet5-small')
-    model.to(device)
-    return tokenizer, model
-
-
-def evaluate(args, model, tokenizer, input_factory):
-    validate_dataset = MaskedValueDataset(args.validate_trace, input_factory)
+def evaluate(validate_tensors_path, model, tokenizer):
+    validate_dataset = TensorDataset(t.load(validate_tensors_path))
     validate_loader = DataLoader(
         validate_dataset, batch_size=p.batch_size, drop_last=True)
 
-    # Eval!
     logger.info("Starting evaluation")
     logger.info("  Num examples = {}".format(len(validate_dataset)))
     logger.info("  Num batches = {}".format(len(validate_loader)))
@@ -51,14 +35,18 @@ def evaluate(args, model, tokenizer, input_factory):
 
     accuracies = []
 
-    with torch.no_grad():
+    with t.no_grad():
         model.eval()
 
         for batch_idx, batch in enumerate(validate_loader):
-            input_ids = batch['input_ids'].to(device)
-            labels_ids = batch['labels'].to(device)
+            batch = t.cat(batch)
+            input_ids = batch[:, 0:512]
+            input_ids = input_ids.to(device)
+            label_ids = batch[:, 512:518]
+            label_ids = label_ids.to(device)
+
             labels = [tokenizer.decode(ids, skip_special_tokens=True)
-                      for ids in labels_ids]
+                      for ids in label_ids]
 
             generated_ids = model.generate(input_ids, max_length=7)
             predictions = [tokenizer.decode(
@@ -83,9 +71,7 @@ if __name__ == "__main__":
 
     tokenizer, model = load_CodeT5()
 
-    input_factory = InputFactory(tokenizer, args.iids)
-
-    train_dataset = MaskedValueDataset(args.train_trace, input_factory)
+    train_dataset = TensorDataset(t.load(args.train_tensors))
     train_loader = DataLoader(
         train_dataset, batch_size=p.batch_size, drop_last=True)
 
@@ -101,10 +87,13 @@ if __name__ == "__main__":
         logger.info(f"Epoch {epoch}")
 
         for batch_idx, batch in enumerate(train_loader):
-            model.train()
-            input_ids = batch['input_ids'].to(device)
-            labels = batch['labels'].to(device)
+            batch = t.cat(batch)
+            input_ids = batch[:, 0:512]
+            input_ids = input_ids.to(device)
+            labels = batch[:, 512:518]
+            labels = labels.to(device)
 
+            model.train()
             optim.zero_grad()
 
             outputs = model(input_ids, labels=labels)
@@ -116,7 +105,7 @@ if __name__ == "__main__":
             logger.info(
                 f"  Training loss of batch {batch_idx}: {round(loss.item(), 4)}")
 
-           # evaluate(args, model)
+            evaluate(args.validate_tensors, model, tokenizer)
 
             # save last checkpoint
             last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
@@ -128,7 +117,7 @@ if __name__ == "__main__":
                     model, 'module') else model
                 output_model_file = os.path.join(
                     last_output_dir, "pytorch_model.bin")
-                torch.save(model_to_save.state_dict(), output_model_file)
+                t.save(model_to_save.state_dict(), output_model_file)
                 logger.info("Saved the last model into %s", output_model_file)
 
             # save last training loss

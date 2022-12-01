@@ -26,6 +26,12 @@ Run the test suite of benchmark projects, e.g.,:
 `source myenv/bin/activate`
 `pytest pandas/core/arrays/boolean.py`
 
+## Fine-tune CodeT5 Model
+
+1. Prepare the dataset, see `python -m lexecutor.predictors.codet5.PrepareData --help`
+
+2. Run the training, see `python -m lexecutor.predictors.codet5.FineTune --help`
+
 ## Use Predictor
 
 1. Set the LExecutor mode to PREDICT at Runtime.py

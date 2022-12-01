@@ -13,3 +13,5 @@ workspace.code-workspace
 .vscode/launch.json
 *.orig
 training_loss.csv
+train.pt
+validate.pt

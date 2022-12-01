@@ -6,20 +6,19 @@ from ...Logging import logger
 
 
 class InputFactory(object):
-    def __init__(self, tokenizer, iid_file):
+    def __init__(self, iids, tokenizer):
+        self.iids = iids
         self.tokenizer = tokenizer
-        with open(iid_file, "r") as fp:
-            self.iids_json_object = json.load(fp)
 
     def entry_to_inputs(self, entry):
         # Add <target> token before the identifier
-        info = self.iids_json_object["iid_to_location"][str(entry[0]-1)]
+        info = self.iids.iid_to_location[str(entry["iid"]-1)]  # TODO why -1 ?
 
         file = open(info[0]+'.orig')
         file_content = file.readlines()
 
         line = file_content[info[1]-1]
-        name = entry[1]
+        name = entry["name"]
 
         match = (re.search(name, line[info[2]:]))
 
@@ -70,17 +69,16 @@ class InputFactory(object):
             input_ids = input_ids + (512 - len(input_ids)) * [0]
 
         # Create labels
-        if not entry[2] or '@' not in entry[2]:
-            value = entry[2]
+        if not hasattr(entry, "value") or '@' not in entry["value"]:
+            value = "unknown"
         else:
-            value = entry[2][1:]
+            value = entry["value"][1:]
 
         # labels: <s><target>value</s>
-        labels_ids = [1, 32, 3299, 34] + \
+        label_ids = [1, 32, 3299, 34] + \
             self.tokenizer.convert_tokens_to_ids([value]) + [2]
 
         input_ids = t.tensor(input_ids, device='cpu')
-        labels = t.tensor(labels_ids, device='cpu')
+        label_ids = t.tensor(label_ids, device='cpu')
 
-        return {'input_ids': input_ids,
-                'labels': labels}
+        return input_ids, label_ids

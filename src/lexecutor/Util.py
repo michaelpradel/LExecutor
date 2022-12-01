@@ -6,11 +6,12 @@ device = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def gather_files(files_arg):
-    if len(files_arg) == 1 and files_arg[0].endswith(".txt"):
+    if all([f.endswith(".txt") for f in files_arg]):
         files = []
-        with open(files_arg[0]) as fp:
-            for line in fp.readlines():
-                files.append(line.rstrip())
+        for f in files_arg:
+            with open(f) as fp:
+                for line in fp.readlines():
+                    files.append(line.rstrip())
     else:
         for f in files_arg:
             if not f.endswith(".py"):
