@@ -4,8 +4,10 @@ import re
 import torch as t
 from ...Util import dtype, device
 from ...Logging import logger
+from ...Hyperparams import Hyperparams as params
 
 
+# special tokens already provided by the tokenizer
 target_begin_token = "<extra_id_0>"
 target_end_token = "<extra_id_1>"
 
@@ -89,21 +91,18 @@ class InputFactory(object):
             input_ids = input_ids + \
                 (512 - len(input_ids)) * [self.tokenizer.pad_token_id]
 
-        # TODO introduce special tokens for the targets (i.e., output sequence will always have len=1)
         # Create labels
         if not hasattr(entry, "value") or '@' not in entry["value"]:
             value = "unknown"
         else:
             value = entry["value"][1:]
 
-        # TODO don't hardcode token ids
-        # labels: <s><target>value</s>
-        label_ids = [1, 32, 3299, 34] + \
-            self.tokenizer.convert_tokens_to_ids([value]) + [2]
+        label_ids = self.tokenizer(
+            value, padding="max_length", max_length=params.max_output_length).input_ids
 
         input_ids = t.tensor(input_ids, device='cpu')
         label_ids = t.tensor(label_ids, device='cpu')
 
         assert len(input_ids) == 512
-        assert len(label_ids) == 6
+        assert len(label_ids) == params.max_output_length
         return input_ids, label_ids

@@ -109,8 +109,8 @@ def split_and_shuffle(entries, iids):
 def gather_context_and_vectorize(entries, iids, tokenizer):
     factory = InputFactory(iids, tokenizer)
 
-    # TODO parallelize (if needed; not so easy due to shared tokenizer)
-    all_vectorized = t.empty([len(entries), 512+6], dtype=t.long)
+    all_vectorized = t.empty(
+        [len(entries), 512+params.max_output_length], dtype=t.long)
     for index, entry in entries.iterrows():
         input_ids, label_ids = factory.entry_to_inputs(entry)
         all_vectorized[index] = t.cat([input_ids, label_ids])
