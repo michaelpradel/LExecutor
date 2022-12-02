@@ -15,3 +15,4 @@ workspace.code-workspace
 training_loss.csv
 train.pt
 validate.pt
+all_training_traces.txt
