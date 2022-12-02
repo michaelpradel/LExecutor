@@ -137,10 +137,6 @@ if __name__ == "__main__":
     dedup_trace_entries(entries)
     train_entries, validate_entries = split_and_shuffle(entries, iids)
 
-    # TODO for quick testing
-    train_entries = train_entries[:200]
-    validate_entries = validate_entries[:200]
-
     train_tensors = gather_context_and_vectorize(
         train_entries, iids, tokenizer)
     validate_tensors = gather_context_and_vectorize(
