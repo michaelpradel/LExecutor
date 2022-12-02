@@ -8,8 +8,13 @@ from ...Hyperparams import Hyperparams as params
 
 
 # special tokens already provided by the tokenizer
+mask_token = "<mask>"
 target_begin_token = "<extra_id_0>"
 target_end_token = "<extra_id_1>"
+kind_name_token = "<extra_id_2>"
+kind_call_token = "<extra_id_3>"
+kind_attribute_token = "<extra_id_4>"
+sep_token = "<extra_id_5>"
 
 
 class InputFactory(object):
@@ -37,11 +42,7 @@ class InputFactory(object):
 
             return lines, tokenized_lines
 
-    def entry_to_inputs(self, entry):
-        info = self.iids.iid_to_location[str(entry["iid"]-1)]
-
-        lines, tokenized_lines = self.__tokenize_lines(info[0]+'.orig')
-
+    def _encode_input(self, entry, info, lines, tokenized_lines):
         # mark the target name in the corresponding line
         target_line = lines[info[1]-1]
         name = entry["name"]
@@ -91,6 +92,9 @@ class InputFactory(object):
             input_ids = input_ids + \
                 (512 - len(input_ids)) * [self.tokenizer.pad_token_id]
 
+        return input_ids
+
+    def _encode_output(self, entry):
         # Create labels
         if not hasattr(entry, "value") or '@' not in entry["value"]:
             value = "unknown"
@@ -99,6 +103,15 @@ class InputFactory(object):
 
         label_ids = self.tokenizer(
             value, padding="max_length", max_length=params.max_output_length).input_ids
+        return label_ids
+
+    def entry_to_inputs(self, entry):
+        info = self.iids.iid_to_location[str(entry["iid"]-1)]
+
+        lines, tokenized_lines = self.__tokenize_lines(info[0]+'.orig')
+
+        input_ids = self._encode_input(entry, info, lines, tokenized_lines)
+        label_ids = self._encode_output(entry)
 
         input_ids = t.tensor(input_ids, device='cpu')
         label_ids = t.tensor(label_ids, device='cpu')

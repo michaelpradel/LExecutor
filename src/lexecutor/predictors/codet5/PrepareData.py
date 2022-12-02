@@ -54,12 +54,15 @@ def read_traces(trace_files):
             [attribute_df, current_attribute_df])
 
     # merge all entries into a single dataframe: iid, name, value
+    name_df["kind"] = "name"
+    call_df["kind"] = "call"
+    attribute_df["kind"] = "attribute"
     entries = pd.concat([
-        name_df[[0, 1, 2]].rename(
+        name_df[[0, 1, 2, "kind"]].rename(
             columns={0: "iid", 1: "name", 2: "value"}),
-        call_df[[0, 1, 3]].rename(
+        call_df[[0, 1, 3, "kind"]].rename(
             columns={0: "iid", 1: "name", 3: "value"}),
-        attribute_df[[0, 2, 3]].rename(
+        attribute_df[[0, 2, 3, "kind"]].rename(
             columns={0: "iid", 2: "name", 3: "value"})
     ])
 
