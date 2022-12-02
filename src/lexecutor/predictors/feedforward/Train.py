@@ -5,7 +5,7 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 from gensim.models.fasttext import FastText
-from ...Hyperparams import Hyperparams as p
+from ...Hyperparams import Hyperparams as params
 from .TensorFactory import TensorFactory
 from .Training import Training
 from .Validation import Validation
@@ -35,7 +35,7 @@ def load_FastText(file_path):
     print("Loading pre-trained FastText token embedding")
     embedding = FastText.load(file_path)
     embedding_size = len(embedding.wv["test"])
-    if embedding_size != p.token_emb_len:
+    if embedding_size != params.token_emb_len:
         raise Exception(
             "FastText embedding size does not match Hyperparams.token_emb_len")
     return embedding
@@ -61,18 +61,18 @@ if __name__ == "__main__":
     tensor_factory = TensorFactory(embedding)
     train_dataset = TraceToTensorDataset(args.train_trace, tensor_factory)
     train_loader = DataLoader(
-        train_dataset, batch_size=p.batch_size, drop_last=True)
+        train_dataset, batch_size=params.batch_size, drop_last=True)
     print(f"Training on   {len(train_dataset)} examples")
     training = Training(model, criterion, optimizer,
-                        train_loader, p.batch_size, p.epochs)
+                        train_loader, params.batch_size, params.epochs)
 
     validate_dataset = TraceToTensorDataset(
         args.validate_trace, tensor_factory)
     validate_loader = DataLoader(
-        validate_dataset, batch_size=p.batch_size, drop_last=True)
+        validate_dataset, batch_size=params.batch_size, drop_last=True)
     print(f"Validating on {len(validate_dataset)} examples")
     validation = Validation(
-        model, criterion, validate_loader, p.batch_size)
+        model, criterion, validate_loader, params.batch_size)
 
     training.run(validation=validation,
                  store_model_path="data/models/latest")

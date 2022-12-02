@@ -1,5 +1,6 @@
 import os
 import argparse
+import random
 import torch as t
 import csv
 import pandas as pd
@@ -7,7 +8,7 @@ import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
 from transformers import AdamW
 from .CodeT5 import load_CodeT5
-from ...Hyperparams import Hyperparams as p
+from ...Hyperparams import Hyperparams as params
 from ...Util import device
 from ...Logging import logger
 
@@ -23,15 +24,18 @@ parser.add_argument(
     "--save_last_checkpoints", help="Save checkpoint after every batch", action="store_true")
 
 
+print_examples = True
+
+
 def evaluate(validate_tensors_path, model, tokenizer):
     validate_dataset = TensorDataset(t.load(validate_tensors_path))
     validate_loader = DataLoader(
-        validate_dataset, batch_size=p.batch_size, drop_last=True)
+        validate_dataset, batch_size=params.batch_size, drop_last=True)
 
     logger.info("Starting evaluation")
     logger.info("  Num examples = {}".format(len(validate_dataset)))
     logger.info("  Num batches = {}".format(len(validate_loader)))
-    logger.info("  Batch size = {}".format(p.batch_size))
+    logger.info("  Batch size = {}".format(params.batch_size))
 
     accuracies = []
 
@@ -45,19 +49,24 @@ def evaluate(validate_tensors_path, model, tokenizer):
             label_ids = batch[:, 512:518]
             label_ids = label_ids.to(device)
 
-            labels = [tokenizer.decode(ids, skip_special_tokens=True)
-                      for ids in label_ids]
+            labels = tokenizer.batch_decode(
+                label_ids, skip_special_tokens=True)
 
-            generated_ids = model.generate(input_ids, max_length=7)
-            predictions = [tokenizer.decode(
-                ids, skip_special_tokens=True) for ids in generated_ids]
+            generated_ids = model.generate(
+                input_ids, max_length=params.max_output_length)
+            predictions = tokenizer.batch_decode(
+                generated_ids, skip_special_tokens=True)
 
             corrects = [1 for i in range(
                 len(labels)) if labels[i] == predictions[i]]
-
             accuracies_batch = float(len(corrects)) / len(labels)
-
             accuracies.append(accuracies_batch)
+
+            # for debugging
+            if print_examples and random.uniform(0, 100) < 5.0:
+                for label_idx, label in enumerate(labels):
+                    prediction = predictions[label_idx]
+                    logger.info(f"Label: {label}, Prediction: {prediction}")
 
     val_accuracy = np.array(accuracies).mean().item()
     logger.info(
@@ -73,17 +82,18 @@ if __name__ == "__main__":
 
     train_dataset = TensorDataset(t.load(args.train_tensors))
     train_loader = DataLoader(
-        train_dataset, batch_size=p.batch_size, drop_last=True)
+        train_dataset, batch_size=params.batch_size, drop_last=True)
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
     logger.info(f"Starting training on {device}")
     logger.info("  Num examples = {}".format(len(train_dataset)))
-    logger.info("  Batch size = {}".format(p.batch_size))
-    logger.info("  Batch num = {}".format(len(train_dataset) / p.batch_size))
-    logger.info("  Num epoch = {}".format(p.epochs))
+    logger.info("  Batch size = {}".format(params.batch_size))
+    logger.info("  Batch num = {}".format(
+        len(train_dataset) / params.batch_size))
+    logger.info("  Num epoch = {}".format(params.epochs))
 
-    for epoch in range(p.epochs):
+    for epoch in range(params.epochs):
         logger.info(f"Epoch {epoch}")
 
         for batch_idx, batch in enumerate(train_loader):

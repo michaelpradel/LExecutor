@@ -7,13 +7,13 @@ from .Model import ValuePredictionModel
 from ...TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from .TensorFactory import TensorFactory, Embedding
 from ...Util import dtype, device
-from ...Hyperparams import Hyperparams as p
+from ...Hyperparams import Hyperparams as params
 from ...ValueAbstraction import restore_value
 
 
 class NeuralValuePredictor(ValuePredictor):
     def __init__(self):
-        p.batch_size = 1
+        params.batch_size = 1
 
         # load model
         print("Loading value prediction model")

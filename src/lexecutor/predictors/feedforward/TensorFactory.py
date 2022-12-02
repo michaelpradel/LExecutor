@@ -2,7 +2,7 @@ import json
 import numpy as np
 import torch as t
 from ...TraceEntries import NameEntry, CallEntry, AttributeEntry, BinOpEntry
-from ...Hyperparams import Hyperparams as p
+from ...Hyperparams import Hyperparams as params
 from ...Util import dtype, device
 
 
@@ -15,7 +15,7 @@ class TensorFactory(object):
         self.next_value_index = 0
 
     def __value_to_one_hot(self, value: str):
-        v = np.zeros(p.value_emb_len)
+        v = np.zeros(params.value_emb_len)
         if value in self.value_to_index:
             v[self.value_to_index[value]] = 1
         else:
@@ -36,11 +36,11 @@ class TensorFactory(object):
         #  - left operand
         #  - right operand
         #  - operator
-        args = np.zeros((p.max_call_args, p.value_emb_len))
-        base = np.zeros(p.value_emb_len)
-        left = np.zeros(p.value_emb_len)
-        right = np.zeros(p.value_emb_len)
-        operator = np.zeros(p.token_emb_len)
+        args = np.zeros((params.max_call_args, params.value_emb_len))
+        base = np.zeros(params.value_emb_len)
+        left = np.zeros(params.value_emb_len)
+        right = np.zeros(params.value_emb_len)
+        operator = np.zeros(params.token_emb_len)
 
         kind = np.zeros(4)
         if type(entry) is NameEntry:
@@ -49,7 +49,7 @@ class TensorFactory(object):
         elif type(entry) is CallEntry:
             kind[1] = 1
             name = self.token_embedding.wv[entry.fct_name]
-            for arg_idx, arg in enumerate(entry.args[:p.max_call_args]):
+            for arg_idx, arg in enumerate(entry.args[:params.max_call_args]):
                 args[arg_idx] = self.__value_to_one_hot(arg)
         elif type(entry) is AttributeEntry:
             kind[2] = 1
@@ -57,7 +57,7 @@ class TensorFactory(object):
             base = self.__value_to_one_hot(entry.base)
         elif type(entry) is BinOpEntry:
             kind[3] = 1
-            name = np.zeros(p.token_emb_len)
+            name = np.zeros(params.token_emb_len)
             left = self.__value_to_one_hot(entry.left)
             right = self.__value_to_one_hot(entry.right)
             operator = self.token_embedding.wv[entry.operator]

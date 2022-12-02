@@ -1,7 +1,7 @@
 import torch as t
 from torch import nn
 import torch.nn.functional as F
-from ...Hyperparams import Hyperparams as p
+from ...Hyperparams import Hyperparams as params
 
 
 class ValuePredictionModel(nn.Module):
@@ -9,16 +9,16 @@ class ValuePredictionModel(nn.Module):
         super(ValuePredictionModel, self).__init__()
 
         self.intermediate_fc = nn.Linear(
-            in_features=4+p.token_emb_len+p.max_call_args*p.value_emb_len+3*p.value_emb_len+p.token_emb_len, out_features=p.intermediate_layer_len)
+            in_features=4+params.token_emb_len+params.max_call_args*params.value_emb_len+3*params.value_emb_len+params.token_emb_len, out_features=params.intermediate_layer_len)
         self.final_fc = nn.Linear(
-            in_features=p.intermediate_layer_len, out_features=p.value_emb_len)
+            in_features=params.intermediate_layer_len, out_features=params.value_emb_len)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, xs):
         xs_kind, xs_name, xs_args, xs_base, xs_left, xs_right, xs_operator = xs
 
         joined_args = xs_args.view(
-            (p.batch_size, p.max_call_args*p.value_emb_len))
+            (params.batch_size, params.max_call_args*params.value_emb_len))
         all_joined = t.cat((xs_kind, xs_name, joined_args, xs_base, xs_left,
                             xs_right, xs_operator), dim=1)
 
