@@ -1,7 +1,7 @@
 class Hyperparams(object):
     # data deduplication
-    dedup = "name-value"
-    # dedup = "name-value-iid"
+    # dedup = "name-value"
+    dedup = "name-value-iid"
 
     # data splitting
     # split = "project"

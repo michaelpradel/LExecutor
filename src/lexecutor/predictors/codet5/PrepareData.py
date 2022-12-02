@@ -115,6 +115,9 @@ def gather_context_and_vectorize(entries, iids, tokenizer):
         input_ids, label_ids = factory.entry_to_inputs(entry)
         all_vectorized[index] = t.cat([input_ids, label_ids])
 
+        if index % 10000 == 0:
+            logger.info(f"Vectorized {index}/{len(entries)} entries")
+
     logger.info(f"Created tensor of shape {all_vectorized.shape}")
     return all_vectorized
 

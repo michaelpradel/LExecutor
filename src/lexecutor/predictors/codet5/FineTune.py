@@ -21,7 +21,7 @@ parser.add_argument(
 parser.add_argument(
     "--output_dir", help="directory to store models", required=True)
 parser.add_argument(
-    "--save_last_checkpoints", help="Save checkpoint after every batch", action="store_true")
+    "--save_last_checkpoints", help="Save checkpoint after every 100 batches", action="store_true")
 
 
 print_examples = True
@@ -63,10 +63,11 @@ def evaluate(validate_tensors_path, model, tokenizer):
             accuracies.append(accuracies_batch)
 
             # for debugging
-            if print_examples and random.uniform(0, 100) < 5.0:
+            if print_examples:
                 for label_idx, label in enumerate(labels):
-                    prediction = predictions[label_idx]
-                    logger.info(f"Label: {label}, Prediction: {prediction}")
+                    if random.uniform(0, 100) < 0.1:
+                        prediction = predictions[label_idx]
+                        logger.info(f"Label: {label}, Prediction: {prediction}")
 
     val_accuracy = np.array(accuracies).mean().item()
     logger.info(
@@ -93,6 +94,11 @@ if __name__ == "__main__":
         len(train_dataset) / params.batch_size))
     logger.info("  Num epoch = {}".format(params.epochs))
 
+    # save last checkpoint
+    last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
+    if not os.path.exists(last_output_dir):
+        os.makedirs(last_output_dir)
+
     for epoch in range(params.epochs):
         logger.info(f"Epoch {epoch}")
 
@@ -115,20 +121,14 @@ if __name__ == "__main__":
             logger.info(
                 f"  Training loss of batch {batch_idx}: {round(loss.item(), 4)}")
 
-            evaluate(args.validate_tensors, model, tokenizer)
-
-            # save last checkpoint
-            last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
-            if not os.path.exists(last_output_dir):
-                os.makedirs(last_output_dir)
-
-            if args.save_last_checkpoints:
+            if (batch_idx+1) % 100 == 0 and args.save_last_checkpoints:
                 model_to_save = model.module if hasattr(
                     model, 'module') else model
                 output_model_file = os.path.join(
                     last_output_dir, "pytorch_model.bin")
                 t.save(model_to_save.state_dict(), output_model_file)
                 logger.info("Saved the last model into %s", output_model_file)
+                evaluate(args.validate_tensors, model, tokenizer)
 
             # save last training loss
             if not os.path.isfile(f'./training_loss.csv'):
@@ -146,5 +146,7 @@ if __name__ == "__main__":
             })
             df = pd.concat([df, df_new_data])
             df.to_csv(f'./training_loss.csv', index=False)
+
+        evaluate(args.validate_tensors, model, tokenizer)
 
     logger.info('Terminating training')
