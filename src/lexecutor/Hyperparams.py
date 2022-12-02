@@ -8,6 +8,8 @@ class Hyperparams(object):
     # split = "file"
     split = "mixed"
 
+    perc_train = 0.95
+
     # CodeT5 model
     max_output_length = 8
 

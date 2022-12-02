@@ -94,7 +94,8 @@ def split_and_shuffle(entries, iids):
         # TODO implement
         pass
     elif params.split == "mixed":
-        mask = np.random.randn(len(entries)) < 0.8
+        logger.info(f"Using {params.perc_train} of entries for training")
+        mask = np.random.random(len(entries)) < params.perc_train
         train_entries = entries[mask]
         validate_entries = entries[~mask]
     else:
