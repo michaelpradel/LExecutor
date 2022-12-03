@@ -29,10 +29,9 @@ def read_traces(trace_files):
 
     trace_files = gather_files(trace_files)
     for trace_file in trace_files:
-        # TODO: really need try-except?
         try:
             current_name_df = pd.read_hdf(trace_file, key="name")
-        except:
+        except Exception as e:
             logger.warning(f"Warning: Could not read trace file {trace_file}")
             current_name_df = pd.DataFrame(data=None)
 
@@ -94,7 +93,7 @@ def split_and_shuffle(entries, iids):
         # TODO implement
         pass
     elif params.split == "mixed":
-        logger.info(f"Using {params.perc_train} of entries for training")
+        logger.info(f"Mixed split with {params.perc_train} of entries for training")
         mask = np.random.random(len(entries)) < params.perc_train
         train_entries = entries[mask]
         validate_entries = entries[~mask]

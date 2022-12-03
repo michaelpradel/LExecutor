@@ -66,7 +66,7 @@ class TensorFactory(object):
         #  - value
         value = self.__value_to_one_hot(entry.value)
 
-        # move to target device (TODO: merge with the above?)
+        # move to target device (maybe merge with the above?)
         x_kind = t.tensor(kind, dtype=dtype, device=device)
         x_name = t.tensor(name, dtype=dtype, device=device)
         x_args = t.tensor(args, dtype=dtype, device=device)
