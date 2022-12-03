@@ -24,17 +24,17 @@ if mode == "RECORD":
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
-   # predictor = AsIs()
-   # predictor = NaiveValuePredictor()
-   # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
-   # predictor = NeuralValuePredictor()
+    # predictor = AsIs()
+    # predictor = NaiveValuePredictor()
+    # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
+    # predictor = NeuralValuePredictor()
     predictor = CodeT5ValuePredictor()
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
 
-   # for running experiments
-   # file = sys.argv[0]
-   # atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
+    # for running experiments
+    file = sys.argv[0]
+    atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
