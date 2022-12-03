@@ -4,20 +4,29 @@ import csv
 
 
 class RuntimeStats:
-    total_uses = 0
-    guided_uses = 0
+    def __init__(self, iids):
+        self.iids = iids
+        self.total_uses = 0
+        self.guided_uses = 0
 
-    covered_iids = set()
+        self.covered_iids = set()
+
+        self.event_trace = []
 
     def cover_iid(self, iid):
         self.covered_iids.add(iid)
+        self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
+
+    def inject_value(self, iid, name, value):
+        self.event_trace.append(
+            f"Line {self.iids.line(iid)}: Inject {value} for {name}")
 
     def print(self):
         print(f"Covered iids: {len(self.covered_iids)}")
         print(f"Total uses: {self.total_uses}")
         print(f"Guided uses : {self.guided_uses}/{self.total_uses}")
 
-    def save(self, file, predictor_name):
+    def _save_summary_metrics(self, file, predictor_name):
         # Create CSV file and add header if it doesn't exist
         if not os.path.isfile('./metrics.csv'):
             columns = ['file', 'predictor', 'covered_iids',
@@ -37,3 +46,11 @@ class RuntimeStats:
         })
         df = pd.concat([df, df_new_data])
         df.to_csv('./metrics.csv', index=False)
+
+    def _save_event_trace(self):
+        with open("trace.txt", "w") as fp:
+            fp.write("\n".join(self.event_trace))
+
+    def save(self, file, predictor_name):
+        self._save_summary_metrics(file, predictor_name)
+        self._save_event_trace()

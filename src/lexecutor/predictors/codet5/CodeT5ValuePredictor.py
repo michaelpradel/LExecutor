@@ -5,22 +5,21 @@ from ...Util import device
 from .FineTune import load_CodeT5
 from .InputFactory import InputFactory
 from ...ValueAbstraction import restore_value
-from ...IIDs import IIDs
 from ...Hyperparams import Hyperparams as params
 
 
 class CodeT5ValuePredictor(ValuePredictor):
-    def __init__(self):
+    def __init__(self, iids, stats):
         # load model
         self.tokenizer, self.model = load_CodeT5()
         self.model.load_state_dict(t.load(
             "data/codeT5_models/dec2_91perc_val_acc/pytorch_model.bin", map_location=device))
 
-        self.iids = IIDs('iids_original.json')
-
+        self.iids = iids
+        self.stats = stats
         self.input_factory = InputFactory(self.iids, self.tokenizer)
 
-    def __query_model(self, entry):
+    def _query_model(self, entry):
         input_ids, _ = self.input_factory.entry_to_inputs(entry)
         input_ids = [tensor.cpu() for tensor in input_ids]
 
@@ -31,12 +30,13 @@ class CodeT5ValuePredictor(ValuePredictor):
 
         predicted_value = self.tokenizer.decode(
             generated_ids[0], skip_special_tokens=True)
-        return restore_value(predicted_value)
+        return predicted_value, restore_value(predicted_value)
 
     def name(self, iid, name):
         entry = {"iid": iid, "name": name, "kind": "name"}
-        v = self.__query_model(entry)
+        abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for name {name}: {v}")
+        self.stats.inject_value(iid, name, abstract_v)
         return v
 
     def call(self, iid, fct, *args, **kwargs):
@@ -44,12 +44,14 @@ class CodeT5ValuePredictor(ValuePredictor):
         if " " in fct_name:  # some fcts that don't have a proper name
             fct_name = fct_name.split(" ")[0]
         entry = {"iid": iid, "name": fct_name, "kind": "call"}
-        v = self.__query_model(entry)
+        abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for call: {v}")
+        self.stats.inject_value(iid, fct_name, abstract_v)
         return v
 
     def attribute(self, iid, base, attr_name):
         entry = {"iid": iid, "name": attr_name, "kind": "attribute"}
-        v = self.__query_model(entry)
+        abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for attribute {attr_name}: {v}")
+        self.stats.inject_value(iid, attr_name, abstract_v)
         return v

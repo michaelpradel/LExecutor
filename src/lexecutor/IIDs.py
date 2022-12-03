@@ -32,3 +32,6 @@ class IIDs:
         json_object = json.dumps(all_data, indent=2)
         with open(self.file_path, "w") as file:
             file.write(json_object)
+
+    def line(self, iid):
+        return self.iid_to_location[str(iid)][1]

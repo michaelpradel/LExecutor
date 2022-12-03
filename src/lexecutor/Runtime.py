@@ -1,3 +1,6 @@
+import atexit
+import sys
+from .IIDs import IIDs
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value
 from .predictors.NaiveValuePredictor import NaiveValuePredictor
@@ -8,9 +11,6 @@ from .RuntimeStats import RuntimeStats
 from .Util import timestamp
 from .predictors.ValuePredictor import ValuePredictor
 from .predictors.AsIs import AsIs
-
-import atexit
-import sys
 
 
 # ------- begin: select mode -----
@@ -28,9 +28,10 @@ elif mode == "PREDICT":
     # predictor = NaiveValuePredictor()
     # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
     # predictor = NeuralValuePredictor()
-    predictor = CodeT5ValuePredictor()
-    runtime_stats = RuntimeStats()
+    iids = IIDs('iids_original.json')
+    runtime_stats = RuntimeStats(iids)
     atexit.register(runtime_stats.print)
+    predictor = CodeT5ValuePredictor(iids, runtime_stats)
 
     # for running experiments
     file = sys.argv[0]
