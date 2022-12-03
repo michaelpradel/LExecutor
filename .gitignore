@@ -17,3 +17,4 @@ train.pt
 validate.pt
 all_training_traces.txt
 checkpoint-last
+functions_under_test
