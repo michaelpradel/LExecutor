@@ -21,6 +21,10 @@ class RuntimeStats:
         self.event_trace.append(
             f"Line {self.iids.line(iid)}: Inject {value} for {name}")
 
+    def uncaught_exception(self, iid, e):
+        self.event_trace.append(
+            f"Line {self.iids.line(iid)}: Uncaught exception {type(e)}\n{e}")
+
     def print(self):
         print(f"Covered iids: {len(self.covered_iids)}")
         print(f"Total uses: {self.total_uses}")
