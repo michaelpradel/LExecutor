@@ -31,45 +31,6 @@ class MyResource(object):
         return True
 
 
-# def restore_value(abstract_value):
-#     if abstract_value.startswith("@"):
-#         kind = abstract_value[3:]
-#         # numeric types
-#         if kind == "int":
-#             return 0
-#         elif kind == "float":
-#             return 0.0
-#         # built-in sequence types
-#         elif kind == "list":
-#             return []
-#         elif kind in "tuple":
-#             return ()
-#         elif kind == "range":
-#             return range(0)
-#         elif kind == "bytes":
-#             return bytearray()
-#         elif kind == "memoryview":
-#             return memoryview(bytearray())
-#         # built-in set and dict types
-#         elif kind == "set":
-#             return set()
-#         elif kind == "frozenset":
-#             return frozenset()
-#         elif kind == "dict":
-#             return {}
-#         # functions and methods
-#         elif kind == "callable":
-#             return lambda *a, **b: ()
-#         # resources (to be used in 'with' statements)
-#         elif kind == "resource":
-#             return MyResource()
-#         # other object types
-#         else:
-#             return object()
-#     else:
-#         # built-in values and types that can be serialized to JSON
-#         return json.loads(abstract_value)
-
 def restore_value(abstract_value):
     # numeric types
     if abstract_value == "int":
