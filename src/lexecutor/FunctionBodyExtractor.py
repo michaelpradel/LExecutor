@@ -19,7 +19,12 @@ class ExtractorVisitor(cst.CSTTransformer):
         self.file = file
 
     def leave_Return(self, node, updated_node):
-        args = [cst.Arg(value=node.value)] if node.value is not None else []
+        args = []
+        if node.value is not None:
+            if type(node.value) is cst.Tuple:
+                args = [cst.Arg(value=cst.Tuple(elements=node.value.elements))]
+            else:
+                args = [cst.Arg(value=node.value)]
         expr = cst.Expr(
             value=cst.Call(
                 func=cst.Name("exit"),
