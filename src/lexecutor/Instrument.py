@@ -72,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     files = gather_files(args.files)
     if not args.restore:
-        print(f"Found {len(files)} file to instrument")
+        print(f"Found {len(files)} file(s) to instrument")
         iids = IIDs(args.iids)
         for file_path in files:
             print(f"Instrumenting {file_path}")
@@ -83,4 +83,4 @@ if __name__ == "__main__":
         for file_path in files:
             if restore_file(file_path):
                 nb_restored += 1
-        print(f"Have restored {nb_restored} out of {len(files)} files")
+        print(f"Have restored {nb_restored} out of {len(files)} file(s)")
