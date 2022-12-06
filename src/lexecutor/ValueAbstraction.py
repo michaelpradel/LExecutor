@@ -30,10 +30,14 @@ class MyResource(object):
     def __exit__(self, exc_type, exc_value, trace):
         return True
 
+
 def dummy_function(*a, **b):
     return ()
 
+
 def restore_value(abstract_value):
+    # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
+
     # numeric types
     if abstract_value == "int":
         return 0

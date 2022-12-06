@@ -113,31 +113,38 @@ def _b_(iid, left, operator, right):
 
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
-    if mode in ("RECORD", "PREDICT"):
-        try:
-            v = perform_fct()
-            if mode == "RECORD":
-                record_fct(v)
-            if verbose:
-                print("Found/computed/returned regular value")
+    if mode == "RECORD":
+        v = perform_fct()
+        record_fct(v)
+        return v
+    elif mode == "PREDICT":
+        if kind == "call_dummy":
+            # predict and inject a return value
+            v = predict_fct()
             return v
-        except Exception as e:
-            if (type(e) == NameError and kind == "name") or (type(e) == AttributeError and kind == "attribute") or (kind == "call_dummy"):
+        else:
+            # try to perform the regular behavior and intervene in case of exception
+            try:
+                v = perform_fct()
                 if verbose:
-                    print(
-                        f"Catching '{type(e)}' during {kind} and calling predictor instead")
-                if mode == "PREDICT":
+                    print("Found/computed/returned regular value")
+                return v
+            except Exception as e:
+                if (type(e) == NameError and kind == "name") \
+                    or (type(e) == AttributeError and kind == "attribute") \
+                        or (type(e) == TypeError and kind == "call"):
+                    if verbose:
+                        print(
+                            f"Catching '{type(e)}' during {kind} and calling predictor instead")
                     v = predict_fct()
                     runtime_stats.guided_uses += 1
                     return v
                 else:
+                    if verbose:
+                        print(
+                            f"Exception '{type(e)}' not caught, re-raising")
+                    runtime_stats.uncaught_exception(iid, e)
                     raise e
-            else:
-                if verbose:
-                    print(
-                        f"Exception '{type(e)}' not caught, re-raising")
-                runtime_stats.uncaught_exception(iid, e)
-                raise e
     elif mode == "REPLAY":
         # replay mode
         global next_trace_idx
