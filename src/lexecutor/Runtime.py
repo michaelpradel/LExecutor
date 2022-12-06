@@ -12,12 +12,15 @@ from .Util import timestamp
 from .predictors.ValuePredictor import ValuePredictor
 from .predictors.AsIs import AsIs
 
+verbose = True
+
 
 # ------- begin: select mode -----
 # mode = "RECORD"    # record values and write into a trace file
 mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
+
 
 if mode == "RECORD":
     trace = TraceWriter(f"trace_{timestamp()}.h5")
@@ -31,7 +34,7 @@ elif mode == "PREDICT":
     iids = IIDs('iids_original.json')
     runtime_stats = RuntimeStats(iids)
     atexit.register(runtime_stats.print)
-    predictor = CodeT5ValuePredictor(iids, runtime_stats)
+    predictor = CodeT5ValuePredictor(iids, runtime_stats, verbose=verbose)
 
     # for running experiments
     file = sys.argv[0]
@@ -41,8 +44,6 @@ elif mode == "REPLAY":
         trace = file.readlines()
     next_trace_idx = 0
     runtime_stats = None
-
-verbose = True
 
 print(f"### LExecutor running in {mode} mode ###")
 
