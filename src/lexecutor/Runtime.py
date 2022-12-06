@@ -2,7 +2,7 @@ import atexit
 import sys
 from .IIDs import IIDs
 from .TraceWriter import TraceWriter
-from .ValueAbstraction import restore_value
+from .ValueAbstraction import restore_value, dummy_function
 from .predictors.NaiveValuePredictor import NaiveValuePredictor
 from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
 from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
@@ -83,7 +83,8 @@ def _c_(iid, fct, *args, **kwargs):
     def predict_fct():
         return predictor.call(iid, fct, args, kwargs)
 
-    return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="call")
+    kind = "call_dummy" if fct is dummy_function else "call"
+    return mode_branch(iid, perform_fct, record_fct, predict_fct, kind=kind)
 
 
 def _a_(iid, base, attr_name):
@@ -121,7 +122,7 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
                 print("Found/computed/returned regular value")
             return v
         except Exception as e:
-            if (type(e) == NameError and kind == "name") or (type(e) == AttributeError and kind == "attribute") or (kind == "call"):
+            if (type(e) == NameError and kind == "name") or (type(e) == AttributeError and kind == "attribute") or (kind == "call_dummy"):
                 if verbose:
                     print(
                         f"Catching '{type(e)}' during {kind} and calling predictor instead")

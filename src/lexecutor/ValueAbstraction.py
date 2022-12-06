@@ -30,6 +30,8 @@ class MyResource(object):
     def __exit__(self, exc_type, exc_value, trace):
         return True
 
+def dummy_function(*a, **b):
+    return ()
 
 def restore_value(abstract_value):
     # numeric types
@@ -57,7 +59,7 @@ def restore_value(abstract_value):
         return {}
     # functions and methods
     elif abstract_value == "callable":
-        return lambda *a, **b: ()
+        return dummy_function
     # resources (to be used in 'with' statements)
     elif abstract_value == "resource":
         return MyResource()
