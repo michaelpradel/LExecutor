@@ -106,86 +106,9 @@ def _a_(iid, base, attr_name):
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="attribute")
 
 
-# TODO still needed?
+# TODO not used anymore, should be removed once we stop importing it in instrumented files
 def _b_(iid, left, operator, right):
     raise NotImplementedError()
-# def _b_(iid, left, operator, right):
-#     if verbose:
-#         print(f"\nAt iid={iid}, performing binary {operator} operation")
-
-#     if runtime_stats is not None:
-#         runtime_stats.total_uses += 1
-#         runtime_stats.cover_iid(iid)
-
-#     def perform_fct():
-#         return perform_binary_op(left, operator, right)
-
-#     def record_fct(v):
-#         trace.append_binary_operation(iid, left, operator, right, v)
-
-#     def predict_fct():
-#         return predictor.binary_operation(iid, left, operator, right)
-
-#     return mode_branch(iid, perform_fct, record_fct, predict_fct)
-
-
-# def perform_binary_op(left, operator, right):
-#     # boolean operators
-#     if operator == "And":
-#         v = left and right
-#     elif operator == "Or":
-#         v = left or right
-#     # arithmetic operators
-#     elif operator == "Add":
-#         v = left + right
-#     elif operator == "BitAnd":
-#         v = left & right
-#     elif operator == "BitOr":
-#         v = left | right
-#     elif operator == "BitXor":
-#         v = left ^ right
-#     elif operator == "Divide":
-#         v = left / right
-#     elif operator == "FloorDivide":
-#         v = left // right
-#     elif operator == "LeftShift":
-#         v = left << right
-#     elif operator == "MatrixMultiply":
-#         v = left @ right
-#     elif operator == "Modulo":
-#         v = left % right
-#     elif operator == "Multiply":
-#         v = left * right
-#     elif operator == "Power":
-#         v = left ^ right
-#     elif operator == "RightShift":
-#         v = left >> right
-#     elif operator == "Subtract":
-#         v = left - right
-#     # comparison operators
-#     elif operator == "Equal":
-#         v = left == right
-#     elif operator == "GreaterThan":
-#         v = left > right
-#     elif operator == "GreaterThanEqual":
-#         v = left >= right
-#     elif operator == "In":
-#         v = left in right
-#     elif operator == "Is":
-#         v = left is right
-#     elif operator == "LessThan":
-#         v = left < right
-#     elif operator == "LessThanEqual":
-#         v = left <= right
-#     elif operator == "NotEqual":
-#         v = left != right
-#     elif operator == "IsNot":
-#         v = left is not right
-#     elif operator == "NotIn":
-#         v = left not in right
-#     else:
-#         raise Exception(f"Unexpected binary operator: {operator}")
-#     return v
 
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
