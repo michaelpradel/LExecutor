@@ -17,9 +17,9 @@ class RuntimeStats:
         self.covered_iids.add(iid)
         self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
 
-    def inject_value(self, iid, name, value):
+    def inject_value(self, iid, msg):
         self.event_trace.append(
-            f"Line {self.iids.line(iid)}: Inject {value} for {name}")
+            f"Line {self.iids.line(iid)}: {msg}")
 
     def uncaught_exception(self, iid, e):
         self.event_trace.append(

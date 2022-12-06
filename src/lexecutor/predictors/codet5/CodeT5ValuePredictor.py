@@ -36,7 +36,7 @@ class CodeT5ValuePredictor(ValuePredictor):
         entry = {"iid": iid, "name": name, "kind": "name"}
         abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for name {name}: {v}")
-        self.stats.inject_value(iid, name, abstract_v)
+        self.stats.inject_value(iid, f"Inject {abstract_v} for variable {name}")
         return v
 
     def call(self, iid, fct, *args, **kwargs):
@@ -46,12 +46,12 @@ class CodeT5ValuePredictor(ValuePredictor):
         entry = {"iid": iid, "name": fct_name, "kind": "call"}
         abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for call: {v}")
-        self.stats.inject_value(iid, fct_name, abstract_v)
+        self.stats.inject_value(iid, f"Inject {abstract_v} as return value of {fct_name}")
         return v
 
     def attribute(self, iid, base, attr_name):
         entry = {"iid": iid, "name": attr_name, "kind": "attribute"}
         abstract_v, v = self._query_model(entry)
         print(f"{iid}: Predicting for attribute {attr_name}: {v}")
-        self.stats.inject_value(iid, attr_name, abstract_v)
+        self.stats.inject_value(iid, f"Inject {abstract_v} for attribute {attr_name}")
         return v
