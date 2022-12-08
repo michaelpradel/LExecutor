@@ -70,7 +70,7 @@ class CodeRewriter(cst.CSTTransformer):
         iid = self.__create_iid(node)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         value_arg = cst.Arg(updated_node.value)
-        assert type(node.attr) == cst.Name
+        assert type(node.attr) == cst.Name, type(node.attr)
         attr_arg = cst.Arg(cst.SimpleString(
             value=f"{self.quotation_char}{node.attr.value}{self.quotation_char}"))
         call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])

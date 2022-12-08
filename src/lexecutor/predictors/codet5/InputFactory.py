@@ -171,7 +171,7 @@ class InputFactory(object):
             value = "unknown"
         else:
             # during training
-            assert entry["value"].startswith("@")
+            assert entry["value"].startswith("@"), entry["value"]
             value = entry["value"][1:]
 
         label_ids = self.tokenizer(
@@ -189,6 +189,6 @@ class InputFactory(object):
         input_ids = t.tensor(input_ids, device='cpu')
         label_ids = t.tensor(label_ids, device='cpu')
 
-        assert len(input_ids) == 512
-        assert len(label_ids) == params.max_output_length
+        assert len(input_ids) == 512, len(input_ids)
+        assert len(label_ids) == params.max_output_length, len(label_ids)
         return input_ids, label_ids
