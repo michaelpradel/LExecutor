@@ -3,9 +3,13 @@ import json
 
 def abstract_value(value):
     t = type(value)
-    # common values that can be serialized to JSON
-    if value is None or t is bool:
-        return json.dumps(value)
+    # common values primitive values
+    if value is None:
+        return "@None"
+    elif value is True:
+        return "@True"
+    elif value is False:
+        return "@False"
     # built-in numeric or sequence types
     elif t in (int, float, list, tuple, range, bytes, bytearray, memoryview,):
         return f"@{t.__name__}"
@@ -38,8 +42,15 @@ def dummy_function(*a, **b):
 def restore_value(abstract_value):
     # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
 
+    # common primitives
+    if abstract_value == "@None":
+        return None
+    elif abstract_value == "@True":
+        return True
+    elif abstract_value == "@False":
+        return False
     # numeric types
-    if abstract_value == "int":
+    elif abstract_value == "int":
         return 0
     elif abstract_value == "float":
         return 0.0

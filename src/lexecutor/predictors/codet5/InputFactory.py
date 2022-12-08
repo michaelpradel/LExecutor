@@ -166,9 +166,12 @@ class InputFactory(object):
 
     def _encode_output(self, entry):
         # Create labels
-        if not hasattr(entry, "value") or '@' not in entry["value"]:
+        if not hasattr(entry, "value"):
+            # during prediction
             value = "unknown"
         else:
+            # during training
+            assert entry["value"].startswith("@")
             value = entry["value"][1:]
 
         label_ids = self.tokenizer(
