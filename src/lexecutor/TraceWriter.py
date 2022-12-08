@@ -34,7 +34,7 @@ class TraceWriter:
         args = " ".join(args)
         value = abstract_value(raw_value)
         fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
-        if " " in fct_name:  # some fcts that don't have a proper name
+        if " " in fct_name:  # some fcts don't have a proper name
             fct_name = fct_name.split(" ")[0]
 
         self.call_buffer.append([iid, fct_name, args, value])
