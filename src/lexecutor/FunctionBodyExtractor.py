@@ -13,7 +13,11 @@ parser.add_argument(
 class ExtractorVisitor(cst.CSTTransformer):
     def __init__(self, dest_dir):
         self.dest_dir = dest_dir
+
+        existing_files = [f for f in os.listdir(dest_dir)]
         self.next_id = 0
+        while f"body_{self.next_id}.py" in existing_files:
+            self.next_id += 1
 
     def set_source_file(self, file):
         self.file = file
