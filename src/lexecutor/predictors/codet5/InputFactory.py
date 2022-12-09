@@ -179,7 +179,7 @@ class InputFactory(object):
         return label_ids
 
     def entry_to_inputs(self, entry):
-        info = self.iids.iid_to_location[str(entry["iid"]-1)]
+        info = self.iids.iid_to_location[str(entry["iid"])]
 
         lines, tokenized_lines = self.__tokenize_lines(info[0]+'.orig')
 

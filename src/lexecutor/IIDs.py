@@ -22,7 +22,7 @@ class IIDs:
     def new(self, file, line, column):
         self.iid_to_location[self.next_iid] = Location(file, line, column)
         self.next_iid += 1
-        return self.next_iid  # TODO should be "return self.next_iid - 1" -- if we fix it here, we need to re-run all trace gathering and remove "-1" in placed where iids are used
+        return self.next_iid - 1
 
     def store(self):
         all_data = {
@@ -34,4 +34,4 @@ class IIDs:
             file.write(json_object)
 
     def line(self, iid):
-        return self.iid_to_location[str(iid-1)][1]
+        return self.iid_to_location[str(iid)][1]
