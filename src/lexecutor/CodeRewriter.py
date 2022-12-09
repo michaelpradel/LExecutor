@@ -245,10 +245,9 @@ class CodeRewriter(cst.CSTTransformer):
         import_n = self.__create_import("_n_")
         import_a = self.__create_import("_a_")
         import_c = self.__create_import("_c_")
-        import_b = self.__create_import("_b_")
 
         new_body = (list(updated_node.body[:target_idx])
-                    + [import_n, import_a, import_c, import_b]
+                    + [import_n, import_a, import_c]
                     + list(updated_node.body[target_idx:]))
 
         return updated_node.with_changes(body=new_body)
