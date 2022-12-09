@@ -3,27 +3,26 @@ import sys
 from .IIDs import IIDs
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, dummy_function
-from .predictors.NaiveValuePredictor import NaiveValuePredictor
-from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
-from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
-from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
+# from .predictors.NaiveValuePredictor import NaiveValuePredictor
+# from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
+# from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
+# from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
-from .Util import timestamp
 from .predictors.ValuePredictor import ValuePredictor
 from .predictors.AsIs import AsIs
 
-verbose = True
+verbose = False
 
 
 # ------- begin: select mode -----
-# mode = "RECORD"    # record values and write into a trace file
-mode = "PREDICT"   # predict and inject values if missing in exeuction
+mode = "RECORD"    # record values and write into a trace file
+# mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
 
 if mode == "RECORD":
-    trace = TraceWriter(f"trace_{timestamp()}.h5")
+    trace = TraceWriter()
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
@@ -97,7 +96,30 @@ def _a_(iid, base, attr_name):
         runtime_stats.cover_iid(iid)
 
     def perform_fct():
-        return getattr(base, attr_name)
+        # return getattr(base, attr_name)
+        # unmangle private attributes (code copied from DynaPyt)
+        if (attr_name.startswith('__')) and (not attr_name.endswith('__')):
+            if type(base).__name__ == 'type':
+                parents = [base]
+            else:
+                parents = [type(base)]
+            found = True
+            while len(parents) > 0:
+                found = True
+                cur_par = parents.pop()
+                try:
+                    cur_name = cur_par.__name__
+                    cur_name = cur_name.lstrip('_')
+                    return getattr(base, '_'+cur_name+attr_name)
+                except AttributeError:
+                    found = False
+                    parents.extend(list(cur_par.__bases__))
+                    continue
+                break
+            if not found:
+                raise AttributeError()
+        else:
+            return getattr(base, attr_name)
 
     def record_fct(v):
         trace.append_attribute(iid, base, attr_name, v)
@@ -106,11 +128,6 @@ def _a_(iid, base, attr_name):
         return predictor.attribute(iid, base, attr_name)
 
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="attribute")
-
-
-# TODO not used anymore, should be removed once we stop importing it in instrumented files
-def _b_(iid, left, operator, right):
-    raise NotImplementedError()
 
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):

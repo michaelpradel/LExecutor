@@ -1,7 +1,20 @@
 import json
 
 
+def _value_to_string(value):
+    t = type(value)
+    try:
+        s = str(value)
+    except Exception:
+        s = "(str() failed)"
+    s = s[:50]
+    return f"{t} -- {s}"
+
+
 def abstract_value(value):
+    # TODO only for gathering information to design a better value abstraction
+    return _value_to_string(value)
+
     t = type(value)
     # common values primitive values
     if value is None:

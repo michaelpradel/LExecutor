@@ -1,82 +1,48 @@
 import pandas as pd
 from .ValueAbstraction import abstract_value
+from .Logging import logger
+from .Util import timestamp
+
+
+column_names = ["iid", "name", "value", "kind"]
 
 
 class TraceWriter:
-    def __init__(self, file_path):
-        self.file_path = file_path
+    def __init__(self):
+        self.df = pd.DataFrame(columns=column_names)
+        self.buffer = []
 
-        self.name_df = pd.DataFrame(data=None)
-        self.name_buffer = []
+    def _flush_buffer(self):
+        new_df = pd.DataFrame(data=self.buffer, columns=column_names)
+        self.df = pd.concat([self.df, new_df])
+        self.buffer = []
 
-        self.call_df = pd.DataFrame(data=None)
-        self.call_buffer = []
+    def _append(self, iid, name, raw_value, kind):
+        value = abstract_value(raw_value)
+        self.buffer.append([iid, name, value, kind])
 
-        self.attribute_df = pd.DataFrame(data=None)
-        self.attribute_buffer = []
-
-    def __flush_buffer(self, buffer, old_df):
-        new_df = pd.DataFrame(data=buffer)
-        all_df = pd.concat([old_df, new_df])
-        self.name_buffer = []
-        return all_df
+        if len(self.buffer) % 100000 == 0:
+            self.write_to_file()
 
     def append_name(self, iid, name, raw_value):
-        value = abstract_value(raw_value)
-        self.name_buffer.append([iid, name, value])
-
-        if len(self.name_buffer) % 100000 == 0:
-            self.name_df = self.__flush_buffer(self.name_buffer, self.name_df)
+        self._append(iid, name, raw_value, "name")
 
     def append_call(self, iid, fct, raw_args, raw_kwargs, raw_value):
-        all_raw_args = list(raw_args) + list(raw_kwargs.values())
-        args = [abstract_value(r) for r in all_raw_args]
-        args = " ".join(args)
-        value = abstract_value(raw_value)
         fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
         if " " in fct_name:  # some fcts don't have a proper name
             fct_name = fct_name.split(" ")[0]
 
-        self.call_buffer.append([iid, fct_name, args, value])
-        if len(self.call_buffer) % 100000 == 0:
-            self.call_df = self.__flush_buffer(self.call_buffer, self.call_df)
+        self._append(iid, fct_name, raw_value, "call")
 
     def append_attribute(self, iid, raw_base, attr_name, raw_value):
-        base = abstract_value(raw_base)
-        value = abstract_value(raw_value)
-
-        self.attribute_buffer.append([iid, base, attr_name, value])
-        if len(self.attribute_buffer) % 100000 == 0:
-            self.attribute_df = self.__flush_buffer(
-                self.attribute_buffer, self.attribute_df)
+        self._append(iid, attr_name, raw_value, "attribute")
 
     def write_to_file(self):
-        try:
-            self.name_df = self.__flush_buffer(self.name_buffer, self.name_df)
-            self.name_df[2].astype("category")
-        except:
-            pass
-        finally:
-            self.name_df.to_hdf(self.file_path, key="name",
-                                complevel=9, complib="bzip2")
-
-        try:
-            self.call_df = self.__flush_buffer(self.call_buffer, self.call_df)
-            self.call_df[2].astype("category")
-            self.call_df[3].astype("category")
-        except:
-            pass
-        finally:
-            self.call_df.to_hdf(self.file_path, key="call",
-                                complevel=9, complib="bzip2")
-
-        try:
-            self.attribute_df = self.__flush_buffer(
-                self.attribute_buffer, self.attribute_df)
-            self.attribute_df[1].astype("category")
-            self.attribute_df[3].astype("category")
-        except:
-            pass
-        finally:
-            self.attribute_df.to_hdf(self.file_path, key="attribute",
-                                     complevel=9, complib="bzip2")
+        file_name = f"trace_{timestamp()}.h5"
+        logger.info(f"Flushing buffer and writing to {file_name}")
+        self._flush_buffer()
+        self.df["iid"] = self.df["iid"].astype("int")
+        self.df["name"] = self.df["name"].astype("str")
+        self.df["value"] = self.df["value"].astype("str")
+        self.df["kind"] = self.df["kind"].astype("str")
+        self.df.to_hdf(file_name, key="entries", complevel=9, complib="bzip2")
