@@ -76,19 +76,6 @@ class CodeRewriter(cst.CSTTransformer):
         call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])
         return call
 
-    def __create_binop_call(self, node, updated_node):
-        callee_name = cst.Name(value="_b_")
-        iid = self.__create_iid(node)
-        iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
-        left_arg = cst.Arg(updated_node.left)
-        operator_name = type(node.operator).__name__
-        operator_arg = cst.Arg(cst.SimpleString(
-            value=f"{self.quotation_char}{operator_name}{self.quotation_char}"))
-        right_arg = cst.Arg(updated_node.right)
-        call = cst.Call(func=callee_name, args=[
-                        iid_arg, left_arg, operator_arg, right_arg])
-        return call
-
     def __create_import(self, name):
         module_name = cst.Attribute(value=cst.Name(
             value="lexecutor"), attr=cst.Name(value="Runtime"))
@@ -204,15 +191,6 @@ class CodeRewriter(cst.CSTTransformer):
         wrapped_attribute = self.__create_attribute_call(node, updated_node)
         return wrapped_attribute
 
-    # tracking and prediction for binary operations turned off for now, as predicting the values might be enough
-    #
-    # def leave_BinaryOperation(self, node, updated_node):
-    #     if not self.instrument:
-    #         return updated_node
-
-    #     wrapped_bin_op = self.__create_binop_call(node, updated_node)
-    #     return wrapped_bin_op
-
     def leave_SimpleStatementLine(self, node, updated_node):
         if not self.instrument:
             return updated_node
@@ -220,12 +198,22 @@ class CodeRewriter(cst.CSTTransformer):
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
         if isinstance(node.body[0], cst.Import) or isinstance(node.body[0], cst.ImportFrom):
+            # don't wrap __future__ imports
             if not (isinstance(node.body[0], cst.ImportFrom) and
                     node.body[0].module is not None and
                     node.body[0].module.value == "__future__"):
-                wrapped_import = self.__wrap_import(
-                    node.body[0], updated_node.body[0])
-                return wrapped_import
+                # don't try-except-pass wrap imports that are already surrounded by try-except (as they should sometimes fail)
+                skip = False
+                parent = self.get_metadata(ParentNodeProvider, node)
+                if isinstance(parent, cst.IndentedBlock):
+                    grand_parent = self.get_metadata(
+                        ParentNodeProvider, parent)
+                    if isinstance(grand_parent, cst.Try):
+                        skip = True
+                if not skip:
+                    wrapped_import = self.__wrap_import(
+                        node.body[0], updated_node.body[0])
+                    return wrapped_import
         return updated_node
 
     def leave_Module(self, node, updated_node):
