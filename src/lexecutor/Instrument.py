@@ -19,7 +19,8 @@ parser.add_argument(
 
 ignored_file_suffixes = [
     "ansible/utils/collection_loader/_collection_finder.py",
-    "ansible/constants.py"
+    "ansible/constants.py",
+    "django/db/models/expressions.py"
 ]
 
 
