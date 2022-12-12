@@ -1,43 +1,58 @@
-import json
-
-
-def _value_to_string(value):
-    t = type(value)
-    try:
-        s = str(value)
-    except Exception:
-        s = "(str() failed)"
-    s = s[:50]
-    return f"{t} -- {s}"
-
-
 def abstract_value(value):
-    # TODO only for gathering information to design a better value abstraction
-    return _value_to_string(value)
-
     t = type(value)
-    # common values primitive values
+    # common primitive values
     if value is None:
         return "@None"
     elif value is True:
         return "@True"
     elif value is False:
         return "@False"
-    # built-in numeric or sequence types
-    elif t in (int, float, list, tuple, range, bytes, bytearray, memoryview,):
-        return f"@{t.__name__}"
+    # built-in numeric types
+    elif t is int:
+        if value < 0:
+            return "@int_neg"
+        elif value == 0:
+            return "@int_zero"
+        else:
+            return "@int_pos"
+    elif t is float:
+        if value < 0:
+            return "@float_neg"
+        elif value == 0:
+            return "@float_zero"
+        else:
+            return "@float_pos"
+    # built-in sequence types
+    elif t is list:
+        if len(value) == 0:
+            return "@list_empty"
+        else:
+            return "@list_nonempty"
+    elif t is tuple:
+        if len(value) == 0:
+            return "@tuple_empty"
+        else:
+            return "@tuple_nonempty"
     # built-in set and dict types
-    elif t in (set, frozenset, dict):
-        return f"@{t.__name__}"
+    elif t is set:
+        if len(value) == 0:
+            return "@set_empty"
+        else:
+            return "@set_nonempty"
+    elif t is dict:
+        if len(value) == 0:
+            return "@dict_empty"
+        else:
+            return "@dict_nonempty"
     # functions and methods
     elif callable(value):
         if hasattr(value, "__enter__") and hasattr(value, "__exit__"):
-            return f"@resource"
+            return "@resource"
         else:
-            return f"@callable"
+            return "@callable"
     # all other types
     else:
-        return f"@object"
+        return "@object"
 
 
 class MyResource(object):
@@ -53,6 +68,8 @@ def dummy_function(*a, **b):
 
 
 def restore_value(abstract_value):
+    # TODO adapt to the revised value abstraction
+
     # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
 
     # common primitives
