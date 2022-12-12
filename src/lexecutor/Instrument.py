@@ -17,6 +17,12 @@ parser.add_argument(
     "--restore", help="Restores uninstrumented files from .py.orig files", action="store_true")
 
 
+ignored_file_suffixes = [
+    "ansible/utils/collection_loader/_collection_finder.py",
+    "ansible/constants.py"
+]
+
+
 def gather_accessed_names(ast_wrapper):
     scopes = set(ast_wrapper.resolve(cst.metadata.ScopeProvider).values())
     ranges = ast_wrapper.resolve(cst.metadata.PositionProvider)
@@ -36,6 +42,11 @@ def gather_accessed_names(ast_wrapper):
 
 
 def instrument_file(file_path, iids):
+    for suffix in ignored_file_suffixes:
+        if file_path.endswith(suffix):
+            print(f"{file_path} is on blacklist -- skipping it")
+            return
+
     with open(file_path, "r") as file:
         src = file.read()
 
