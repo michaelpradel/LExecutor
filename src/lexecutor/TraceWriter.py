@@ -9,12 +9,6 @@ column_names = ["iid", "name", "value", "kind"]
 
 class TraceWriter:
     def __init__(self):
-        self.df = pd.DataFrame(columns=column_names)
-        self.buffer = []
-
-    def _flush_buffer(self):
-        new_df = pd.DataFrame(data=self.buffer, columns=column_names)
-        self.df = pd.concat([self.df, new_df])
         self.buffer = []
 
     def _append(self, iid, name, raw_value, kind):
@@ -39,10 +33,13 @@ class TraceWriter:
 
     def write_to_file(self):
         file_name = f"trace_{timestamp()}.h5"
-        logger.info(f"Flushing buffer and writing to {file_name}")
-        self._flush_buffer()
-        self.df["iid"] = self.df["iid"].astype("int")
-        self.df["name"] = self.df["name"].astype("str")
-        self.df["value"] = self.df["value"].astype("str")
-        self.df["kind"] = self.df["kind"].astype("str")
-        self.df.to_hdf(file_name, key="entries", complevel=9, complib="bzip2")
+        logger.info(f"Writing to {file_name} and flushing buffer")
+        
+        df = pd.DataFrame(data=self.buffer, columns=column_names)
+        df["iid"] = df["iid"].astype("int")
+        df["name"] = df["name"].astype("str")
+        df["value"] = df["value"].astype("str")
+        df["kind"] = df["kind"].astype("str")
+        df.to_hdf(file_name, key="entries", complevel=9, complib="bzip2")
+        
+        self.buffer = []
