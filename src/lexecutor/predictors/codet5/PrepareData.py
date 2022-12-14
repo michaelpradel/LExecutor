@@ -47,6 +47,15 @@ def dedup_trace_entries(entries):
     logger.info(f"After deduplicating: {len(entries)} trace entries")
 
 
+def clean_entries(entries):
+    before_len = len(entries)
+    # remove entries with invalid names (e.g. "functools.partial(<bound")
+    entries.drop(entries[entries.name.astype(
+        str).str.find("(") != -1].index, inplace=True)
+    logger.info(
+        f"Data cleaning removes {before_len - len(entries)} of {before_len} entries")
+
+
 def split_and_shuffle(entries, iids):
     # split
     if params.split == "project":
@@ -105,6 +114,7 @@ if __name__ == "__main__":
     iids = IIDs(args.iids)
     entries = read_traces(args.traces)
     dedup_trace_entries(entries)
+    clean_entries(entries)
     train_entries, validate_entries = split_and_shuffle(entries, iids)
 
     train_tensors = gather_context_and_vectorize(
