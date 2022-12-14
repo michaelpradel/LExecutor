@@ -99,9 +99,8 @@ def gather_context_and_vectorize(entries, iids, tokenizer):
 
 
 def store_tensors(train_tensors, validate_tensors, output_suffix):
-    if output_suffix is None:
-        train_path = f"train{output_suffix if output_suffix is not None else ''}.pt"
-        validate_path = f"validate{output_suffix if output_suffix is not None else ''}.pt"
+    train_path = f"train{output_suffix if output_suffix is not None else ''}.pt"
+    validate_path = f"validate{output_suffix if output_suffix is not None else ''}.pt"
     t.save(train_tensors, train_path)
     t.save(validate_tensors, validate_path)
     logger.info(f"Stored tensors to {train_path} and {validate_path}")
