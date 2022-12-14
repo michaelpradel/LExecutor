@@ -23,49 +23,12 @@ parser.add_argument(
 
 def read_traces(trace_files):
     logger.info("Loading trace files")
-    name_df = pd.DataFrame(data=None)
-    call_df = pd.DataFrame(data=None)
-    attribute_df = pd.DataFrame(data=None)
-
+    df = pd.DataFrame(data=None)
     trace_files = gather_files(trace_files)
     for trace_file in trace_files:
-        try:
-            current_name_df = pd.read_hdf(trace_file, key="name")
-        except Exception as e:
-            logger.warning(f"Warning: Could not read trace file {trace_file}")
-            current_name_df = pd.DataFrame(data=None)
-
-        try:
-            current_call_df = pd.read_hdf(trace_file, key="call")
-        except:
-            logger.warning(f"Warning: Could not read trace file {trace_file}")
-            current_call_df = pd.DataFrame(data=None)
-
-        try:
-            current_attribute_df = pd.read_hdf(trace_file, key="attribute")
-        except:
-            logger.warning(f"Warning: Could not read trace file {trace_file}")
-            current_attribute_df = pd.DataFrame(data=None)
-
-        name_df = pd.concat([name_df, current_name_df])
-        call_df = pd.concat([call_df, current_call_df])
-        attribute_df = pd.concat(
-            [attribute_df, current_attribute_df])
-
-    # merge all entries into a single dataframe: iid, name, value
-    name_df["kind"] = "name"
-    call_df["kind"] = "call"
-    attribute_df["kind"] = "attribute"
-    entries = pd.concat([
-        name_df[[0, 1, 2, "kind"]].rename(
-            columns={0: "iid", 1: "name", 2: "value"}),
-        call_df[[0, 1, 3, "kind"]].rename(
-            columns={0: "iid", 1: "name", 3: "value"}),
-        attribute_df[[0, 2, 3, "kind"]].rename(
-            columns={0: "iid", 2: "name", 3: "value"})
-    ])
-
-    return entries
+        current_df = pd.read_hdf(trace_file, key="entries")
+        df = pd.concat([df, current_df])
+    return df
 
 
 def dedup_trace_entries(entries):
@@ -93,7 +56,8 @@ def split_and_shuffle(entries, iids):
         # TODO implement
         pass
     elif params.split == "mixed":
-        logger.info(f"Mixed split with {params.perc_train} of entries for training")
+        logger.info(
+            f"Mixed split with {params.perc_train} of entries for training")
         mask = np.random.random(len(entries)) < params.perc_train
         train_entries = entries[mask]
         validate_entries = entries[~mask]
