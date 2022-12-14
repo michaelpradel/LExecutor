@@ -10,7 +10,7 @@ Location = namedtuple("Location", ["file", "line", "column"])
 
 class IIDs:
     def __init__(self, file_path):
-        if not os.is_file(file_path):
+        if not path.exists(file_path):
             logger.info(f"Creating new iid file at {file_path}")
             self.next_iid = 1
             self.iid_to_location = {}
