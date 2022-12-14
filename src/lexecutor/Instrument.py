@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--files", help="Python files to instrument or .txt file with all file paths", nargs="+")
 parser.add_argument(
-    "--iids", help="JSON file with instruction IDs (will create iids.json if nothing given)")
+    "--iids", help="JSON file with instruction IDs", default="iids.json")
 parser.add_argument(
     "--restore", help="Restores uninstrumented files from .py.orig files", action="store_true")
 
