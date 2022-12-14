@@ -15,7 +15,7 @@ class TraceWriter:
         value = abstract_value(raw_value)
         self.buffer.append([iid, name, value, kind])
 
-        if len(self.buffer) % 100000 == 0:
+        if len(self.buffer) % 10000000 == 0:
             self.write_to_file()
 
     def append_name(self, iid, name, raw_value):
@@ -33,13 +33,18 @@ class TraceWriter:
 
     def write_to_file(self):
         file_name = f"trace_{timestamp()}.h5"
-        logger.info(f"Writing to {file_name} and flushing buffer")
-        
+        logger.info(f"Writing to {file_name}, and flushing buffer")
+
         df = pd.DataFrame(data=self.buffer, columns=column_names)
         df["iid"] = df["iid"].astype("int")
         df["name"] = df["name"].astype("str")
         df["value"] = df["value"].astype("str")
         df["kind"] = df["kind"].astype("str")
+
+        logger.info(f"Deduplicating {len(df)} trace entries")
+        df.drop_duplicates(inplace=True)
+        logger.info(f"After deduplicating: {len(df)} trace entries")
+
         df.to_hdf(file_name, key="entries", complevel=9, complib="bzip2")
-        
+
         self.buffer = []
