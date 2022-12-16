@@ -30,7 +30,7 @@ elif mode == "PREDICT":
     # predictor = NaiveValuePredictor()
     # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
     # predictor = NeuralValuePredictor()
-    iids = IIDs('iids_original.json')
+    iids = IIDs('iids.json')
     runtime_stats = RuntimeStats(iids)
     atexit.register(runtime_stats.print)
     predictor = CodeT5ValuePredictor(iids, runtime_stats, verbose=verbose)
