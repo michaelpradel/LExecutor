@@ -22,3 +22,5 @@ bodies_under_test
 metrics.csv
 trace*.txt
 build
+eval_examples.pkl
+validation_acc.csv
