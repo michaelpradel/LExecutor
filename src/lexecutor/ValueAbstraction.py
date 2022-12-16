@@ -2,57 +2,65 @@ def abstract_value(value):
     t = type(value)
     # common primitive values
     if value is None:
-        return "@None"
+        abtract_value = "@None"
     elif value is True:
-        return "@True"
+        abtract_value = "@True"
     elif value is False:
-        return "@False"
+        abtract_value = "@False"
+    # strings
+    elif t is str:
+        if len(value) == 0:
+            abtract_value = "@str_empty"
+        else:
+            abtract_value = "@str_nonempty"
     # built-in numeric types
     elif t is int:
         if value < 0:
-            return "@int_neg"
+            abtract_value = "@int_neg"
         elif value == 0:
-            return "@int_zero"
+            abtract_value = "@int_zero"
         else:
-            return "@int_pos"
+            abtract_value = "@int_pos"
     elif t is float:
         if value < 0:
-            return "@float_neg"
+            abtract_value = "@float_neg"
         elif value == 0:
-            return "@float_zero"
+            abtract_value = "@float_zero"
         else:
-            return "@float_pos"
+            abtract_value = "@float_pos"
     # built-in sequence types
     elif t is list:
         if len(value) == 0:
-            return "@list_empty"
+            abtract_value = "@list_empty"
         else:
-            return "@list_nonempty"
+            abtract_value = "@list_nonempty"
     elif t is tuple:
         if len(value) == 0:
-            return "@tuple_empty"
+            abtract_value = "@tuple_empty"
         else:
-            return "@tuple_nonempty"
+            abtract_value = "@tuple_nonempty"
     # built-in set and dict types
     elif t is set:
         if len(value) == 0:
-            return "@set_empty"
+            abtract_value = "@set_empty"
         else:
-            return "@set_nonempty"
+            abtract_value = "@set_nonempty"
     elif t is dict:
         if len(value) == 0:
-            return "@dict_empty"
+            abtract_value = "@dict_empty"
         else:
-            return "@dict_nonempty"
+            abtract_value = "@dict_nonempty"
     # functions and methods
     elif callable(value):
         if hasattr(value, "__enter__") and hasattr(value, "__exit__"):
-            return "@resource"
+            abtract_value = "@resource"
         else:
-            return "@callable"
+            abtract_value = "@callable"
     # all other types
     else:
-        return "@object"
+        abtract_value = "@object"
+
+    return abtract_value, str(t)[:20]
 
 
 class MyResource(object):
@@ -75,6 +83,11 @@ def restore_value(abstract_value):
         return True
     elif abstract_value == "False":
         return False
+    # strings
+    elif abstract_value == "str_empty":
+        return ""
+    elif abstract_value == "str_nonempty":
+        return "a"
     # built-in numeric types
     elif abstract_value == "int_neg":
         return -1

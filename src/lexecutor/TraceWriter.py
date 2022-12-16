@@ -4,7 +4,7 @@ from .Logging import logger
 from .Util import timestamp
 
 
-column_names = ["iid", "name", "value", "kind"]
+column_names = ["iid", "name", "value", "kind", "info"]
 
 
 class TraceWriter:
@@ -12,8 +12,8 @@ class TraceWriter:
         self.buffer = []
 
     def _append(self, iid, name, raw_value, kind):
-        value = abstract_value(raw_value)
-        self.buffer.append([iid, name, value, kind])
+        value, info = abstract_value(raw_value)
+        self.buffer.append([iid, name, value, kind, info])
 
         if len(self.buffer) % 10000000 == 0:
             self.write_to_file()
@@ -40,9 +40,11 @@ class TraceWriter:
         df["name"] = df["name"].astype("str")
         df["value"] = df["value"].astype("str")
         df["kind"] = df["kind"].astype("str")
+        df["info"] = df["info"].astype("str")
 
         logger.info(f"Deduplicating {len(df)} trace entries")
-        df.drop_duplicates(inplace=True)
+        df.drop_duplicates(
+            subset=["iid", "name", "value", "kind"], inplace=True)
         logger.info(f"After deduplicating: {len(df)} trace entries")
 
         df.to_hdf(file_name, key="entries", complevel=9, complib="bzip2")
