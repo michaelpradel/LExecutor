@@ -5,7 +5,7 @@ dtype = t.float
 device = "cuda" if t.cuda.is_available() else "cpu"
 
 
-def gather_files(files_arg):
+def gather_files(files_arg, suffix=".py"):
     if all([f.endswith(".txt") for f in files_arg]):
         files = []
         for f in files_arg:
@@ -14,8 +14,8 @@ def gather_files(files_arg):
                     files.append(line.rstrip())
     else:
         for f in files_arg:
-            if not f.endswith(".py"):
-                raise Exception(f"Incorrect argument, expected .py file: {f}")
+            if not f.endswith(suffix):
+                raise Exception(f"Incorrect argument, expected {suffix} file: {f}")
         files = files_arg
     return files
 

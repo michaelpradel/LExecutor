@@ -24,7 +24,7 @@ parser.add_argument(
 def read_traces(trace_files):
     logger.info("Loading trace files")
     df = pd.DataFrame(data=None)
-    trace_files = gather_files(trace_files)
+    trace_files = gather_files(trace_files, suffix=".h5")
     for trace_file in trace_files:
         current_df = pd.read_hdf(trace_file, key="entries")
         df = pd.concat([df, current_df])
