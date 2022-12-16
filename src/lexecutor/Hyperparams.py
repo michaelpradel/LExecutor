@@ -21,5 +21,5 @@ class Hyperparams(object):
     intermediate_layer_len = 200
 
     # training
-    epochs = 2
+    epochs = 10
     batch_size = 50
