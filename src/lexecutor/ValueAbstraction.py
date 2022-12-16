@@ -69,51 +69,51 @@ def dummy_function(*a, **b):
 
 def restore_value(abstract_value):
     # common primitive values
-    if abstract_value == "@None":
+    if abstract_value == "None":
         return None
-    elif abstract_value == "@True":
+    elif abstract_value == "True":
         return True
-    elif abstract_value == "@False":
+    elif abstract_value == "False":
         return False
     # built-in numeric types
-    elif abstract_value == "@int_neg":
+    elif abstract_value == "int_neg":
         return -1
-    elif abstract_value == "@int_zero":
+    elif abstract_value == "int_zero":
         return 0
-    elif abstract_value == "@int_pos":
+    elif abstract_value == "int_pos":
         return 1
-    elif abstract_value == "@float_neg":
+    elif abstract_value == "float_neg":
         return -1.0
-    elif abstract_value == "@float_zero":
+    elif abstract_value == "float_zero":
         return 0.0
-    elif abstract_value == "@float_pos":
+    elif abstract_value == "float_pos":
         return 1.0
     # built-in sequence types
-    elif abstract_value == "@list_empty":
+    elif abstract_value == "list_empty":
         return []
-    elif abstract_value == "@list_nonempty":
+    elif abstract_value == "list_nonempty":
         # TODO return special object that delays evaluation of its elements (also for other collection types)
         return [object()]
-    elif abstract_value == "@tuple_empty":
+    elif abstract_value == "tuple_empty":
         return ()
-    elif abstract_value == "@tuple_nonempty":
+    elif abstract_value == "tuple_nonempty":
         return (object(),)
     # built-in set and dict types
-    elif abstract_value == "@set_empty":
+    elif abstract_value == "set_empty":
         return set()
-    elif abstract_value == "@set_nonempty":
+    elif abstract_value == "set_nonempty":
         return {object()}
-    elif abstract_value == "@dict_empty":
+    elif abstract_value == "dict_empty":
         return {}
-    elif abstract_value == "@dict_nonempty":
+    elif abstract_value == "dict_nonempty":
         return {"a": object()}
     # functions and methods
-    elif abstract_value == "@resource":
+    elif abstract_value == "resource":
         return MyResource()
-    elif abstract_value == "@callable":
+    elif abstract_value == "callable":
         return dummy_function
     # all other types
     else:
-        return "@object"
+        return object()
 
     # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
