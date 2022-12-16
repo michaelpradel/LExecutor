@@ -6,7 +6,7 @@ from .ValueAbstraction import restore_value, dummy_function
 # from .predictors.NaiveValuePredictor import NaiveValuePredictor
 # from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
 # from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
-# from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
+from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .predictors.ValuePredictor import ValuePredictor
 from .predictors.AsIs import AsIs
@@ -15,8 +15,8 @@ verbose = False
 
 
 # ------- begin: select mode -----
-mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
+# mode = "RECORD"    # record values and write into a trace file
+mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
