@@ -34,7 +34,8 @@ def read_traces(trace_files):
 def dedup_trace_entries(entries):
     logger.info(f"Deduplicating {len(entries)} trace entries")
     if params.dedup == "name-value-iid":
-        entries.drop_duplicates(inplace=True)
+        entries.drop_duplicates(
+            subset=["iid", "name", "value", "kind"], inplace=True)
     elif params.dedup == "name-value":
         entries.drop_duplicates(subset=["name", "value"], inplace=True)
     else:
