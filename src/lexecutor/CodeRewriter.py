@@ -141,10 +141,10 @@ class CodeRewriter(cst.CSTTransformer):
         return False
 
     def visit_FormattedString(self, node):
-        if node.start == 'f"':
+        if node.start == 'f"' or node.start == 'fr"':
             self.quotation_char = "'"
             self.fstring_stack.append(node)
-        elif node.start == "f'":
+        elif node.start == "f'" or node.start == "fr'":
             self.quotation_char = '"'
             self.fstring_stack.append(node)
         if len(self.fstring_stack) > 1:
