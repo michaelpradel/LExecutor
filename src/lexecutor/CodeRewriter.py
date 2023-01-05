@@ -22,8 +22,9 @@ class CodeRewriter(cst.CSTTransformer):
     def __create_iid(self, node):
         location = self.get_metadata(PositionProvider, node)
         line = location.start.line
-        column = location.start.column
-        iid = self.iids.new(self.file_path, line, column)
+        column_start = location.start.column
+        column_end = location.end.column
+        iid = self.iids.new(self.file_path, line, column_start, column_end)
         return iid
 
     def __create_name_call(self, node, updated_node):
@@ -55,9 +56,18 @@ class CodeRewriter(cst.CSTTransformer):
                 updated_args.append(arg)
         return updated_args
 
+    def __get_callee_name_node(self, call_node):
+        if isinstance(call_node.func, cst.Name):
+            return call_node.func
+        elif isinstance(call_node.func, cst.Attribute):
+            return call_node.func.attr
+        else: # everything else, e.g., cst.Subscript
+            return call_node.func
+
     def __create_call_call(self, node, updated_node):
         callee_name = cst.Name(value="_c_")
-        iid = self.__create_iid(node)
+        node_of_callee_name = self.__get_callee_name_node(node)
+        iid = self.__create_iid(node_of_callee_name)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         fct_arg = cst.Arg(value=updated_node.func)
         all_args = [iid_arg, fct_arg] + \
@@ -67,10 +77,10 @@ class CodeRewriter(cst.CSTTransformer):
 
     def __create_attribute_call(self, node, updated_node):
         callee_name = cst.Name(value="_a_")
-        iid = self.__create_iid(node)
+        assert type(node.attr) == cst.Name, type(node.attr)
+        iid = self.__create_iid(node.attr)
         iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
         value_arg = cst.Arg(updated_node.value)
-        assert type(node.attr) == cst.Name, type(node.attr)
         attr_arg = cst.Arg(cst.SimpleString(
             value=f"{self.quotation_char}{node.attr.value}{self.quotation_char}"))
         call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])

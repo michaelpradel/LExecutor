@@ -73,66 +73,30 @@ class InputFactory(object):
 
         return previous_target_tokens, after_target_tokens
 
-    def _encode_input(self, entry, info, lines, tokenized_lines):
-        # mark the target name in the corresponding line
-        target_line = lines[info[1]-1]
-        name = entry["name"]
 
-        match = (re.search(name, target_line[info[2]:]))
-
-        if not match:
-            start_index = 0
-            end_index = 0
-        else:
-            start_index = match.span()[0] + info[2]
-            end_index = start_index + len(name)
-
-        modified_line = target_line[:start_index] + target_begin_token + \
-            name + target_end_token + target_line[end_index:]
-
-        tokenized_target_line = self.tokenizer(
-            modified_line, return_attention_mask=False, add_special_tokens=False).input_ids
-        tokenized_lines[info[1]-1] = tokenized_target_line
-        token_ids = list(itertools.chain(*tokenized_lines))
-
-        previous_target_tokens, after_target_tokens = self._extract_context_window(
-            token_ids, target_begin_token)
-
-        input_ids = previous_target_tokens + after_target_tokens
-        input_ids[0] = self.tokenizer.bos_token_id
-        input_ids[-1] = self.tokenizer.eos_token_id
-
-        # Add padding
-        if len(input_ids) < 512:
-            input_ids = input_ids + \
-                (512 - len(input_ids)) * [self.tokenizer.pad_token_id]
-
-        return input_ids
-
-    def _encode_input2(self, entry, info, lines, tokenized_lines):
+    def _encode_input(self, entry, location, lines, tokenized_lines):
         # format of input:
         # name <sep> kind <sep> pre-content <mask> post-content
 
-        target_line = lines[info[1]-1]
-        name = entry["name"]
-
-        match = (re.search(name, target_line[info[2]:]))
-
-        if not match:
-            start_index = 0
-            end_index = 0
-        else:
-            start_index = match.span()[0] + info[2]
-            end_index = start_index + len(name)
+        target_line = lines[location.line-1]
+            
+        start_index = location.column_start
+        end_index = location.column_end
 
         modified_line = target_line[:start_index] + \
             mask_token + target_line[end_index:]
 
         tokenized_target_line = self.tokenizer(
             modified_line, return_attention_mask=False, add_special_tokens=False).input_ids
-        tokenized_lines[info[1]-1] = tokenized_target_line
+        
+        # store and later restore the original tokenized line
+        # (because we use the same tokenized_lines for all entries)
+        original_tokenized_target_line = tokenized_lines[location.line-1]
+        tokenized_lines[location.line-1] = tokenized_target_line
         token_ids = list(itertools.chain(*tokenized_lines))
+        tokenized_lines[location.line-1] = original_tokenized_target_line
 
+        name = entry["name"]
         name_ids = self.tokenizer(name, return_attention_mask=False,
                                   add_special_tokens=False).input_ids
 
@@ -179,11 +143,11 @@ class InputFactory(object):
         return label_ids
 
     def entry_to_inputs(self, entry):
-        info = self.iids.iid_to_location[str(entry["iid"])]
+        location = self.iids.location(str(entry["iid"]))
 
-        lines, tokenized_lines = self.__tokenize_lines(info[0]+'.orig')
+        lines, tokenized_lines = self.__tokenize_lines(location.file+'.orig')
 
-        input_ids = self._encode_input2(entry, info, lines, tokenized_lines)
+        input_ids = self._encode_input(entry, location, lines, tokenized_lines)
         label_ids = self._encode_output(entry)
 
         input_ids = t.tensor(input_ids, device='cpu')
