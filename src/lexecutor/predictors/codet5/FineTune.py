@@ -65,7 +65,7 @@ def evaluate(validate_tensors_path, model, tokenizer):
 
             # for debugging
             all_inputs.extend(tokenizer.batch_decode(
-                input_ids, skip_special_tokens=True))
+                input_ids, skip_special_tokens=False))
             all_labels.extend(labels)
             all_predictions.extend(predictions)
             if print_examples:
@@ -79,6 +79,7 @@ def evaluate(validate_tensors_path, model, tokenizer):
     logger.info(
         f"val_accuracy = {round(val_accuracy, 4)}")
 
+    # for debugging
     logger.info("Storing examples in human-readable format")
     examples_df = pd.DataFrame(
         {"input": all_inputs, "label": all_labels, "prediction": all_predictions})
