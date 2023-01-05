@@ -1,3 +1,5 @@
+from .Logging import logger
+
 def abstract_value(value):
     t = type(value)
     # common primitive values
@@ -125,8 +127,11 @@ def restore_value(abstract_value):
         return MyResource()
     elif abstract_value == "callable":
         return dummy_function
+    elif abstract_value == "object":
+        return object()
     # all other types
     else:
+        logger.info("Unknown abstract value: %s", abstract_value)
         return object()
 
     # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
