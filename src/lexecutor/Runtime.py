@@ -141,7 +141,7 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
             v = predict_fct()
             return v
         else:
-            # try to perform the regular behavior and intervene in case of exception
+            # try to perform the regular behavior and intervene in case of exceptions caused by missing values
             try:
                 v = perform_fct()
                 if verbose:
@@ -149,8 +149,7 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
                 return v
             except Exception as e:
                 if (type(e) == NameError and kind == "name") \
-                    or (type(e) == AttributeError and kind == "attribute") \
-                        or (type(e) == TypeError and kind == "call"):
+                        or (type(e) == AttributeError and kind == "attribute"):
                     if verbose:
                         print(
                             f"Catching '{type(e)}' during {kind} and calling predictor instead")
