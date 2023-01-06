@@ -1,8 +1,7 @@
 myenv
 *.swp
 *~
-iids.json
-iids_original.json
+iids*.json
 trace_*.h5
 __pycache__
 workspace.code-workspace
@@ -24,3 +23,4 @@ trace*.txt
 build
 eval_examples.pkl
 validation_acc.csv
+tests/test.py
