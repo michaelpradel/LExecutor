@@ -1,4 +1,6 @@
 import argparse
+import os
+import signal
 import subprocess
 from .Util import gather_files
 
@@ -12,7 +14,11 @@ if __name__ == "__main__":
 
     files = gather_files(args.files)
 
-    # run the files and save stats
+    # run the files (with a timeout)
     for file in files:
-        process = subprocess.Popen(f"python {file}", shell=True)
-        process.wait()
+        try:
+            process = subprocess.Popen(
+                f"python {file}", shell=True, start_new_session=True)
+            process.wait(timeout=30)  # seconds
+        except subprocess.TimeoutExpired:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
