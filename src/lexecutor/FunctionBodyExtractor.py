@@ -37,6 +37,21 @@ class ExtractorVisitor(cst.CSTTransformer):
         )
         return expr
 
+    def leave_Yield(self, node, updated_node):
+        args = []
+        if node.value is not None:
+            if type(node.value) is cst.Tuple:
+                args = [cst.Arg(value=cst.Tuple(elements=node.value.elements))]
+            else:
+                args = [cst.Arg(value=node.value)]
+        expr = cst.Expr(
+            value=cst.Call(
+                func=cst.Name("exit"),
+                args=args
+            )
+        )
+        return expr
+
     def leave_FunctionDef(self, node, updated_node):
         body = [s for s in updated_node.body.body]
         out_code = cst.Module(body=body).code
