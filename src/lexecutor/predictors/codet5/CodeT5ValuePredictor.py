@@ -13,7 +13,7 @@ class CodeT5ValuePredictor(ValuePredictor):
         # load model
         self.tokenizer, self.model = load_CodeT5()
         self.model.load_state_dict(t.load(
-            "data/codeT5_models/dec16_5_projects/checkpoint-last/pytorch_model.bin", map_location=device))
+            "data/codeT5_models/jan5_5_projects/pytorch_model_epoch9.bin", map_location=device))
 
         self.iids = iids
         self.stats = stats
