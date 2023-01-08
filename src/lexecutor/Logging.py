@@ -6,3 +6,5 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 
 logger = logging.getLogger("LExecutor logger")
 logger.setLevel(logging.INFO)
+
+logger.info("Logging starts")

@@ -25,3 +25,4 @@ eval_examples.pkl
 validation_acc.csv
 tests/test.py
 *.out
+model_server.log

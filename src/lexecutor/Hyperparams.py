@@ -1,4 +1,7 @@
 class Hyperparams(object):
+    iids_file = "iids.json"
+    verbose = False
+    
     # data deduplication
     # dedup = "name-value"
     dedup = "name-value-iid"
@@ -23,3 +26,5 @@ class Hyperparams(object):
     # training
     epochs = 10
     batch_size = 50
+
+    

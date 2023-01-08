@@ -1,6 +1,6 @@
 import atexit
 import sys
-from .IIDs import IIDs
+from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, dummy_function
 # from .predictors.NaiveValuePredictor import NaiveValuePredictor
@@ -10,9 +10,11 @@ from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .predictors.ValuePredictor import ValuePredictor
 from .predictors.AsIs import AsIs
+from .IIDs import IIDs
+from .Logging import logger
 
-verbose = False
 
+logger.info("Runtime starting")
 
 # ------- begin: select mode -----
 # mode = "RECORD"    # record values and write into a trace file
@@ -30,12 +32,12 @@ elif mode == "PREDICT":
     # predictor = NaiveValuePredictor()
     # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
     # predictor = NeuralValuePredictor()
-    iids = IIDs('iids.json')
-    runtime_stats = RuntimeStats(iids)
-    atexit.register(runtime_stats.print)
-    predictor = CodeT5ValuePredictor(iids, runtime_stats, verbose=verbose)
 
-    # for running experiments
+    runtime_stats = RuntimeStats(IIDs(params.iids_file))
+    atexit.register(runtime_stats.print)
+    predictor = CodeT5ValuePredictor(runtime_stats)
+
+    # # for running experiments
     file = sys.argv[0]
     atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
 elif mode == "REPLAY":
@@ -44,12 +46,12 @@ elif mode == "REPLAY":
     next_trace_idx = 0
     runtime_stats = None
 
-print(f"### LExecutor running in {mode} mode ###")
+logger.info(f"### LExecutor running in {mode} mode ###")
 
 
 def _n_(iid, name, lambada):
-    if verbose:
-        print(f"\nAt iid={iid}, looking up name '{name}'")
+    if params.verbose:
+        logger.info(f"\nAt iid={iid}, looking up name '{name}'")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -67,8 +69,8 @@ def _n_(iid, name, lambada):
 
 
 def _c_(iid, fct, *args, **kwargs):
-    if verbose:
-        print(f"\nAt iid={iid}, calling function {fct}")
+    if params.verbose:
+        logger.info(f"\nAt iid={iid}, calling function {fct}")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -88,8 +90,8 @@ def _c_(iid, fct, *args, **kwargs):
 
 
 def _a_(iid, base, attr_name):
-    if verbose:
-        print(f"\nAt iid={iid}, looking up attribute '{attr_name}'")
+    if params.verbose:
+        logger.info(f"\nAt iid={iid}, looking up attribute '{attr_name}'")
 
     if runtime_stats is not None:
         runtime_stats.total_uses += 1
@@ -144,21 +146,21 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
             # try to perform the regular behavior and intervene in case of exceptions caused by missing values
             try:
                 v = perform_fct()
-                if verbose:
-                    print("Found/computed/returned regular value")
+                if params.verbose:
+                    logger.info("Found/computed/returned regular value")
                 return v
             except Exception as e:
                 if (type(e) == NameError and kind == "name") \
                         or (type(e) == AttributeError and kind == "attribute"):
-                    if verbose:
-                        print(
+                    if params.verbose:
+                        logger.info(
                             f"Catching '{type(e)}' during {kind} and calling predictor instead")
                     v = predict_fct()
                     runtime_stats.guided_uses += 1
                     return v
                 else:
-                    if verbose:
-                        print(
+                    if params.verbose:
+                        logger.info(
                             f"Exception '{type(e)}' not caught, re-raising")
                     runtime_stats.uncaught_exception(iid, e)
                     raise e

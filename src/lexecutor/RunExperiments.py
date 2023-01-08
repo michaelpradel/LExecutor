@@ -18,7 +18,7 @@ if __name__ == "__main__":
     for file in files:
         try:
             process = subprocess.Popen(
-                f"python {file}", shell=True, start_new_session=True)
+                f"time python {file}", shell=True, start_new_session=True)
             process.wait(timeout=30)  # seconds
         except subprocess.TimeoutExpired:
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)

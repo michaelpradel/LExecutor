@@ -6,3 +6,5 @@ pytest
 pytest-xdist
 transformers
 gensim
+flask
+requests

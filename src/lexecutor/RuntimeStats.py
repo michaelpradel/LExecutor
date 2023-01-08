@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import csv
+from .Logging import logger
 
 
 class RuntimeStats:
@@ -26,9 +27,9 @@ class RuntimeStats:
             f"Line {self.iids.line(iid)}: Uncaught exception {type(e)}\n{e}")
 
     def print(self):
-        print(f"Covered iids: {len(self.covered_iids)}")
-        print(f"Total uses: {self.total_uses}")
-        print(f"Guided uses : {self.guided_uses}/{self.total_uses}")
+        logger.info(f"Covered iids: {len(self.covered_iids)}")
+        logger.info(f"Total uses: {self.total_uses}")
+        logger.info(f"Guided uses : {self.guided_uses}/{self.total_uses}")
 
     def _save_summary_metrics(self, file, predictor_name):
         # Create CSV file and add header if it doesn't exist
