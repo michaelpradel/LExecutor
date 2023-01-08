@@ -3,14 +3,12 @@ import sys
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, dummy_function
+# from .predictors.AsIs import AsIs
 # from .predictors.NaiveValuePredictor import NaiveValuePredictor
 # from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
 # from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
 from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
-from .predictors.ValuePredictor import ValuePredictor
-from .predictors.AsIs import AsIs
-from .IIDs import IIDs
 from .Logging import logger
 
 
@@ -33,7 +31,7 @@ elif mode == "PREDICT":
     # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
     # predictor = NeuralValuePredictor()
 
-    runtime_stats = RuntimeStats(IIDs(params.iids_file))
+    runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
     predictor = CodeT5ValuePredictor(runtime_stats)
 

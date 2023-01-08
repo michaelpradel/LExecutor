@@ -2,29 +2,37 @@ import pandas as pd
 import os
 import csv
 from .Logging import logger
+from .IIDs import IIDs
+from .Hyperparams import Hyperparams as param
+
+write_event_trace = False
 
 
 class RuntimeStats:
-    def __init__(self, iids):
-        self.iids = iids
+    def __init__(self):
         self.total_uses = 0
         self.guided_uses = 0
 
         self.covered_iids = set()
 
-        self.event_trace = []
+        if write_event_trace:
+            self.event_trace = []
+            self.iids = IIDs(param.iids_file)
 
     def cover_iid(self, iid):
         self.covered_iids.add(iid)
-        self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
+        if write_event_trace:
+            self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
 
     def inject_value(self, iid, msg):
-        self.event_trace.append(
-            f"Line {self.iids.line(iid)}: {msg}")
+        if write_event_trace:
+            self.event_trace.append(
+                f"Line {self.iids.line(iid)}: {msg}")
 
     def uncaught_exception(self, iid, e):
-        self.event_trace.append(
-            f"Line {self.iids.line(iid)}: Uncaught exception {type(e)}\n{e}")
+        if write_event_trace:
+            self.event_trace.append(
+                f"Line {self.iids.line(iid)}: Uncaught exception {type(e)}\n{e}")
 
     def print(self):
         logger.info(f"Covered iids: {len(self.covered_iids)}")
@@ -58,4 +66,5 @@ class RuntimeStats:
 
     def save(self, file, predictor_name):
         self._save_summary_metrics(file, predictor_name)
-        self._save_event_trace()
+        if write_event_trace:
+            self._save_event_trace()
