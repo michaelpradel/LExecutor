@@ -74,12 +74,9 @@ class DummyResource(object):
         return True
 
 
-def dummy_function(*a, **b):
-    return ()
-
-
-class DummyClass():
-    pass
+class DummyCallable():
+    def __init__(self, *a, **b):
+        pass
 
 
 def restore_value(abstract_value):
@@ -131,12 +128,12 @@ def restore_value(abstract_value):
     elif abstract_value == "resource":
         return DummyResource()
     elif abstract_value == "callable":
-        return dummy_function
+        return DummyCallable
     elif abstract_value == "object":
-        return DummyClass()
+        return DummyCallable()
     # all other types
     else:
         logger.info("Unknown abstract value: %s", abstract_value)
-        return DummyClass()
+        return DummyCallable()
 
     # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
