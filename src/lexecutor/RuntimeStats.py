@@ -55,7 +55,7 @@ class RuntimeStats:
             'predictor': [predictor_name],
             'covered_iids': [len(self.covered_iids)],
             'total_uses': [self.total_uses],
-            'guided_uses': [f"{self.guided_uses}/{self.total_uses}"]
+            'guided_uses': [self.guided_uses]
         })
         df = pd.concat([df, df_new_data])
         df.to_csv('./metrics.csv', index=False)

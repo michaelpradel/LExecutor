@@ -42,6 +42,8 @@ class ExtractorVisitor(cst.CSTTransformer):
         if node.value is not None:
             if type(node.value) is cst.Tuple:
                 args = [cst.Arg(value=cst.Tuple(elements=node.value.elements))]
+            elif type(node.value) is cst.From:
+                args = [cst.Arg(value=node.value.item)]
             else:
                 args = [cst.Arg(value=node.value)]
         expr = cst.Expr(
