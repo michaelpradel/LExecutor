@@ -9,8 +9,6 @@ from ...Hyperparams import Hyperparams as params
 
 # special tokens already provided by the tokenizer
 mask_token = "<mask>"
-target_begin_token = "<extra_id_0>"
-target_end_token = "<extra_id_1>"
 kind_name_token = "<extra_id_2>"
 kind_call_token = "<extra_id_3>"
 kind_attribute_token = "<extra_id_4>"
