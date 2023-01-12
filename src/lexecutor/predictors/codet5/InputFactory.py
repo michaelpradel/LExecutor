@@ -74,7 +74,7 @@ class InputFactory(object):
 
     def _encode_input(self, entry, location, lines, tokenized_lines):
         # format of input:
-        # name <sep> kind <sep> pre-content <mask> post-content
+        # name <sep> kind <sep> pre-context <mask> post-context
 
         target_line = lines[location.line-1]
             
