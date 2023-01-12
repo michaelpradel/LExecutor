@@ -109,7 +109,6 @@ def restore_value(abstract_value):
     elif abstract_value == "list_empty":
         return []
     elif abstract_value == "list_nonempty":
-        # TODO return special object that delays evaluation of its elements (also for other collection types)
         return [object()]
     elif abstract_value == "tuple_empty":
         return ()
@@ -135,5 +134,3 @@ def restore_value(abstract_value):
     else:
         logger.info("Unknown abstract value: %s", abstract_value)
         return DummyCallable()
-
-    # TODO If we had a way to "taint" all injected values, could decide more precisely in Runtime.mode_branch about which exceptions to catch
