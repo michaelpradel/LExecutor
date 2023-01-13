@@ -109,20 +109,20 @@ def restore_value(abstract_value):
     elif abstract_value == "list_empty":
         return []
     elif abstract_value == "list_nonempty":
-        return [object()]
+        return [DummyCallable()]
     elif abstract_value == "tuple_empty":
         return ()
     elif abstract_value == "tuple_nonempty":
-        return (object(),)
+        return (DummyCallable(),)
     # built-in set and dict types
     elif abstract_value == "set_empty":
         return set()
     elif abstract_value == "set_nonempty":
-        return {object()}
+        return {DummyCallable()}
     elif abstract_value == "dict_empty":
         return {}
     elif abstract_value == "dict_nonempty":
-        return {"a": object()}
+        return {"a": DummyCallable()}
     # functions and methods
     elif abstract_value == "resource":
         return DummyResource()
