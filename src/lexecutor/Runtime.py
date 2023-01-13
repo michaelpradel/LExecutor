@@ -2,7 +2,7 @@ import atexit
 import sys
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
-from .ValueAbstraction import restore_value, DummyCallable
+from .ValueAbstraction import restore_value, DummyObject
 # from .predictors.AsIs import AsIs
 # from .predictors.NaiveValuePredictor import NaiveValuePredictor
 # from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
@@ -83,7 +83,7 @@ def _c_(iid, fct, *args, **kwargs):
     def predict_fct():
         return predictor.call(iid, fct, args, kwargs)
 
-    kind = "call_dummy" if fct is DummyCallable else "call"
+    kind = "call_dummy" if fct is DummyObject else "call"
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind=kind)
 
 
