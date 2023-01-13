@@ -74,7 +74,7 @@ class DummyResource(object):
         return True
 
 
-class DummyCallable():
+class DummyObject():
     def __init__(self, *a, **b):
         pass
 
@@ -109,28 +109,28 @@ def restore_value(abstract_value):
     elif abstract_value == "list_empty":
         return []
     elif abstract_value == "list_nonempty":
-        return [DummyCallable()]
+        return [DummyObject()]
     elif abstract_value == "tuple_empty":
         return ()
     elif abstract_value == "tuple_nonempty":
-        return (DummyCallable(),)
+        return (DummyObject(),)
     # built-in set and dict types
     elif abstract_value == "set_empty":
         return set()
     elif abstract_value == "set_nonempty":
-        return {DummyCallable()}
+        return {DummyObject()}
     elif abstract_value == "dict_empty":
         return {}
     elif abstract_value == "dict_nonempty":
-        return {"a": DummyCallable()}
+        return {"a": DummyObject()}
     # functions and methods
     elif abstract_value == "resource":
         return DummyResource()
     elif abstract_value == "callable":
-        return DummyCallable
+        return DummyObject
     elif abstract_value == "object":
-        return DummyCallable()
+        return DummyObject()
     # all other types
     else:
         logger.info("Unknown abstract value: %s", abstract_value)
-        return DummyCallable()
+        return DummyObject()
