@@ -45,21 +45,6 @@ def get_random_answer(question_url):
     return answers[random_index]
 
 def get_python_code(answer):
-    code = ""
-    code_blocks = answer.find_all("pre", class_="lang-py s-code-block")
-    print(code_blocks)
-    if code_blocks:
-        raw_code = code_blocks.find_all("code")
-        for snippet in raw_code:
-            for line in snippet.get_text().split('\n'):
-                if not line.startswith("...") or not line.startswith("*"):
-                    if line.startswith(">>>"):
-                        code += line[3:] + "\n"
-                    else:
-                        code += line + "\n"
-    return code
-
-def get_python_code(answer):
     raw_code = answer.find_all("code")
     code = ""
     for snippet in raw_code:
