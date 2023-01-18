@@ -1,6 +1,7 @@
 from .ValuePredictor import ValuePredictor
 from .NaiveValuePredictor import NaiveValuePredictor
-from ..TraceEntries import read_traces, NameEntry, CallEntry, AttributeEntry, BinOpEntry
+#from ..TraceEntries import read_traces, NameEntry, CallEntry, AttributeEntry, BinOpEntry
+from .codet5.PrepareData import read_traces, clean_entries
 from collections import Counter
 from random import choices
 
@@ -18,23 +19,21 @@ class FrequencyValuePredictor(ValuePredictor):
         self.frequency_based_predictions = 0
 
         entries = read_traces(trace_files)
-        for entry in entries:
-            if isinstance(entry, NameEntry):
-                key = entry.name
+        clean_entries(entries)
+        for index, entry in entries.iterrows():
+            key = entry["name"]
+            if entry["kind"] == "name":
                 self.name_to_values.setdefault(key, Counter())[
                     entry.value] += 1
-            elif isinstance(entry, CallEntry):
-                key = f"{entry.fct_name}--{entry.args}"
+            elif entry["kind"] == "call":
                 self.call_to_values.setdefault(key, Counter())[
                     entry.value] += 1
-            elif isinstance(entry, AttributeEntry):
-                key = f"{entry.base}--{entry.attr_name}"
+            elif entry["kind"] == "attribute":
                 self.attribute_to_values.setdefault(key, Counter())[
                     entry.value] += 1
-            elif isinstance(entry, BinOpEntry):
-                key = f"{entry.left}--{entry.operator}--{entry.right}"
-                self.binop_to_values.setdefault(key, Counter())[
-                    entry.value] += 1
+            # elif isinstance(entry, BinOpEntry):
+            #     self.binop_to_values.setdefault(key, Counter())[
+            #         entry.value] += 1
 
     def name(self, iid, name):
         counter = self.name_to_values.get(name)
