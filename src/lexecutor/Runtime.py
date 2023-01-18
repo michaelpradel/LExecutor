@@ -3,10 +3,10 @@ import sys
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, DummyObject
-# from .predictors.AsIs import AsIs
-# from .predictors.NaiveValuePredictor import NaiveValuePredictor
-# from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
-# from .predictors.feedforward.NeuralValuePredictor import NeuralValuePredictor
+from .predictors.AsIs import AsIs
+from .predictors.RandomPredictor import RandomPredictor
+from .predictors.NaiveValuePredictor import NaiveValuePredictor
+from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
 from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .Logging import logger
@@ -28,7 +28,8 @@ if mode == "RECORD":
 elif mode == "PREDICT":
     # predictor = AsIs()
     # predictor = NaiveValuePredictor()
-    # predictor = FrequencyValuePredictor("/home/beatriz/LExecutor/all_training_traces.txt")
+    # predictor = RandomPredictor()
+    # predictor = FrequencyValuePredictor("values_frequencies.json")
     # predictor = NeuralValuePredictor()
 
     runtime_stats = RuntimeStats()

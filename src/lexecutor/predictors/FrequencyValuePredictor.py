@@ -1,34 +1,23 @@
 from .ValuePredictor import ValuePredictor
 from .NaiveValuePredictor import NaiveValuePredictor
-from .codet5.PrepareData import read_traces, clean_entries
-from collections import Counter
+from ..Logging import logger
+from ..ValueAbstraction import restore_value
 from random import choices
-
+import json
 
 class FrequencyValuePredictor(ValuePredictor):
-    def __init__(self, trace_files):
-        self.name_to_values = {}
-        self.call_to_values = {}
-        self.attribute_to_values = {}
+    def __init__(self, values_frequencies_file):
+        with open(f'{values_frequencies_file}', 'r') as openfile:
+            values_frequencies = json.load(openfile)
+    
+        self.name_to_values = values_frequencies["name_to_values"]
+        self.call_to_values = values_frequencies["call_to_values"]
+        self.attribute_to_values = values_frequencies["attribute_to_values"]
 
         self.naive_predictor = NaiveValuePredictor()  # as a fallback
 
         self.total_predictions = 0
         self.frequency_based_predictions = 0
-
-        entries = read_traces(trace_files)
-        clean_entries(entries)
-        for index, entry in entries.iterrows():
-            key = entry["name"]
-            if entry["kind"] == "name":
-                self.name_to_values.setdefault(key, Counter())[
-                    entry.value] += 1
-            elif entry["kind"] == "call":
-                self.call_to_values.setdefault(key, Counter())[
-                    entry.value] += 1
-            elif entry["kind"] == "attribute":
-                self.attribute_to_values.setdefault(key, Counter())[
-                    entry.value] += 1
 
     def name(self, iid, name):
         counter = self.name_to_values.get(name)
@@ -37,27 +26,34 @@ class FrequencyValuePredictor(ValuePredictor):
             return self.naive_predictor.name(iid, name)
         else:
             self.frequency_based_predictions += 1
-            return choices(list(counter.keys()), list(counter.values()))[0]
+            v = choices(list(counter.keys()), list(counter.values()))[0]
+            logger.info(f"{iid}: Predicting for name {name}: {v}")
+            return restore_value(v)
 
     def call(self, iid, fct, *args, **kwargs):
-        key = f"{fct}--{args}"
-        counter = self.call_to_values.get(key)
+        fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
+        if " " in fct_name:  # some fcts that don't have a proper name
+            fct_name = fct_name.split(" ")[0]
+        counter = self.call_to_values.get(fct_name)
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.call(iid, fct, *args, **kwargs)
         else:
             self.frequency_based_predictions += 1
-            return choices(list(counter.keys()), list(counter.values()))[0]
+            v = choices(list(counter.keys()), list(counter.values()))[0]
+            logger.info(f"{iid}: Predicting for call: {v}")
+            return restore_value(v)
 
     def attribute(self, iid, base, attr_name):
-        key = f"{base}--{attr_name}"
-        counter = self.attribute_to_values.get(key)
+        counter = self.attribute_to_values.get(attr_name)
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.attribute(iid, base, attr_name)
         else:
             self.frequency_based_predictions += 1
-            return choices(list(counter.keys()), list(counter.values()))[0]
+            v = choices(list(counter.keys()), list(counter.values()))[0]
+            logger.info(f"{iid}: Predicting for attribute {attr_name}: {v}")
+            return restore_value(v)
 
     def print_stats(self):
         print(f"{self.frequency_based_predictions}/{self.total_predictions} ({self.frequency_based_predictions/self.total_predictions if self.total_predictions > 0 else 0}) predictions were frequency based")
