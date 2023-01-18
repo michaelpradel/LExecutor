@@ -1,6 +1,5 @@
 from .ValuePredictor import ValuePredictor
 from .NaiveValuePredictor import NaiveValuePredictor
-#from ..TraceEntries import read_traces, NameEntry, CallEntry, AttributeEntry, BinOpEntry
 from .codet5.PrepareData import read_traces, clean_entries
 from collections import Counter
 from random import choices
@@ -11,7 +10,6 @@ class FrequencyValuePredictor(ValuePredictor):
         self.name_to_values = {}
         self.call_to_values = {}
         self.attribute_to_values = {}
-        self.binop_to_values = {}
 
         self.naive_predictor = NaiveValuePredictor()  # as a fallback
 
@@ -31,9 +29,6 @@ class FrequencyValuePredictor(ValuePredictor):
             elif entry["kind"] == "attribute":
                 self.attribute_to_values.setdefault(key, Counter())[
                     entry.value] += 1
-            # elif isinstance(entry, BinOpEntry):
-            #     self.binop_to_values.setdefault(key, Counter())[
-            #         entry.value] += 1
 
     def name(self, iid, name):
         counter = self.name_to_values.get(name)
@@ -60,16 +55,6 @@ class FrequencyValuePredictor(ValuePredictor):
         self.total_predictions += 1
         if counter is None:
             return self.naive_predictor.attribute(iid, base, attr_name)
-        else:
-            self.frequency_based_predictions += 1
-            return choices(list(counter.keys()), list(counter.values()))[0]
-
-    def binary_operation(self, iid, left, operator, right):
-        key = f"{left}--{operator}--{right}"
-        counter = self.binop_to_values.get(key)
-        self.total_predictions += 1
-        if counter is None:
-            return self.naive_predictor.binary_operation(iid, left, operator, right)
         else:
             self.frequency_based_predictions += 1
             return choices(list(counter.keys()), list(counter.values()))[0]
