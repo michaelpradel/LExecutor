@@ -130,6 +130,9 @@ def _a_(iid, base, attr_name):
 
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="attribute")
 
+def _l_(iid):
+    if runtime_stats is not None:
+        runtime_stats.cover_line(iid)
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
     if mode == "RECORD":
