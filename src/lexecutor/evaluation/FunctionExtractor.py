@@ -1,6 +1,6 @@
 import argparse
 import libcst
-from .Util import gather_files
+from ..Util import gather_files
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

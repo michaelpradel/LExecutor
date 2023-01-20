@@ -2,7 +2,7 @@ import argparse
 import os
 import signal
 import subprocess
-from .Util import gather_files
+from ..Util import gather_files
 
 
 parser = argparse.ArgumentParser()

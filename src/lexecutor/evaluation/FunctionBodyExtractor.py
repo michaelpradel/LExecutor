@@ -1,5 +1,5 @@
 import argparse
-from .Util import gather_files
+from ..Util import gather_files
 import libcst as cst
 import os
 

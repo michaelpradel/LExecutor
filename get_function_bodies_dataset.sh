@@ -29,7 +29,7 @@ for project in ${PROJECTS[@]}; do
     else
         FILES=$(find ./data/repos/$REPO_NAME/$REPO_NAME -type f -name "*.py")
     fi
-	python -m lexecutor.FunctionBodyExtractor --files $FILES --dest ./function_bodies_dataset/$REPO_NAME
+	python -m lexecutor.evaluation.FunctionBodyExtractor --files $FILES --dest ./function_bodies_dataset/$REPO_NAME
     # randomly select 200 function bodies
     FUNCTION_BODIES+="$(find ./function_bodies_dataset/$REPO_NAME -type f -name "*.py" | shuf -n 200) "
 done
