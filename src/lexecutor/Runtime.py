@@ -1,5 +1,6 @@
 import atexit
 import sys
+import time
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, DummyObject
@@ -35,10 +36,11 @@ elif mode == "PREDICT":
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
     predictor = CodeT5ValuePredictor(runtime_stats)
+    start_time = time.time()
 
     # # for running experiments
     file = sys.argv[0]
-    atexit.register(runtime_stats.save, file, predictor.__class__.__name__)
+    atexit.register(runtime_stats.save, file, predictor.__class__.__name__, start_time)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
