@@ -181,7 +181,7 @@ if params.value_abstraction.startswith("coarse-grained"):
                 logger.info("Unknown abstract value: %s", abstract_value)
                 return DummyObject()
 
-elif params.value_abstraction == "fined-grained":
+elif params.value_abstraction == "fine-grained":
     def restore_value(abstract_value):
         # common primitive values
         if abstract_value == "None":
@@ -237,3 +237,7 @@ elif params.value_abstraction == "fined-grained":
         else:
             logger.info("Unknown abstract value: %s", abstract_value)
             return DummyObject()
+
+else:
+    raise ValueError(
+        f"Unknown setting for value_abstraction: {params.value_abstraction}")
