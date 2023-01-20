@@ -40,7 +40,7 @@ class RandomPredictor(ValuePredictor):
         logger.info(f"{iid}: Predicting for name {name}: {v}")
         return v
 
-    def call(self, iid, fct, *args, **kwargs):
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         v = self.get_random_value()
         logger.info(f"{iid}: Predicting for call: {v}")
         return v

@@ -59,10 +59,7 @@ class CodeT5ValuePredictor(ValuePredictor):
             iid, f"Inject {abstract_v} for variable {name}")
         return v
 
-    def call(self, iid, fct, *args, **kwargs):
-        fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
-        if " " in fct_name:  # some fcts that don't have a proper name
-            fct_name = fct_name.split(" ")[0]
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         entry = {"iid": iid, "name": fct_name, "kind": "call"}
         abstract_v, v = self._query_model(entry)
         logger.info(f"{iid}: Predicting for call: {v}")

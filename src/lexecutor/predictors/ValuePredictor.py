@@ -5,7 +5,7 @@ class ValuePredictor(ABC):
     def name(self, iid, name):
         pass
 
-    def call(self, iid, fct, *args, **kwargs):
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         pass
 
     def attribute(self, iid, base, attr_name):

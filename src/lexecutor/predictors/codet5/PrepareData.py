@@ -9,6 +9,7 @@ from .CodeT5 import load_CodeT5
 from ...Hyperparams import Hyperparams as params
 from ...IIDs import IIDs
 from .InputFactory import InputFactory
+from ...ValueAbstraction import fine_to_coarse_grained
 
 
 parser = argparse.ArgumentParser()
@@ -29,6 +30,12 @@ def read_traces(trace_files):
         current_df = pd.read_hdf(trace_file, key="entries")
         df = pd.concat([df, current_df])
     return df
+
+
+def abstract_trace_entries(entries):
+    if params.value_abstraction.startswith("coarse-grained"):
+        logger.info("Abstracting trace entries to use coarse-grained values")
+        entries.replace({"value": fine_to_coarse_grained}, inplace=True)
 
 
 def dedup_trace_entries(entries):
@@ -113,6 +120,7 @@ if __name__ == "__main__":
 
     iids = IIDs(args.iids)
     entries = read_traces(args.traces)
+    abstract_trace_entries(entries)
     dedup_trace_entries(entries)
     clean_entries(entries)
     train_entries, validate_entries = split_and_shuffle(entries, iids)

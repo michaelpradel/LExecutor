@@ -30,10 +30,7 @@ class FrequencyValuePredictor(ValuePredictor):
             logger.info(f"{iid}: Predicting for name {name}: {v}")
             return restore_value(v)
 
-    def call(self, iid, fct, *args, **kwargs):
-        fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
-        if " " in fct_name:  # some fcts that don't have a proper name
-            fct_name = fct_name.split(" ")[0]
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         counter = self.call_to_values.get(fct_name)
         self.total_predictions += 1
         if counter is None:

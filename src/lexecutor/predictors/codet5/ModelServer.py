@@ -20,8 +20,14 @@ class ModelServer:
     def _initialize_model(self):
         logger.info("Loading CodeT5 model")
         self.tokenizer, self.model = load_CodeT5()
-        self.model.load_state_dict(t.load(
-            "data/codeT5_models/jan5_5_projects/pytorch_model_epoch9.bin", map_location=device))
+
+        # Note: The model loaded here must match the Hyperparams.value_abstraction setting.
+        if params.value_abstraction == "fine-grained":
+            self.model.load_state_dict(t.load(
+                "data/codeT5_models/jan5_5_projects/pytorch_model_epoch9.bin", map_location=device))
+        elif params.value_abstraction == "coarse-grained-deterministic" or params.value_abstraction == "coarse-grained-randomized":
+            self.model.load_state_dict(t.load(
+                "data/codeT5_models/jan5_5_projects_coarse-grained/pytorch_model_epoch9.bin", map_location=device))
 
         iids = IIDs(params.iids_file)
         self.input_factory = InputFactory(iids, self.tokenizer)

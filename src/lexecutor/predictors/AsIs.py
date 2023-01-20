@@ -2,7 +2,7 @@ class AsIs():
     def name(self, iid, name):
         raise
 
-    def call(self, iid, fct, *args, **kwargs):
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         raise
 
     def attribute(self, iid, base, attr_name):

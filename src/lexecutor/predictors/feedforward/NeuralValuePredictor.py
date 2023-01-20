@@ -10,6 +10,7 @@ from ...Util import dtype, device
 from ...Hyperparams import Hyperparams as params
 from ...ValueAbstraction import restore_value
 
+# NOTE: obsolete and outdated
 
 class NeuralValuePredictor(ValuePredictor):
     def __init__(self):
@@ -64,7 +65,7 @@ class NeuralValuePredictor(ValuePredictor):
         entry = NameEntry(iid, name, None)
         return self.__query_model(entry)
 
-    def call(self, iid, fct, *args, **kwargs):
+    def call(self, iid, fct, fct_name, *args, **kwargs):
         entry = CallEntry(iid, fct, args, None)
         return self.__query_model(entry)
 

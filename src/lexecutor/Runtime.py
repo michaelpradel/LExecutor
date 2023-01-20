@@ -47,6 +47,9 @@ elif mode == "REPLAY":
 
 logger.info(f"### LExecutor running in {mode} mode ###")
 
+# map kind+name to predicted value to ensure consistent predictions for the same name
+kind_and_name_to_value = {}
+
 
 def _n_(iid, name, lambada):
     if params.verbose:
@@ -62,7 +65,13 @@ def _n_(iid, name, lambada):
         trace.append_name(iid, name, v)
 
     def predict_fct():
-        return predictor.name(iid, name)
+        key = f"name#{name}"
+        if key in kind_and_name_to_value:
+            return kind_and_name_to_value[key]
+        else:
+            v = predictor.name(iid, name)
+            kind_and_name_to_value[key] = v
+            return v
 
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="name")
 
@@ -82,7 +91,17 @@ def _c_(iid, fct, *args, **kwargs):
         trace.append_call(iid, fct, args, kwargs, v)
 
     def predict_fct():
-        return predictor.call(iid, fct, args, kwargs)
+        fct_name = fct.__name__ if hasattr(fct, "__name__") else str(fct)
+        if " " in fct_name:  # some fcts that don't have a proper name
+            fct_name = fct_name.split(" ")[0]
+
+        key = f"call#{fct_name}"
+        if key in kind_and_name_to_value:
+            return kind_and_name_to_value[key]
+        else:
+            v = predictor.call(iid, fct, fct_name, args, kwargs)
+            kind_and_name_to_value[key] = v
+            return v
 
     kind = "call_dummy" if fct is DummyObject else "call"
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind=kind)
@@ -126,7 +145,13 @@ def _a_(iid, base, attr_name):
         trace.append_attribute(iid, base, attr_name, v)
 
     def predict_fct():
-        return predictor.attribute(iid, base, attr_name)
+        key = f"attribute#{attr_name}"
+        if key in kind_and_name_to_value:
+            return kind_and_name_to_value[key]
+        else:
+            v = predictor.attribute(iid, base, attr_name)
+            kind_and_name_to_value[key] = v
+            return v
 
     return mode_branch(iid, perform_fct, record_fct, predict_fct, kind="attribute")
 
@@ -178,7 +203,3 @@ def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
         return v
     else:
         raise Exception(f"Unexpected mode {mode}")
-
-
-def print_prediction_stats():
-    pass
