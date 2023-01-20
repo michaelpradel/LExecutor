@@ -40,42 +40,51 @@ def get_popular_python_questions(start_page, end_page, page_size):
 def get_random_answer(question_url):
     request = requests.get(url = question_url)
     soup = BeautifulSoup(request.text, "html.parser")
-    answers = soup.find_all("div", itemtype="https://schema.org/Answer")
+    answers = soup.find_all("div", class_="answercell post-layout--right")
     random_index = random.randint(0, len(answers) - 1)
     return answers[random_index]
 
 def get_python_code(answer):
-    raw_code = answer.find_all("code")
     code = ""
-    for snippet in raw_code:
-        for line in snippet.get_text().split('\n'):
-            if not (line.startswith("...") or line.startswith("*") or line.startswith("/") or line.startswith("<")):
-                if line.startswith(">>>"):
-                    code += line[3:] + "\n"
-                elif line.startswith("$"):
-                    code += line[2:] + "\n"
-                else:
-                    code += line + "\n"
+    code_block = answer.find_all("pre")
+    for code_block in code_block:
+        raw_code = code_block.find_all("code")
+        for snippet in raw_code:
+            for line in snippet.get_text().split('\n'):
+                if not (line.startswith("...") or line.startswith("*") or line.startswith("/") or line.startswith("<") or line.startswith("-->")):
+                    if line.startswith(">>> "):
+                        code += line[4:] + "\n"
+                    elif line.startswith(">>>"):
+                        code += line[3:] + "\n"
+                    elif line.startswith("$"):
+                        code += line[2:] + "\n"
+                    else:
+                        code += line + "\n"
     return code
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
     popular_python_questions = get_popular_python_questions(1, 20, 50)
-
+  
     next_id = 1
     for question in popular_python_questions:
         found_snippet = False
         while not found_snippet:
-            random_answer = get_random_answer(question)
+            try:
+                random_answer = get_random_answer(question)
+            except ValueError:
+                break
+                
             code = get_python_code(random_answer)
 
             if code:
                 found_snippet = True
 
-        outfile = os.path.join(args.dest_dir, f"snippet_{next_id}.py")
-        info = f"# Extracted from {question}"
-        with open(outfile, "w") as f:
-            f.write(info+"\n")
-            f.write(code)
-        next_id += 1
+        if found_snippet:
+            outfile = os.path.join(args.dest_dir, f"snippet_{next_id}.py")
+            info = f"# Extracted from {question}"
+            with open(outfile, "w") as f:
+                f.write(info+"\n")
+                f.write(code)
+            next_id += 1
