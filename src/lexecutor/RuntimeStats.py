@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import csv
+import time
 from .Logging import logger
 from .IIDs import IIDs
 from .Hyperparams import Hyperparams as param
@@ -14,6 +15,7 @@ class RuntimeStats:
         self.guided_uses = 0
 
         self.covered_iids = set()
+        self.covered_lines = set()
 
         if write_event_trace:
             self.event_trace = []
@@ -23,6 +25,9 @@ class RuntimeStats:
         self.covered_iids.add(iid)
         if write_event_trace:
             self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
+            
+    def cover_line(self, iid):
+        self.covered_lines.add(iid)
 
     def inject_value(self, iid, msg):
         if write_event_trace:
@@ -39,11 +44,11 @@ class RuntimeStats:
         logger.info(f"Total uses: {self.total_uses}")
         logger.info(f"Guided uses : {self.guided_uses}/{self.total_uses}")
 
-    def _save_summary_metrics(self, file, predictor_name):
+    def _save_summary_metrics(self, file, predictor_name, execution_time):
         # Create CSV file and add header if it doesn't exist
         if not os.path.isfile('./metrics.csv'):
             columns = ['file', 'predictor', 'covered_iids',
-                       'total_uses', 'guided_uses']
+                       'total_uses', 'guided_uses', 'covered_lines', 'execution_time']
 
             with open('./metrics.csv', 'a') as csvFile:
                 writer = csv.writer(csvFile)
@@ -55,7 +60,9 @@ class RuntimeStats:
             'predictor': [predictor_name],
             'covered_iids': [len(self.covered_iids)],
             'total_uses': [self.total_uses],
-            'guided_uses': [self.guided_uses]
+            'guided_uses': [self.guided_uses],
+            'covered_lines': [len(self.covered_lines)],
+            'execution_time': [execution_time]
         })
         df = pd.concat([df, df_new_data])
         df.to_csv('./metrics.csv', index=False)
@@ -64,7 +71,7 @@ class RuntimeStats:
         with open("trace.txt", "w") as fp:
             fp.write("\n".join(self.event_trace))
 
-    def save(self, file, predictor_name):
-        self._save_summary_metrics(file, predictor_name)
+    def save(self, file, predictor_name, start_time):
+        self._save_summary_metrics(file, predictor_name, time.time() - start_time)
         if write_event_trace:
             self._save_event_trace()

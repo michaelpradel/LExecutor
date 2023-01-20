@@ -85,6 +85,13 @@ class CodeRewriter(cst.CSTTransformer):
             value=f"{self.quotation_char}{node.attr.value}{self.quotation_char}"))
         call = cst.Call(func=callee_name, args=[iid_arg, value_arg, attr_arg])
         return call
+    
+    def __create_line_call(self, node, updated_node):
+        callee_name = cst.Name(value="_l_")
+        iid = self.__create_iid(node)
+        iid_arg = cst.Arg(value=cst.Integer(value=str(iid)))
+        call = cst.Call(func=callee_name, args=[iid_arg])
+        return call
 
     def __create_import(self, name):
         module_name = cst.Attribute(value=cst.Name(
@@ -202,8 +209,9 @@ class CodeRewriter(cst.CSTTransformer):
         return wrapped_attribute
 
     def leave_SimpleStatementLine(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
         if not self.instrument:
-            return updated_node
+            return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
 
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
@@ -223,9 +231,25 @@ class CodeRewriter(cst.CSTTransformer):
                 if not skip:
                     wrapped_import = self.__wrap_import(
                         node.body[0], updated_node.body[0])
-                    return wrapped_import
-        return updated_node
-
+                    return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), wrapped_import])
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+    
+    def leave_For(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+    
+    def leave_While(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+    
+    def leave_FunctionDef(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+    
+    def leave_With(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+    
     def leave_Module(self, node, updated_node):
         if not self.instrument:
             return updated_node
@@ -243,9 +267,10 @@ class CodeRewriter(cst.CSTTransformer):
         import_n = self.__create_import("_n_")
         import_a = self.__create_import("_a_")
         import_c = self.__create_import("_c_")
+        import_l = self.__create_import("_l_")
 
         new_body = (list(updated_node.body[:target_idx])
-                    + [import_n, import_a, import_c]
+                    + [import_n, import_a, import_c, import_l]
                     + list(updated_node.body[target_idx:]))
 
         return updated_node.with_changes(body=new_body)
