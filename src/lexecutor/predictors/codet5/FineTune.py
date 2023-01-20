@@ -35,7 +35,8 @@ def evaluate(validate_tensors_path, model, tokenizer):
     logger.info("  Num batches = {}".format(len(validate_loader)))
     logger.info("  Batch size = {}".format(params.batch_size))
 
-    accuracies = []
+    k_max = 5
+    k_to_all_accuracies = {k: [] for k in range(1, k_max+1)}
     all_inputs = []
     all_labels = []
     all_predictions = []
@@ -53,6 +54,8 @@ def evaluate(validate_tensors_path, model, tokenizer):
             labels = tokenizer.batch_decode(
                 label_ids, skip_special_tokens=True)
 
+            # combine top-most prediction obtained via normal sampling and top-2, top-3, etc. predictions obtained via top-p nucleus sampling
+            # 1) top-most prediction obtained via normal sampling
             generated_ids = model.generate(
                 input_ids, max_length=params.max_output_length)
             predictions = tokenizer.batch_decode(
@@ -60,10 +63,10 @@ def evaluate(validate_tensors_path, model, tokenizer):
 
             corrects = [1 for i in range(
                 len(labels)) if labels[i] == predictions[i]]
-            accuracies_batch = float(len(corrects)) / len(labels)
-            accuracies.append(accuracies_batch)
+            top1_accuracy = float(len(corrects)) / len(labels)
+            k_to_all_accuracies[1].append(top1_accuracy)
 
-            # for debugging
+            # for debugging/eye-balling the results
             all_inputs.extend(tokenizer.batch_decode(
                 input_ids, skip_special_tokens=False))
             all_labels.extend(labels)
@@ -75,9 +78,36 @@ def evaluate(validate_tensors_path, model, tokenizer):
                         logger.info(
                             f"Label: {label}, Prediction: {prediction}")
 
-    val_accuracy = np.array(accuracies).mean().item()
+            # 2) top-2, top-3, etc. predictions obtained via top-p nucleus sampling (see https://huggingface.co/blog/how-to-generate)
+            topk_generated_ids = model.generate(
+                input_ids, max_length=params.max_output_length,
+                do_sample=True, top_k=k_max, top_p=0.95, num_return_sequences=k_max)
+            topk_predictions = tokenizer.batch_decode(
+                topk_generated_ids, skip_special_tokens=True)
+
+            # count correct predictions among different top-k
+            k_to_corrects = {k: 0 for k in range(1, k_max+1)}
+            # for top-1, use regular predictions from above
+            k_to_corrects[1] = len(corrects)
+            i = 0
+            while i < len(topk_predictions):
+                topk_predictions_for_example = topk_predictions[i:i+k_max]
+                example_idx = int(i / k_max)
+                label_for_example = labels[example_idx]
+                for k in range(2, k_max+1):
+                    if label_for_example in topk_predictions_for_example[:k]:
+                        k_to_corrects[k] += 1
+                i += k_max
+
+            # compute top-k accuracies
+            for k, corrects in k_to_corrects.items():
+                accuracy = float(corrects) / len(labels)
+                k_to_all_accuracies[k].append(accuracy)
+
+    k_to_accuracy = {k: round(
+        np.array(k_to_all_accuracies[k]).mean().item(), 4) for k in range(1, k_max+1)}
     logger.info(
-        f"val_accuracy = {round(val_accuracy, 4)}")
+        f"validation accuracy: {k_to_accuracy}")
 
     # for debugging
     logger.info("Storing examples in human-readable format")
@@ -85,12 +115,12 @@ def evaluate(validate_tensors_path, model, tokenizer):
         {"input": all_inputs, "label": all_labels, "prediction": all_predictions})
     examples_df.to_pickle("./eval_examples.pkl")
 
-    logger.info('Done with evaluation')
-    return val_accuracy
+    logger.info("Done with evaluation")
+    return k_to_accuracy
 
 
 def save_model(model, output_dir, epoch):
-    model_to_save = model.module if hasattr(model, 'module') else model
+    model_to_save = model.module if hasattr(model, "module") else model
     output_model_file = os.path.join(
         output_dir, f"pytorch_model_epoch{epoch}.bin")
     t.save(model_to_save.state_dict(), output_model_file)
@@ -151,12 +181,12 @@ if __name__ == "__main__":
             })])
             df_training_loss.to_csv('./training_loss.csv', index=False)
 
-        val_accuracy = evaluate(args.validate_tensors, model, tokenizer)
+        accuracy = evaluate(args.validate_tensors, model, tokenizer)[1]
 
         # save validation accuracies to file
         df_validation_acc = pd.concat([df_validation_acc, pd.DataFrame({
             "epoch": [epoch],
-            "val_accuracy": [val_accuracy]
+            "val_accuracy": [accuracy]
         })])
         df_validation_acc.to_csv('./validation_acc.csv', index=False)
 
