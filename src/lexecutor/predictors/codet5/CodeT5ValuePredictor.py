@@ -8,6 +8,7 @@ from requests.exceptions import ConnectionError
 import subprocess
 from ...ValueAbstraction import restore_value
 
+
 class CodeT5ValuePredictor(ValuePredictor):
     def __init__(self, stats):
         self.stats = stats
@@ -46,7 +47,7 @@ class CodeT5ValuePredictor(ValuePredictor):
         if response is None:
             raise RuntimeError("Could not connect to model server")
 
-        val_as_string = response["top-k values"][0] # use only top-1 prediction for now
+        val_as_string = response["v"]
         val = restore_value(val_as_string)
 
         return val_as_string, val
