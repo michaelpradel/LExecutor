@@ -46,7 +46,7 @@ class CodeT5ValuePredictor(ValuePredictor):
         if response is None:
             raise RuntimeError("Could not connect to model server")
 
-        val_as_string = response["v"]
+        val_as_string = response["top-k values"][0] # use only top-1 prediction for now
         val = restore_value(val_as_string)
 
         return val_as_string, val

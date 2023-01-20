@@ -53,19 +53,22 @@ class ModelServer:
             # query the model and decode the result
             with t.no_grad():
                 self.model.eval()
-                generated_ids = self.model.generate(
-                    t.tensor(np.array([input_ids]), device=device), max_length=params.max_output_length)
+                topk_generated_ids = self.model.generate(
+                    t.tensor(np.array([input_ids]), device=device),
+                    max_length=params.max_output_length,
+                    num_beams=5, num_return_sequences=5, early_stopping=True)
 
-            predicted_value = self.tokenizer.decode(
-                generated_ids[0], skip_special_tokens=True)
-
-            if params.verbose:
-                if self.tokenizer.bos_token_id not in generated_ids or self.tokenizer.eos_token_id not in generated_ids[0]:
-                    print(
-                        f"Warning: CodeT5 likely produced a garbage value: {predicted_value}")
+            topk_predicted_values = []
+            for generated_ids in topk_generated_ids:
+                predicted_value = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+                if params.verbose:
+                    if self.tokenizer.bos_token_id not in generated_ids or self.tokenizer.eos_token_id not in generated_ids[0]:
+                        print(
+                            f"Warning: CodeT5 likely produced a garbage value: {predicted_value}")
+                topk_predicted_values.append(predicted_value)
 
             # respond with a JSON object
-            result = {"v": predicted_value}
+            result = {"top-k values": topk_predicted_values}
             return json.dumps(result)
 
         api.run()
