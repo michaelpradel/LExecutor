@@ -15,7 +15,7 @@ class RuntimeStats:
         self.guided_uses = 0
 
         self.covered_iids = set()
-        self.covered_lines = set()
+        self.executed_lines = []
 
         if write_event_trace:
             self.event_trace = []
@@ -27,7 +27,7 @@ class RuntimeStats:
             self.event_trace.append(f"Line {self.iids.line(iid)}: Executed")
             
     def cover_line(self, iid):
-        self.covered_lines.add(iid)
+        self.executed_lines.append(iid)
 
     def inject_value(self, iid, msg):
         if write_event_trace:
@@ -48,7 +48,8 @@ class RuntimeStats:
         # Create CSV file and add header if it doesn't exist
         if not os.path.isfile('./metrics.csv'):
             columns = ['file', 'predictor', 'covered_iids',
-                       'total_uses', 'guided_uses', 'covered_lines', 'execution_time']
+                       'total_uses', 'guided_uses', 'executed_lines', 
+                       'covered_lines', 'execution_time']
 
             with open('./metrics.csv', 'a') as csvFile:
                 writer = csv.writer(csvFile)
@@ -61,7 +62,8 @@ class RuntimeStats:
             'covered_iids': [len(self.covered_iids)],
             'total_uses': [self.total_uses],
             'guided_uses': [self.guided_uses],
-            'covered_lines': [len(self.covered_lines)],
+            'executed_lines': [len(self.executed_lines)]
+            'covered_lines': [len(set(self.covered_lines))],
             'execution_time': [execution_time]
         })
         df = pd.concat([df, df_new_data])
