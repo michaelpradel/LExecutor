@@ -10,7 +10,7 @@ declare -a PROJECTS=(
     "https://github.com/tensorflow/tensorflow"
 )
 
-mkdir function_bodies_dataset
+mkdir popular_projects_snippets_dataset
 
 # extract function bodies from projects
 for project in ${PROJECTS[@]}; do
@@ -21,7 +21,9 @@ for project in ${PROJECTS[@]}; do
     # download repo
     git -C ./data/repos clone $project
     # create destination dir
-    mkdir function_bodies_dataset/$REPO_NAME
+    mkdir popular_projects_snippets_dataset/$REPO_NAME
+    mkdir popular_projects_snippets_dataset/$REPO_NAME/functions
+    mkdir popular_projects_snippets_dataset/$REPO_NAME/bodies
     # extract function bodies
     if [ "$REPO_NAME" == "flask" ] || [ "$REPO_NAME" == "black" ]
     then
@@ -29,9 +31,11 @@ for project in ${PROJECTS[@]}; do
     else
         FILES=$(find ./data/repos/$REPO_NAME/$REPO_NAME -type f -name "*.py")
     fi
-	python -m lexecutor.evaluation.FunctionBodyExtractor --files $FILES --dest ./function_bodies_dataset/$REPO_NAME
+	python -m lexecutor.evaluation.FunctionBodyExtractor --files $FILES --dest ./popular_projects_snippets_dataset/$REPO_NAME
     # randomly select 200 function bodies
-    FUNCTION_BODIES+="$(find ./function_bodies_dataset/$REPO_NAME -type f -name "*.py" | shuf -n 200) "
+    FUNCTION_BODIES+="$(find ./popular_projects_snippets_dataset/$REPO_NAME/bodies -type f -name "*.py" | shuf -n 200) "
 done
 
-echo $FUNCTION_BODIES | tr  ' ' '\n' > function_bodies_dataset.txt
+echo $FUNCTION_BODIES | tr  ' ' '\n' > popular_projects_function_bodies_dataset.txt
+
+sed -e 's/bodies/functions/g' -e 's/body/function/g' popular_projects_function_bodies_dataset.txt > popular_projects_functions_dataset.txt
