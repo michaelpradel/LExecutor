@@ -245,32 +245,56 @@ class CodeRewriter(cst.CSTTransformer):
     def leave_FunctionDef(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
         return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+
+    def leave_ClassDef(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
     
     def leave_With(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
         return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
     
+    def leave_IndentedBlock(self, node, updated_node):
+        new_body = []
+        for i in range(len(updated_node.body)):
+            stmt = updated_node.body[i]
+            if (isinstance(stmt, cst.If)
+               or isinstance(stmt, cst.Try)):
+                statement_call = self.__create_line_call(node, updated_node)
+                new_body.append(statement_call)
+                new_body.append(cst.Expr(cst.Newline()))
+            new_body.append(stmt)
+            
+        return updated_node.with_changes(body=new_body)
+    
     def leave_Module(self, node, updated_node):
         if not self.instrument:
             return updated_node
-
+        
         # check for "__future__" imports; they must remain at beginning of file
         target_idx = 0  # index to add our imports at
+        new_body = []
         for i in range(len(updated_node.body)):
             stmt = updated_node.body[i]
+            if (isinstance(stmt, cst.If)
+               or isinstance(stmt, cst.Try)):
+                statement_call = self.__create_line_call(node, updated_node)
+                new_body.append(statement_call)
+                new_body.append(cst.Expr(cst.Newline()))
             if (isinstance(stmt, cst.SimpleStatementLine)
                and isinstance(stmt.body[0], cst.ImportFrom)
                and stmt.body[0].module.value == "__future__"):
                 target_idx = i + 1
-
+            new_body.append(stmt)
+            
         # add our imports
         import_n = self.__create_import("_n_")
         import_a = self.__create_import("_a_")
         import_c = self.__create_import("_c_")
         import_l = self.__create_import("_l_")
 
-        new_body = (list(updated_node.body[:target_idx])
+        new_body = (list(new_body[:target_idx])
                     + [import_n, import_a, import_c, import_l]
-                    + list(updated_node.body[target_idx:]))
+                    + list(new_body[target_idx:]))
 
         return updated_node.with_changes(body=new_body)
