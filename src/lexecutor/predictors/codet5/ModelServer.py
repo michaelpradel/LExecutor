@@ -33,7 +33,7 @@ class ModelServer:
         self.input_factory = InputFactory(iids, self.tokenizer)
         logger.info("CodeT5 model loaded")
 
-   def _initialize_http_server(self):
+    def _initialize_http_server(self):
         logger.info("Starting HTTP server")
         api = Flask(__name__)
         flask_log = logging.getLogger('werkzeug')
