@@ -62,8 +62,8 @@ class RuntimeStats:
             'covered_iids': [len(self.covered_iids)],
             'total_uses': [self.total_uses],
             'guided_uses': [self.guided_uses],
-            'executed_lines': [len(self.executed_lines)]
-            'covered_lines': [len(set(self.covered_lines))],
+            'executed_lines': [len(self.executed_lines)],
+            'covered_lines': [len(set(self.executed_lines))],
             'execution_time': [execution_time]
         })
         df = pd.concat([df, df_new_data])
