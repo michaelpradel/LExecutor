@@ -56,22 +56,16 @@ class ExtractorVisitor(cst.CSTTransformer):
 
     def leave_FunctionDef(self, node, updated_node):
         info = f"# Extracted from {self.file}"
-        
-        # save full function
-        function_code = cst.Module([]).code_for_node(updated_node)
-        outfile = os.path.join(f"{self.dest_dir}/functions", f"function_{self.next_id}.py")
-        with open(outfile, "w") as f:
-            f.write(info+"\n")
-            f.write(function_code)
-       
+
         # save function body
         body = [s for s in updated_node.body.body]
         body_code = cst.Module(body=body).code
-        outfile = os.path.join(f"{self.dest_dir}/bodies", f"body_{self.next_id}.py")
+        outfile = os.path.join(
+            f"{self.dest_dir}/bodies", f"body_{self.next_id}.py")
         with open(outfile, "w") as f:
             f.write(info+"\n")
             f.write(body_code)
-            
+
         self.next_id += 1
 
         return updated_node

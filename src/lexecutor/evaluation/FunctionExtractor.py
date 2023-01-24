@@ -1,33 +1,55 @@
 import argparse
-import libcst
 from ..Util import gather_files
+import libcst as cst
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--files", help="Python files or .txt file with all file paths to extract functions", nargs="+")
+    "--files", help="Python files to extract from or .txt file with all file paths", nargs="+")
+parser.add_argument(
+    "--dest", help="Destination directory", required=True)
 
 
-class FunctionExtractorTransformer(libcst.CSTTransformer):
+class ExtractorVisitor(cst.CSTTransformer):
+    def __init__(self, dest_dir):
+        self.dest_dir = dest_dir
 
-    def leave_FunctionDef(
-        self, original_node: libcst.FunctionDef, updated_node: libcst.FunctionDef
-    ) -> libcst.CSTNode:
-        code = f"{libcst.Module([]).code_for_node(updated_node.with_changes(params=libcst.Parameters()))}\n\nif __name__ == '__main__':\n\t{updated_node.name.value}()"
+        existing_files = [f for f in os.listdir(dest_dir)]
+        self.next_id = 0
+        while f"body_{self.next_id}.py" in existing_files:
+            self.next_id += 1
 
-        with open(f"./functions_under_test/{updated_node.name.value}.py", "w") as file:
-            file.write(code)
+    def set_source_file(self, file):
+        self.file = file
+
+    def leave_Param(self, node, updated_node):
+        # remove parameter type annotation
+        return updated_node.with_changes(annotation=None)
+
+    def leave_FunctionDef(self, node, updated_node):
+        info = f"# Extracted from {self.file}"
+
+        # remove return type annotation and save full function
+        function_code = cst.Module([]).code_for_node(
+            updated_node.with_changes(returns=None))
+        outfile = os.path.join(
+            f"{self.dest_dir}/functions", f"function_{self.next_id}.py")
+        with open(outfile, "w") as f:
+            f.write(info+"\n")
+            f.write(function_code)
+
+        self.next_id += 1
 
         return updated_node
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-
     files = gather_files(args.files)
-
-    for file_path in files:
-        with open(file_path, "r") as file:
-            src = file.read()
-
-            ast = libcst.parse_module(src)
-            ast.visit(FunctionExtractorTransformer())
+    extractor = ExtractorVisitor(args.dest)
+    for file in files:
+        with open(file, "r") as fp:
+            src = fp.read()
+        ast = cst.parse_module(src)
+        extractor.set_source_file(file)
+        ast.visit(extractor)

@@ -1,4 +1,4 @@
-myenv
+myenv*
 *.swp
 *~
 iids*.json
@@ -26,3 +26,7 @@ validation_acc.csv
 tests/test.py
 *.out
 *.log
+popular_projects_snippets_dataset
+tmp
+pynguin-report
+flask_files.txt
