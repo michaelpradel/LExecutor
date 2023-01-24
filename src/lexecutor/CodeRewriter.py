@@ -231,7 +231,7 @@ class CodeRewriter(cst.CSTTransformer):
                 if not skip:
                     wrapped_import = self.__wrap_import(
                         node.body[0], updated_node.body[0])
-                    return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), wrapped_import])
+                    return wrapped_import
         return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
     
     def leave_For(self, node, updated_node):
