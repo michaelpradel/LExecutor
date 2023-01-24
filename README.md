@@ -38,3 +38,21 @@ Run the test suite of benchmark projects, e.g.,:
 2. Instrument the Python files that will be LExecuted
 3. Set the iids_file in CodeT5ValuePredictor.py to point to the iids file used or generated in step 2
 4. Run the Python files instrumented in step 2
+
+## Running the Pynguin Baseline
+
+Extract functions into individual files, see:
+
+`python -m lexecutor.evaluation.FunctionExtractor --help`
+
+Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
+
+`python3.10 -m venv myenv_py3.10`
+
+`source myenv_3.10/bin/activate`
+
+Run Pynguin on the extracted functions:
+
+`python -m lexecutor.evaluation.RunPyngiun --files dir_with_functions/*.py`
+
+See `pynguin-report/statistics.csv` for coverage results (as measured by Pynguin).
