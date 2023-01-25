@@ -15,7 +15,7 @@ if __name__ == "__main__":
     files = gather_files(args.files)
     os.environ['PYNGUIN_DANGER_AWARE'] = 'x'
     
-    pynguin_parameters = '--maximum_search_time 20 --seed 42 --max-attempts 10 --maximum_test_execution_timeout 10 --maximum_slicing_time 10 --test_execution_time_per_statement 1 --assertion-generation SIMPLE -v'
+    pynguin_parameters = '--maximum_search_time 30 --seed 42 --max-attempts 10 --maximum_test_execution_timeout 10 --maximum_slicing_time 10 --test_execution_time_per_statement 1 --assertion-generation SIMPLE -v'
 
     for file in files:
         if file.startswith(os.getcwd()):
