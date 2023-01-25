@@ -15,6 +15,8 @@ parser.add_argument(
     "--iids", help="JSON file with instruction IDs", default="iids.json")
 parser.add_argument(
     "--restore", help="Restores uninstrumented files from .py.orig files", action="store_true")
+parser.add_argument(
+    "--line_coverage_instrumentation", help="Instruments files to calculate line coverage", action="store_true")
 
 
 ignored_file_suffixes = [
@@ -42,7 +44,7 @@ def gather_accessed_names(ast_wrapper):
     return used_names
 
 
-def instrument_file(file_path, iids):
+def instrument_file(file_path, iids, line_coverage_instrumentation):
     for suffix in ignored_file_suffixes:
         if file_path.endswith(suffix):
             print(f"{file_path} is on blacklist -- skipping it")
@@ -59,7 +61,7 @@ def instrument_file(file_path, iids):
     ast_wrapper = cst.metadata.MetadataWrapper(ast)
     accessed_names = gather_accessed_names(ast_wrapper)
 
-    code_rewriter = CodeRewriter(file_path, iids, accessed_names)
+    code_rewriter = CodeRewriter(file_path, iids, line_coverage_instrumentation, accessed_names)
     rewritten_ast = ast_wrapper.visit(code_rewriter)
     # print(f"\n{rewritten_ast.code}")
 
@@ -88,7 +90,7 @@ if __name__ == "__main__":
         iids = IIDs(args.iids)
         for file_path in files:
             print(f"Instrumenting {file_path}")
-            instrument_file(file_path, iids)
+            instrument_file(file_path, iids, args.line_coverage_instrumentation)
         iids.store()
     else:
         nb_restored = 0

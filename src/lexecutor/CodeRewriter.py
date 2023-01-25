@@ -9,10 +9,11 @@ class CodeRewriter(cst.CSTTransformer):
     ignored_names = ["True", "False", "None"]
     ignored_calls = ["super"]  # special function names to not instrument
 
-    def __init__(self, file_path, iids, used_names):
+    def __init__(self, file_path, iids, line_coverage_instrumentation, used_names):
         self.file_path = file_path
         self.used_names = used_names
         self.iids = iids
+        self.line_coverage_instrumentation = line_coverage_instrumentation
 
         self.instrument = True  # turned off in special cases, e.g., inside nested f-strings
 
@@ -182,7 +183,7 @@ class CodeRewriter(cst.CSTTransformer):
 
     def leave_Call(self, node, updated_node):
         # rewrite Call nodes to intercept function calls
-        if not self.__is_ignored_call(node):
+        if not self.__is_ignored_call(node) and not self.line_coverage_instrumentation:
             wrapped_call = self.__create_call_call(node, updated_node)
             return wrapped_call
         else:
@@ -193,7 +194,7 @@ class CodeRewriter(cst.CSTTransformer):
             return updated_node
 
         # rewrite Name nodes to intercept values they resolve to
-        if node in self.used_names and node.value not in self.ignored_names:
+        if node in self.used_names and node.value not in self.ignored_names and not self.line_coverage_instrumentation:
             wrapped_name = self.__create_name_call(node, updated_node)
             return wrapped_name
         else:
@@ -203,10 +204,11 @@ class CodeRewriter(cst.CSTTransformer):
         if not self.instrument:
             return updated_node
 
-        if self.__is_l_value(node):
+        if not self.__is_l_value(node) and not self.line_coverage_instrumentation:
+            wrapped_attribute = self.__create_attribute_call(node, updated_node)
+            return wrapped_attribute
+        else:
             return updated_node
-        wrapped_attribute = self.__create_attribute_call(node, updated_node)
-        return wrapped_attribute
 
     def leave_SimpleStatementLine(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
