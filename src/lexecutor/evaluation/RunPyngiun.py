@@ -6,6 +6,8 @@ from ..Util import gather_files
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--files", help="Python files with extracted functions or .txt file with all file paths", nargs="+")
+parser.add_argument(
+    "--dest", help="Destination directory for the tests", required=True)
 
 
 if __name__ == "__main__":
@@ -20,5 +22,5 @@ if __name__ == "__main__":
             file = file[len(os.getcwd())+1:]
         module_pynguin_path = file.replace("/", ".")[2:-3]
         print(f"Running Pynguin on {module_pynguin_path} with parameters {pynguin_parameters}")
-        log_pynguin = subprocess.run(f"pynguin --project-path . --output-path ./tmp --module-name {module_pynguin_path} {pynguin_parameters}".split(
+        log_pynguin = subprocess.run(f"pynguin --project-path . --output-path {args.dest} --module-name {module_pynguin_path} {pynguin_parameters}".split(
             " "), capture_output=True, text=True, shell=False, timeout=60)
