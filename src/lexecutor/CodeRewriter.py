@@ -104,8 +104,12 @@ class CodeRewriter(cst.CSTTransformer):
         return stmt
 
     def __wrap_import(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [cst.SimpleStatementLine(body=[updated_node])]
+        body_content.extend([statement_call, cst.Expr(cst.Newline())])
+
         try_stmt = cst.Try(body=cst.IndentedBlock(
-            body=[cst.SimpleStatementLine(body=[updated_node])]),
+            body=body_content),
             handlers=[cst.ExceptHandler(body=cst.IndentedBlock(
                 body=[cst.SimpleStatementLine(body=[cst.Pass()])]),
                 type=cst.Name(value="ImportError"))])
@@ -218,7 +222,8 @@ class CodeRewriter(cst.CSTTransformer):
             
         statement_call = self.__create_line_call(node, updated_node)
         if not self.instrument:
-            return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+            return cst.FlattenSentinel([updated_node, cst.Expr(cst.Newline()), 
+                                        statement_call, cst.Expr(cst.Newline())])
 
         # surround imports with try-except;
         # cannot do this in leave_Import because we need to replace the import's parent node
@@ -239,41 +244,79 @@ class CodeRewriter(cst.CSTTransformer):
                     wrapped_import = self.__wrap_import(
                         node.body[0], updated_node.body[0])
                     return wrapped_import
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+        return cst.FlattenSentinel([updated_node, cst.Expr(cst.Newline()), 
+                                    statement_call, cst.Expr(cst.Newline())])
     
     def leave_For(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
     
     def leave_While(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
     
     def leave_FunctionDef(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
 
     def leave_ClassDef(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
     
     def leave_With(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
-        return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
-    
-    def leave_IndentedBlock(self, node, updated_node):
-        new_body = []
-        for i in range(len(updated_node.body)):
-            stmt = updated_node.body[i]
-            if (isinstance(stmt, cst.If)
-               or isinstance(stmt, cst.Try)):
-                statement_call = self.__create_line_call(node, updated_node)
-                new_body.append(statement_call)
-                new_body.append(cst.Expr(cst.Newline()))
-            new_body.append(stmt)
-            
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
         return updated_node.with_changes(body=new_body)
     
+    def leave_If(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
+    
+    def leave_Elif(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
+    
+    def leave_Try(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
+    
+    def leave_ExceptHandler(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
+    
+    def leave_Finally(self, node, updated_node):
+        statement_call = self.__create_line_call(node, updated_node)
+        body_content = [statement_call, cst.Expr(cst.Newline())]
+        body_content.extend(updated_node.body.body)
+        new_body = cst.IndentedBlock(body=body_content)
+        return updated_node.with_changes(body=new_body)
+        
     def leave_Module(self, node, updated_node):
         if not self.instrument:
             return updated_node
@@ -283,16 +326,12 @@ class CodeRewriter(cst.CSTTransformer):
         new_body = []
         for i in range(len(updated_node.body)):
             stmt = updated_node.body[i]
-            if (isinstance(stmt, cst.If)
-               or isinstance(stmt, cst.Try)):
-                statement_call = self.__create_line_call(node, updated_node)
-                new_body.append(statement_call)
-                new_body.append(cst.Expr(cst.Newline()))
+            new_body.append(stmt)
+
             if (isinstance(stmt, cst.SimpleStatementLine)
                and isinstance(stmt.body[0], cst.ImportFrom)
                and stmt.body[0].module.value == "__future__"):
                 target_idx = i + 1
-            new_body.append(stmt)
             
         # add our imports
         import_n = self.__create_import("_n_")
