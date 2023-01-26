@@ -21,6 +21,8 @@ mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
+file_type = "SOURCE"
+# file_type = "TESTE"
 
 if mode == "RECORD":
     trace = TraceWriter()
@@ -38,8 +40,12 @@ elif mode == "PREDICT":
     predictor = CodeT5ValuePredictor(runtime_stats)
     start_time = time.time()
 
-    # # for running experiments
-    file = sys.argv[0]
+    # for running experiments
+    if file_type == "SOURCE":
+        file = sys.argv[0]
+    elif file_type == "TESTE":
+        file = sys.argv[1]
+        
     atexit.register(runtime_stats.save, file, predictor.__class__.__name__, start_time)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
