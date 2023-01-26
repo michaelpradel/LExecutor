@@ -12,8 +12,20 @@ def count_lines(file_path):
     total_lines = 0
     with open(file_path, "r") as file:
         lines = file.readlines()
+        docstring = False
         for line in lines:
-            if line.strip() and not line.startswith("#"):
+            line = line.strip()
+            
+            if line == "" \
+                or line.startswith("#") \
+                or docstring and not (line.startswith('"""') or line.startswith("'''"))\
+                or (line.startswith("'''") and line.endswith("'''") and len(line) >3)  \
+                or (line.startswith('"""') and line.endswith('"""') and len(line) >3) :
+                    continue
+            elif line.startswith('"""') or line.startswith("'''"):
+                docstring = not docstring
+                continue
+            else:
                 total_lines += 1
     return total_lines
 

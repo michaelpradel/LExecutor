@@ -211,6 +211,11 @@ class CodeRewriter(cst.CSTTransformer):
             return updated_node
 
     def leave_SimpleStatementLine(self, node, updated_node):
+        if isinstance(node.body[0], cst.Expr):
+            if isinstance(node.body[0].value, cst.SimpleString):
+                if node.body[0].value.value.startswith('"""'):
+                    return updated_node
+            
         statement_call = self.__create_line_call(node, updated_node)
         if not self.instrument:
             return cst.FlattenSentinel([statement_call, cst.Expr(cst.Newline()), updated_node])
