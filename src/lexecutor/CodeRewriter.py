@@ -121,8 +121,13 @@ class CodeRewriter(cst.CSTTransformer):
 
     def __wrap_import(self, node, updated_node):
         statement_call = self.__create_line_call(node, updated_node)
+        stmt = cst.SimpleStatementLine(body=[cst.Expr(value=statement_call)],
+                                trailing_whitespace=cst.TrailingWhitespace(
+                                    whitespace=cst.SimpleWhitespace(value='',)
+                                ),
+                            )
         body_content = [cst.SimpleStatementLine(body=[updated_node])]
-        body_content.extend([statement_call, cst.Expr(cst.Newline())])
+        body_content.extend([stmt, cst.Expr(cst.Newline())])
 
         try_stmt = cst.Try(body=cst.IndentedBlock(
             body=body_content),
@@ -238,8 +243,7 @@ class CodeRewriter(cst.CSTTransformer):
             
         statement_call = self.__create_line_call(node, updated_node)
         stmt = cst.SimpleStatementLine(body=[cst.Expr(value=statement_call)],
-                                trailing_whitespace=updated_node.trailing_whitespace
-                                )
+                                trailing_whitespace=updated_node.trailing_whitespace)
         if not self.instrument:
             return cst.FlattenSentinel([updated_node, stmt])
 
