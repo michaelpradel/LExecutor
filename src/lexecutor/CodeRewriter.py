@@ -244,6 +244,9 @@ class CodeRewriter(cst.CSTTransformer):
         statement_call = self.__create_line_call(node, updated_node)
         stmt = cst.SimpleStatementLine(body=[cst.Expr(value=statement_call)],
                                 trailing_whitespace=updated_node.trailing_whitespace)
+        
+        if isinstance(node.body[0], cst.Pass):
+            return cst.FlattenSentinel([updated_node, stmt])
         if not self.instrument:
             return cst.FlattenSentinel([updated_node, stmt])
 
