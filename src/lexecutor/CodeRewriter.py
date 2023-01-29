@@ -103,6 +103,24 @@ class CodeRewriter(cst.CSTTransformer):
                             )
         return stmt
     
+    def __create_aux_stmt(self, updated_node, value):
+        aux_stmt = cst.SimpleStatementLine(
+                body=[
+                    cst.Assign(
+                    targets=[
+                        cst.AssignTarget(
+                        target=cst.Name(value='aux', lpar=[], rpar=[],),
+                        whitespace_before_equal=cst.SimpleWhitespace(value=' ',),
+                        whitespace_after_equal=cst.SimpleWhitespace(value=' ',),),
+                    ],
+                    value=value
+                    )
+                ],
+                trailing_whitespace=updated_node.trailing_whitespace
+            )
+        return aux_stmt
+        
+    
     def __update_indented_block(self, node, updated_node):
         stmt = self.__create_line_call_stmt(node, updated_node)
         body_content = [stmt, cst.Expr(cst.Newline())]
@@ -247,6 +265,41 @@ class CodeRewriter(cst.CSTTransformer):
         
         if isinstance(node.body[0], cst.Pass):
             return cst.FlattenSentinel([updated_node, stmt])
+        if isinstance(node.body[0], cst.Return):
+            if node.body[0].value:
+                value = updated_node.body[0].value
+            else:
+                value = cst.SimpleString(value='""',lpar=[],rpar=[],)
+            aux_stmt = self.__create_aux_stmt(updated_node, value)
+            new_return_content = [cst.Return(value=cst.Name(value='aux',lpar=[],rpar=[],),
+                                whitespace_after_return=cst.SimpleWhitespace(value=' ',),
+                                semicolon=cst.MaybeSentinel.DEFAULT,)]
+            return cst.FlattenSentinel([aux_stmt, stmt, updated_node.with_changes(body=new_return_content)])
+        try:
+            if isinstance(node.body[0], cst.Expr) and isinstance(node.body[0].value, cst.Call) and node.body[0].value.func.value == 'exit':
+                if len(updated_node.body[0].value.args) < 3:
+                    value = cst.SimpleString(value='""',lpar=[],rpar=[],)
+                else:
+                    value = updated_node.body[0].value.args[2]
+                aux_stmt =  self.__create_aux_stmt(updated_node, value)
+                new_exit_content = [cst.Expr(
+                    value=cst.Call(
+                        func=cst.Name(value='exit',lpar=[],rpar=[],),
+                        args=[cst.Arg(
+                                value=cst.Name(value='aux',lpar=[],rpar=[],),
+                                keyword=None,
+                                equal=cst.MaybeSentinel.DEFAULT,
+                                comma=cst.MaybeSentinel.DEFAULT,
+                                star='',
+                                whitespace_after_star=cst.SimpleWhitespace(value='',),
+                                whitespace_after_arg=cst.SimpleWhitespace(value='',),
+                            ),],lpar=[],rpar=[],
+                        whitespace_after_func=cst.SimpleWhitespace(value='',),
+                        whitespace_before_args=cst.SimpleWhitespace(value='',),),
+                    semicolon=cst.MaybeSentinel.DEFAULT,)]
+                return cst.FlattenSentinel([aux_stmt, stmt, updated_node.with_changes(body=new_exit_content)])
+        except Exception as e:
+            print(e)
         if not self.instrument:
             return cst.FlattenSentinel([updated_node, stmt])
 
