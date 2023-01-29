@@ -39,6 +39,7 @@ elif mode == "PREDICT":
     atexit.register(runtime_stats.print)
     predictor = CodeT5ValuePredictor(runtime_stats)
     start_time = time.time()
+    predictor_name = predictor.__class__.name
 
     # for running experiments
     if file_type == "SOURCE":
@@ -46,7 +47,7 @@ elif mode == "PREDICT":
     elif file_type == "TESTE":
         file = sys.argv[1]
         
-    atexit.register(runtime_stats.save, file, predictor.__class__.__name__, start_time)
+    atexit.register(runtime_stats.save, file, predictor_name, start_time)
 elif mode == "REPLAY":
     with open("trace.out", "r") as file:
         trace = file.readlines()
@@ -166,6 +167,7 @@ def _a_(iid, base, attr_name):
 def _l_(iid):
     if runtime_stats is not None:
         runtime_stats.cover_line(iid)
+        runtime_stats.save(file, predictor_name, start_time)
 
 def mode_branch(iid, perform_fct, record_fct, predict_fct, kind):
     if mode == "RECORD":
