@@ -28,15 +28,29 @@ class ExtractorVisitor(cst.CSTTransformer):
 
     def leave_FunctionDef(self, node, updated_node):
         info = f"# Extracted from {self.file}"
-
-        # remove return type annotation and save full function
-        function_code = cst.Module([]).code_for_node(
-            updated_node.with_changes(returns=None))
+        
+        if len(updated_node.params.params) and updated_node.params.params[0].name.value == "self":
+            # wrap function into a class
+            code = cst.Module([]).code_for_node(
+                cst.ClassDef(
+                    name=cst.Name(
+                        value='Wrapper'
+                    ),
+                    body=cst.IndentedBlock(
+                        body=[updated_node.with_changes(returns=None)]
+                    )
+                )
+            )
+        else:
+            # remove return type annotation and save full function
+            code = cst.Module([]).code_for_node(
+                updated_node.with_changes(returns=None))
+        
         outfile = os.path.join(
             f"{self.dest_dir}/functions", f"function_{self.next_id}.py")
         with open(outfile, "w") as f:
             f.write(info+"\n")
-            f.write(function_code)
+            f.write(code)
 
         self.next_id += 1
 
