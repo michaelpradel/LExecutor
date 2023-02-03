@@ -54,5 +54,3 @@ Create and enter a virtual environment for Python 3.10 (required by the newest P
 Run Pynguin on the extracted functions:
 
 `python -m lexecutor.evaluation.RunPyngiun --files dir_with_functions/*.py`
-
-See `pynguin-report/statistics.csv` for coverage results (as measured by Pynguin).
