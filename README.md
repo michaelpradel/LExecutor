@@ -1,5 +1,7 @@
 # LExecutor
 
+Paper (pre-print): https://arxiv.org/abs/2302.02343
+
 ## Setup
 
 Create and enter a virtual environment:
