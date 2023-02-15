@@ -1,6 +1,8 @@
+from pathlib import Path
 import torch as t
 import numpy as np
 from flask import Flask, json, request
+import requests
 from ...Util import device
 from ...Hyperparams import Hyperparams as params
 from ...IIDs import IIDs
@@ -17,17 +19,28 @@ class ModelServer:
         self._initialize_model()
         self._initialize_http_server()
 
+    def _fetch_model(self, model_path):
+        path_to_url = {
+            "data/released_models/codet5_model_20230105_fine-grained.bin": "https://github.com/michaelpradel/LExecutor/releases/download/Models_20230105/codet5_model_20230105_fine-grained.bin",
+            "data/released_models/codet5_model_20230105_coarse-grained.bin": "https://github.com/michaelpradel/LExecutor/releases/download/Models_20230105/codet5_model_20230105_coarse-grained.bin"
+        }
+        if Path(model_path).exists():
+            return
+        Path.mkdir(Path(model_path).parent, parents=True, exist_ok=True)
+        logger.info(f"Downloading model from {path_to_url[model_path]}")
+        request = requests.get(path_to_url[model_path], allow_redirects=True)
+        open(model_path, 'wb').write(request.content)        
+
     def _initialize_model(self):
         logger.info("Loading CodeT5 model")
         self.tokenizer, self.model = load_CodeT5()
 
-        # Note: The model loaded here must match the Hyperparams.value_abstraction setting.
         if params.value_abstraction == "fine-grained":
-            self.model.load_state_dict(t.load(
-                "data/codeT5_models/jan5_5_projects/pytorch_model_epoch9.bin", map_location=device))
+            model_path = "data/released_models/codet5_model_20230105_fine-grained.bin"
         elif params.value_abstraction == "coarse-grained-deterministic" or params.value_abstraction == "coarse-grained-randomized":
-            self.model.load_state_dict(t.load(
-                "data/codeT5_models/jan5_5_projects_coarse-grained/pytorch_model_epoch9.bin", map_location=device))
+            model_path = "data/released_models/codet5_model_20230105_coarse-grained.bin"
+        self._fetch_model(model_path)
+        self.model.load_state_dict(t.load(model_path, map_location=device))
 
         iids = IIDs(params.iids_file)
         self.input_factory = InputFactory(iids, self.tokenizer)
