@@ -17,6 +17,8 @@ parser.add_argument(
     "--restore", help="Restores uninstrumented files from .py.orig files", action="store_true")
 parser.add_argument(
     "--line_coverage_instrumentation", help="Instruments files to calculate line coverage", action="store_true")
+parser.add_argument(
+    "--verbose", help="Print details, e.g., about exceptions during instrumentation", action="store_true")
 
 
 ignored_file_suffixes = [
@@ -89,8 +91,13 @@ if __name__ == "__main__":
         print(f"Found {len(files)} file(s) to instrument")
         iids = IIDs(args.iids)
         for file_path in files:
-            print(f"Instrumenting {file_path}")
-            instrument_file(file_path, iids, args.line_coverage_instrumentation)
+            try:
+                print(f"Instrumenting {file_path}")
+                instrument_file(file_path, iids, args.line_coverage_instrumentation)
+            except Exception as e:
+                print(f"Error while instrumenting {file_path}. Ignoring this file.")
+                if args.verbose:
+                    print(e)
         iids.store()
     else:
         nb_restored = 0
