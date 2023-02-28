@@ -1,10 +1,10 @@
 libcst
-torch
 pandas
 tables
 pytest
 pytest-xdist
-transformers
 gensim
 flask
 requests
+torch
+transformers

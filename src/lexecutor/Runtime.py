@@ -4,11 +4,6 @@ import time
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, DummyObject
-from .predictors.AsIs import AsIs
-from .predictors.RandomPredictor import RandomPredictor
-from .predictors.NaiveValuePredictor import NaiveValuePredictor
-from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
-from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
 from .RuntimeStats import RuntimeStats
 from .Logging import logger
 
@@ -16,8 +11,8 @@ from .Logging import logger
 logger.info("Runtime starting")
 
 # ------- begin: select mode -----
-# mode = "RECORD"    # record values and write into a trace file
-mode = "PREDICT"   # predict and inject values if missing in exeuction
+mode = "RECORD"    # record values and write into a trace file
+# mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
@@ -29,15 +24,24 @@ if mode == "RECORD":
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
-    # predictor = AsIs()
-    # predictor = NaiveValuePredictor()
-    # predictor = RandomPredictor()
-    # predictor = FrequencyValuePredictor("values_frequencies.json")
-    # predictor = NeuralValuePredictor()
-
     runtime_stats = RuntimeStats()
     atexit.register(runtime_stats.print)
+    
+    # from .predictors.AsIs import AsIs
+    # predictor = AsIs()
+
+    # from .predictors.NaiveValuePredictor import NaiveValuePredictor
+    # predictor = NaiveValuePredictor()
+
+    # from .predictors.RandomPredictor import RandomPredictor    
+    # predictor = RandomPredictor()
+
+    # from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
+    # predictor = FrequencyValuePredictor("values_frequencies.json")
+    
+    from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
     predictor = CodeT5ValuePredictor(runtime_stats)
+    
     start_time = time.time()
     predictor_name = predictor.__class__.name
 
