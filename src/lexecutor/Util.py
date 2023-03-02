@@ -1,8 +1,4 @@
-import torch as t
 from datetime import datetime
-
-dtype = t.float
-device = "cuda" if t.cuda.is_available() else "cpu"
 
 
 def gather_files(files_arg, suffix=".py"):

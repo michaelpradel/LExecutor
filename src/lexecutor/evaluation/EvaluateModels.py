@@ -1,5 +1,5 @@
 import torch as t
-from ..Util import device
+from ..predictors.DLUtil import device
 from ..predictors.codet5.FineTune import load_CodeT5, evaluate
 
 

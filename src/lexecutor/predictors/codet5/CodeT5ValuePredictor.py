@@ -1,5 +1,5 @@
 from ..ValuePredictor import ValuePredictor
-from ...Util import device
+from ..DLUtil import device
 from .ModelServer import ModelServer
 from ...Logging import logger
 import time

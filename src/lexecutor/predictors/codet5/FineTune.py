@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from transformers import AdamW
 from .CodeT5 import load_CodeT5
 from ...Hyperparams import Hyperparams as params
-from ...Util import device
+from ..DLUtil import device
 from ...Logging import logger
 
 

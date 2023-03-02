@@ -3,7 +3,7 @@ import torch as t
 import numpy as np
 from flask import Flask, json, request
 import requests
-from ...Util import device
+from ..DLUtil import device
 from ...Hyperparams import Hyperparams as params
 from ...IIDs import IIDs
 from .FineTune import load_CodeT5

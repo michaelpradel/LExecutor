@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, T5ForConditionalGeneration, AdamW
 from ...Logging import logger
-from ...Util import device
+from ..DLUtil import device
 
 
 def load_CodeT5():
