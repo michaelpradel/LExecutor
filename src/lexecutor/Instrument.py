@@ -18,6 +18,8 @@ parser.add_argument(
 parser.add_argument(
     "--line_coverage_instrumentation", help="Instruments files to calculate line coverage", action="store_true")
 parser.add_argument(
+    "--validate", help="Validate syntactic correctness of the instrumented code (and skip a file if syntactically incorrect)", action="store_true")
+parser.add_argument(
     "--verbose", help="Print details, e.g., about exceptions during instrumentation", action="store_true")
 
 
@@ -46,7 +48,7 @@ def gather_accessed_names(ast_wrapper):
     return used_names
 
 
-def instrument_file(file_path, iids, line_coverage_instrumentation):
+def instrument_file(file_path, iids, line_coverage_instrumentation, validate):
     for suffix in ignored_file_suffixes:
         if file_path.endswith(suffix):
             print(f"{file_path} is on blacklist -- skipping it")
@@ -65,12 +67,20 @@ def instrument_file(file_path, iids, line_coverage_instrumentation):
 
     code_rewriter = CodeRewriter(file_path, iids, line_coverage_instrumentation, accessed_names)
     rewritten_ast = ast_wrapper.visit(code_rewriter)
-    # print(f"\n{rewritten_ast.code}")
+    rewritten_code = "# LExecutor: DO NOT INSTRUMENT\n\n" + rewritten_ast.code
+
+    if validate:
+        try:
+            cst.parse_module(rewritten_code)
+        except Exception as e:
+            print(f"Error while validating {file_path}. Ignoring this file.")
+            if args.verbose:
+                print(e)
+            return
 
     copied_file_path = re.sub(r"\.py$", ".py.orig", file_path)
     copyfile(file_path, copied_file_path)
 
-    rewritten_code = "# LExecutor: DO NOT INSTRUMENT\n\n" + rewritten_ast.code
     with open(file_path, "w") as file:
         file.write(rewritten_code)
 
@@ -93,7 +103,7 @@ if __name__ == "__main__":
         for file_path in files:
             try:
                 print(f"Instrumenting {file_path}")
-                instrument_file(file_path, iids, args.line_coverage_instrumentation)
+                instrument_file(file_path, iids, args.line_coverage_instrumentation, args.validate)
             except Exception as e:
                 print(f"Error while instrumenting {file_path}. Ignoring this file.")
                 if args.verbose:
