@@ -37,15 +37,15 @@ class RandomPredictor(ValuePredictor):
     
     def name(self, iid, name):
         v = self.get_random_value()
-        logger.info(f"{iid}: Predicting for name {name}: {v}")
+        logger.info(f"{iid}: Predicting with RandomPredictor for name {name}: {v}")
         return v
 
     def call(self, iid, fct, fct_name, *args, **kwargs):
         v = self.get_random_value()
-        logger.info(f"{iid}: Predicting for call: {v}")
+        logger.info(f"{iid}: Predicting with RandomPredictor for call: {v}")
         return v
 
     def attribute(self, iid, base, attr_name):
         v = self.get_random_value()
-        logger.info(f"{iid}: Predicting for attribute {attr_name}: {v}")
+        logger.info(f"{iid}: Predicting with RandomPredictor for attribute {attr_name}: {v}")
         return v
