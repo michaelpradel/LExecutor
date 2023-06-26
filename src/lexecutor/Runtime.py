@@ -12,7 +12,7 @@ from .Logging import logger
 logger.info("Runtime starting")
 
 # ------- begin: select mode -----
-#mode = "RECORD"    # record values and write into a trace file
+# mode = "RECORD"    # record values and write into a trace file
 mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
@@ -42,14 +42,14 @@ elif mode == "PREDICT":
     # from .predictors.NaiveValuePredictor import NaiveValuePredictor
     # predictor = NaiveValuePredictor()
 
-    from .predictors.RandomPredictor import RandomPredictor    
-    predictor = RandomPredictor()
+    # from .predictors.RandomPredictor import RandomPredictor    
+    # predictor = RandomPredictor()
 
     # from .predictors.FrequencyValuePredictor import FrequencyValuePredictor
     # predictor = FrequencyValuePredictor("values_frequencies.json")
     
-    # from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
-    # predictor = CodeT5ValuePredictor(runtime_stats)
+    from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
+    predictor = CodeT5ValuePredictor(runtime_stats)
 
     # from .predictors.Type4PyValuePredictor import Type4PyValuePredictor
     # predictor = Type4PyValuePredictor(file, runtime_stats)

@@ -8,3 +8,4 @@ flask
 requests
 torch
 transformers
+GitPython
