@@ -31,11 +31,13 @@ def find_code_changes(repo):
             diff_str = str(diff[0])
             matches = re.findall(r"@@", diff_str)
             if len(matches) == 2:
-                line_info = diff_str.split("@@")[1]
-                line = int(line_info[line_info.find("-")+1:line_info.find(",")])
-                code_changes.append(CodeChange(c.parents[0].hexsha, c.hexsha, diff[0].a_path, line))
-                # TODO remove after testing
-                if len(code_changes) == 5:
+                try:
+                    line_info = diff_str.split("@@")[1]
+                    line = int(line_info[line_info.find("-")+1:line_info.find(",")])
+                    code_changes.append(CodeChange(c.parents[0].hexsha, c.hexsha, diff[0].a_path, line))
+                except:
+                    print(f"Error parsing diff for commit {c.hexsha} -- ignoring")
+                if len(code_changes) == 1000:
                     break
     return code_changes
 
