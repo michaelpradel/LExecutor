@@ -11,9 +11,11 @@ class Hyperparams(object):
     # split = "file"
     split = "mixed"
 
-    value_abstraction = "fine-grained"
-    # value_abstraction = "coarse-grained-deterministic"
+    # value_abstraction = "fine-grained"
+    value_abstraction = "coarse-grained-deterministic"
     # value_abstraction = "coarse-grained-randomized"
+
+    type4Py_prediction = False
 
     perc_train = 0.95
 
@@ -29,6 +31,14 @@ class Hyperparams(object):
 
     # training
     epochs = 10
-    batch_size = 50
+    # CodeT5
+    # batch_size = 50
+    # CodeBERT
+    batch_size = 13
+
+    # experiments
+    dataset = "so_snippets"
+    # dataset = "random_functions"
+    number_executions = 10
 
     

@@ -110,7 +110,8 @@ fine_to_coarse_grained = {
 if params.value_abstraction.startswith("coarse-grained"):
     if params.value_abstraction == "coarse-grained-deterministic":
         def restore_value(abstract_value):
-            abstract_value = fine_to_coarse_grained["@" + abstract_value][1:]
+            if not params.type4Py_prediction:
+                abstract_value = fine_to_coarse_grained["@" + abstract_value][1:]
             # common primitive values
             if abstract_value == "None":
                 return None
@@ -147,7 +148,8 @@ if params.value_abstraction.startswith("coarse-grained"):
                 return DummyObject()
     elif params.value_abstraction == "coarse-grained-randomized":
         def restore_value(abstract_value):
-            abstract_value = fine_to_coarse_grained["@" + abstract_value][1:]
+            if not params.type4Py_prediction:
+                abstract_value = fine_to_coarse_grained["@" + abstract_value][1:]
             # common primitive values
             if abstract_value == "None":
                 return None
