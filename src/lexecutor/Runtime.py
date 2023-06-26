@@ -11,8 +11,8 @@ from .Logging import logger
 logger.info("Runtime starting")
 
 # ------- begin: select mode -----
-mode = "RECORD"    # record values and write into a trace file
-# mode = "PREDICT"   # predict and inject values if missing in exeuction
+# mode = "RECORD"    # record values and write into a trace file
+mode = "PREDICT"   # predict and inject values if missing in execution
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
