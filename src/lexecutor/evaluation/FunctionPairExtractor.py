@@ -5,6 +5,8 @@ from collections import namedtuple
 from os.path import exists, isdir, join
 from os import mkdir
 import libcst as cst
+from typing import Optional
+from .AddFunctionInvocation import TransformerVisitor
 
 # Helper script to find commits that modify a single function,
 # and to extract the pair of old+new function into separate files.
@@ -53,18 +55,32 @@ class FunctionExtractor(cst.CSTVisitor):
             self.function = cst.Module([]).code_for_node(node)
 
 
-def extract_function(file, line):
+def extract_function(file, line) -> Optional[cst.FunctionDef]:
     tree = cst.parse_module(open(file).read())
     tree = cst.MetadataWrapper(tree)
     extractor = FunctionExtractor(line)
     tree.visit(extractor)
-    if extractor.function is None:
-        print(f"WARNING: No function found in {file} at line {line}")
-        return "MISSING"
     return extractor.function
 
 
-def extract_function_pair(repo, code_change, dest):
+def write_function_to_file(fct, dest_dir, name_prefix):
+    # write only the function 
+    file_name = join(dest_dir, f"{name_prefix}.py")
+    with open(file_name, "w") as f:
+        f.write(fct)
+
+    # write function with invocation in main script
+    ast = cst.parse_module(fct)
+    ast_wrapper = cst.metadata.MetadataWrapper(ast)
+    code_transformer = TransformerVisitor()
+    rewritten_ast = ast_wrapper.visit(code_transformer)
+    fct_with_invoc = rewritten_ast.code
+    file_name = join(dest_dir, f"{name_prefix}_with_invocation.py")
+    with open(file_name, "w") as f:
+        f.write(fct_with_invoc)
+
+
+def extract_function_pair(repo, code_change, dest_dir):
     # get old function
     repo.git.checkout(code_change.old_commit)
     file_path = join(repo.working_tree_dir, code_change.file)
@@ -75,11 +91,11 @@ def extract_function_pair(repo, code_change, dest):
     file_path = join(repo.working_tree_dir, code_change.file)
     new_function = extract_function(file_path, code_change.line)
 
-    # write both functions to destination directory
-    with open(join(dest, "old.py"), "w") as f:
-        f.write(old_function)
-    with open(join(dest, "new.py"), "w") as f:
-        f.write(new_function)
+    if old_function is not None and new_function is not None:
+        print(f"Trying to write to {dest_dir}")
+        write_function_to_file(old_function, dest_dir, "old")
+        write_function_to_file(new_function, dest_dir, "new")
+        print(f"Extracted function pair to {dest_dir}")
 
 
 if __name__ == "__main__":
@@ -87,14 +103,17 @@ if __name__ == "__main__":
     if not exists(args.repo) or not isdir(args.repo):
         print(f"Invalid repo directory: {args.repo}")
         exit(1)
-    if not exists(args.dest) or not isdir(args.dest):
-        print(f"Invalid destination directory: {args.dest}")
-        exit(1)    
+    if exists(args.dest) and not isdir(args.dest):
+        print(f"Destination must be a directory: {args.dest}")
+        exit(1)
+    if not exists(args.dest):
+        mkdir(args.dest)    
 
     repo = Repo(args.repo)
     code_changes = find_code_changes(repo)
     print(f"{len(code_changes)} code changes found")
     for code_change_idx, code_change in enumerate(code_changes):
         dest_dir = join(args.dest, f"code_change_{code_change_idx}")
-        mkdir(dest_dir)
+        if not exists(dest_dir):
+            mkdir(dest_dir)
         extract_function_pair(repo, code_change, dest_dir)
