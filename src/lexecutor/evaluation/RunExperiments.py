@@ -26,14 +26,14 @@ if __name__ == "__main__":
 
     # run the files (with a timeout)
     for file in files:
-        project_name = file.split("/")[2]
         for execution in range(1, params.number_executions+1):
             if params.dataset == "random_functions":
+                project_name = file.split("/")[2]
                 file_name = file.split("/")[4].split('.')[0]
+                log_file = open(f"{args.log_dest_dir}/{project_name}_{file_name}_{str(execution)}.txt", "w")
             else:
                 file_name = file.split("/")[2].split('.')[0]
-
-            log_file = open(f"{args.log_dest_dir}/{project_name}_{file_name}_{str(execution)}.txt", "w")
+                log_file = open(f"{args.log_dest_dir}/{file_name}_{str(execution)}.txt", "w")
             try:
                 process = subprocess.Popen(
                     f"time {command} {file} {execution}", shell=True, start_new_session=True, stdout=log_file, stderr=log_file)
