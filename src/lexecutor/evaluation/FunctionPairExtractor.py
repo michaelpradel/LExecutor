@@ -21,7 +21,11 @@ CodeChange = namedtuple("CodeChange", ["old_commit", "new_commit", "file", "line
 
 
 def find_code_changes(repo):
-    commits = list(repo.iter_commits("main"))
+    try:
+        commits = list(repo.iter_commits("main"))
+    except:
+        commits = list(repo.iter_commits("master"))
+        
     code_changes = []
     for c in commits:
         if len(c.parents) == 0:
