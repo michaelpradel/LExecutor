@@ -78,8 +78,6 @@ def evaluate(validate_tensors_path, model, tokenizer):
             top1_accuracy = float(len(corrects)) / len(labels)
             k_to_all_accuracies[1].append(top1_accuracy)
 
-            print(f"Label: {label_ids[0][int(masked_index[i][1])]}, Prediction: {predictions[0][0]['token']}")
-
             # for debugging/eye-balling the results
             all_inputs.extend(INPUT)
             all_labels.extend(labels)
@@ -186,7 +184,7 @@ if __name__ == "__main__":
             })])
             df_training_loss.to_csv('./training_loss.csv', index=False)
 
-        accuracy = evaluate(args.validate_tensors, model, tokenizer)[1]
+        accuracy = evaluate(args.validate_tensors, model, tokenizer)
 
         # save validation accuracies to file
         df_validation_acc = pd.concat([df_validation_acc, pd.DataFrame({

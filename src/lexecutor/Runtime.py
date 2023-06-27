@@ -1,6 +1,7 @@
 import atexit
 import sys
 import time
+from os import path
 from .Hyperparams import Hyperparams as params
 from .TraceWriter import TraceWriter
 from .ValueAbstraction import restore_value, DummyObject
@@ -12,7 +13,7 @@ logger.info("Runtime starting")
 
 # ------- begin: select mode -----
 # mode = "RECORD"    # record values and write into a trace file
-mode = "PREDICT"   # predict and inject values if missing in execution
+mode = "PREDICT"   # predict and inject values if missing in exeuction
 # mode = "REPLAY"  # replay a previously recorded trace (mostly for testing)
 # ------- end: select mode -------
 
@@ -24,7 +25,15 @@ if mode == "RECORD":
     atexit.register(lambda: trace.write_to_file())
     runtime_stats = None
 elif mode == "PREDICT":
-    runtime_stats = RuntimeStats()
+    # for running experiments
+    if file_type == "SOURCE":
+        file = sys.argv[0]
+        execution = sys.argv[1]
+    elif file_type == "TESTE":
+        file = sys.argv[1]
+        execution = sys.argv[2]
+    
+    runtime_stats = RuntimeStats(execution)
     atexit.register(runtime_stats.print)
     
     # from .predictors.AsIs import AsIs
@@ -41,15 +50,12 @@ elif mode == "PREDICT":
     
     from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
     predictor = CodeT5ValuePredictor(runtime_stats)
+
+    # from .predictors.Type4PyValuePredictor import Type4PyValuePredictor
+    # predictor = Type4PyValuePredictor(file, runtime_stats)
     
     start_time = time.time()
-    predictor_name = predictor.__class__.name
-
-    # for running experiments
-    if file_type == "SOURCE":
-        file = sys.argv[0]
-    elif file_type == "TESTE":
-        file = sys.argv[1]
+    predictor_name = predictor.__class__.__name__
         
     atexit.register(runtime_stats.save, file, predictor_name, start_time)
 elif mode == "REPLAY":

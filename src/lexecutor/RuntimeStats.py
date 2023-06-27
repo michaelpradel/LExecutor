@@ -1,16 +1,17 @@
 import pandas as pd
 import os
+from os import path
 import csv
 import time
 from .Logging import logger
 from .IIDs import IIDs
 from .Hyperparams import Hyperparams as param
 
-write_event_trace = False
+write_event_trace = True
 
 
 class RuntimeStats:
-    def __init__(self):
+    def __init__(self, execution):
         self.total_uses = 0
         self.guided_uses = 0
 
@@ -21,6 +22,11 @@ class RuntimeStats:
             self.event_trace = []
             self.iids = IIDs(param.iids_file)
 
+        self.random_predictions = 0
+        self.type4py_predictions = 0
+
+        self.execution = execution
+
     def cover_iid(self, iid):
         self.covered_iids.add(iid)
         if write_event_trace:
@@ -28,6 +34,7 @@ class RuntimeStats:
             
     def cover_line(self, iid):
         self.executed_lines.append(iid)
+        logger.info(f"Line {self.iids.line(iid)}: Executed")
 
     def inject_value(self, iid, msg):
         if write_event_trace:
@@ -45,17 +52,25 @@ class RuntimeStats:
         logger.info(f"Guided uses : {self.guided_uses}/{self.total_uses}")
 
     def _save_summary_metrics(self, file, predictor_name, execution_time):
+        if param.dataset == "so_snippets":
+            project_name = ""
+            file_name = file.split("/")[2].split('.')[0]
+        else:
+            project_name = file.split("/")[2]
+            file_name = file.split("/")[4].split('.')[0]
+
         # Create CSV file and add header if it doesn't exist
-        if not os.path.isfile('./metrics.csv'):
+        if not os.path.isfile(f'./metrics_{project_name}_{file_name}_{self.execution}.csv'):
             columns = ['file', 'predictor', 'covered_iids',
                        'total_uses', 'guided_uses', 'executed_lines', 
-                       'covered_lines', 'execution_time']
+                       'covered_lines', 'execution_time', 'random_predictions', 
+                       'type4py_predictions', 'execution']
 
-            with open('./metrics.csv', 'a') as csvFile:
+            with open(f'./metrics_{project_name}_{file_name}_{self.execution}.csv', 'a') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(columns)
 
-        df = pd.read_csv('./metrics.csv')
+        df = pd.read_csv(f'./metrics_{project_name}_{file_name}_{self.execution}.csv')
         df_new_data = pd.DataFrame({
             'file': [file],
             'predictor': [predictor_name],
@@ -64,10 +79,13 @@ class RuntimeStats:
             'guided_uses': [self.guided_uses],
             'executed_lines': [len(self.executed_lines)],
             'covered_lines': [len(set(self.executed_lines))],
-            'execution_time': [execution_time]
+            'execution_time': [execution_time],
+            'random_predictions': [self.random_predictions],
+            'type4py_predictions': [self.type4py_predictions],
+            'execution': [self.execution]
         })
         df = pd.concat([df, df_new_data])
-        df.to_csv('./metrics.csv', index=False)
+        df.to_csv(f'./metrics_{project_name}_{file_name}_{self.execution}.csv', index=False)
 
     def _save_event_trace(self):
         with open("trace.txt", "w") as fp:

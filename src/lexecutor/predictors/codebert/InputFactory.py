@@ -82,7 +82,7 @@ class InputFactory(object):
             value = entry["value"][1:]
 
         label_ids = self.tokenizer(
-            value, max_length=params.max_output_length, 
+            value, max_length=1, 
             return_attention_mask=False, add_special_tokens=False).input_ids
         return label_ids
     
