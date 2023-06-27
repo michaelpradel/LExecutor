@@ -11,8 +11,8 @@ class Hyperparams(object):
     # split = "file"
     split = "mixed"
 
-    # value_abstraction = "fine-grained"
-    value_abstraction = "coarse-grained-deterministic"
+    value_abstraction = "fine-grained"
+    # value_abstraction = "coarse-grained-deterministic"
     # value_abstraction = "coarse-grained-randomized"
 
     type4Py_prediction = False
