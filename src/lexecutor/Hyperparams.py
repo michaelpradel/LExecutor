@@ -15,8 +15,6 @@ class Hyperparams(object):
     # value_abstraction = "coarse-grained-deterministic"
     # value_abstraction = "coarse-grained-randomized"
 
-    type4Py_prediction = False
-
     perc_train = 0.95
 
     # CodeT5 model
