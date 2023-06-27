@@ -82,9 +82,11 @@ def extract_function(file, line) -> Optional[cst.FunctionDef]:
     return extractor
 
 
-def write_function_to_file(fct, dest_dir, name_prefix):
+def write_function_to_file(fct, dest_dir, name_prefix, code_change):
     fct_code = cst.Module([]).code_for_node(fct)
     file_name = join(dest_dir, f"{name_prefix}.py")
+    comment = f"# {code_change.old_commit} -- {code_change.new_commit} -- {code_change.file} -- {code_change.line}\n\n"
+    all_code = comment + fct_code
     with open(file_name, "w") as f:
         f.write(fct_code)
 
@@ -104,7 +106,7 @@ def create_class_wrapper(fct_node, wrapper_name):
     return fct_def_code
 
 
-def write_function_comparison_script(old_fct_extractor, new_fct_extractor, dest_dir):
+def write_function_comparison_script(old_fct_extractor, new_fct_extractor, dest_dir, code_change):
     # create code that defines the functions/methods
     assert old_fct_extractor.is_method == new_fct_extractor.is_method
     if old_fct_extractor.is_method:
@@ -121,16 +123,19 @@ def write_function_comparison_script(old_fct_extractor, new_fct_extractor, dest_
     # create code that calls and compares the two functions/methods
     main_code_template = """
 if __name__ == "__main__":
+    import pathlib
+    p = str(pathlib.Path(__file__).parent.resolve())
+
     try:
         val1 = INVOCATION1
         val2 = INVOCATION2
-    except Exception as _:
-        print("Function(s) raised an exception")
+    except Exception as e:
+        print(p + ": Function(s) raised an exception: " + str(type(e)) + " -- " + str(e))
     else:
         if val1 == val2:
-            print("Both functions returned the same value")
+            print(p + ": Both functions returned the same value" + str(val1))
         else:
-            print("Functions returned different values: " + val1 + " vs. " + val2)
+            print(p + ": Functions returned different values: " + str(val1) + " vs. " + str(val2))
     """
 
     if old_fct_extractor.is_method:
@@ -140,7 +145,9 @@ if __name__ == "__main__":
         main_code_template = main_code_template.replace("INVOCATION1", old_fct_extractor.function.name.value + "_1(" + ", ".join(old_fct_extractor.param_names) + ")")
         main_code_template = main_code_template.replace("INVOCATION2", new_fct_extractor.function.name.value + "_2(" + ", ".join(new_fct_extractor.param_names) + ")")
 
-    all_code = fct_def_code + "\n\n" + main_code_template
+    comment = f"# {code_change.old_commit} -- {code_change.new_commit} -- {code_change.file} -- {code_change.line}\n\n"
+
+    all_code = comment + fct_def_code + "\n\n" + main_code_template
     file_name = join(dest_dir, "compare.py")
     with open(file_name, "w") as f:
         f.write(all_code)
@@ -164,11 +171,11 @@ def extract_function_pair(repo, code_change, dest_dir):
         return
 
     # write original functions into files
-    write_function_to_file(old_function_extractor.function, dest_dir, "old")
-    write_function_to_file(new_function_extractor.function, dest_dir, "new")
+    write_function_to_file(old_function_extractor.function, dest_dir, "old", code_change)
+    write_function_to_file(new_function_extractor.function, dest_dir, "new", code_change)
 
     # write both functions to a single file that invokes and compares them
-    write_function_comparison_script(old_function_extractor, new_function_extractor, dest_dir)
+    write_function_comparison_script(old_function_extractor, new_function_extractor, dest_dir, code_change)
 
     print(f"Extracted function pair to {dest_dir}")
 
