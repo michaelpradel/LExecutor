@@ -28,10 +28,10 @@ elif mode == "PREDICT":
     # for running experiments
     if file_type == "SOURCE":
         file = sys.argv[0]
-        execution = sys.argv[1]
+        execution = sys.argv[1] if len(sys.argv) > 1 else ""
     elif file_type == "TESTE":
         file = sys.argv[1]
-        execution = sys.argv[2]
+        execution = sys.argv[2] if len(sys.argv) > 1 else ""
     
     runtime_stats = RuntimeStats(execution)
     atexit.register(runtime_stats.print)

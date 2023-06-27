@@ -18,7 +18,7 @@ all_training_traces.txt
 checkpoint-last
 functions_under_test
 bodies_under_test
-metrics.csv
+metrics*.csv
 trace*.txt
 build
 eval_examples.pkl
@@ -31,3 +31,4 @@ tmp
 pynguin-report
 flask_files.txt
 pyrightconfig.json
+out
