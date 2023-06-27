@@ -191,4 +191,8 @@ if __name__ == "__main__":
         dest_dir = join(args.dest, f"code_change_{code_change_idx}")
         if not exists(dest_dir):
             mkdir(dest_dir)
-        extract_function_pair(repo, code_change, dest_dir)
+
+        try:
+            extract_function_pair(repo, code_change, dest_dir)
+        except:
+            print(f"Something went wrong when extracting from code change {code_change_idx} -- ignoring")
