@@ -21,13 +21,15 @@ CodeChange = namedtuple("CodeChange", ["old_commit", "new_commit", "file", "line
 
 
 def find_code_changes(repo):
+    print(f"Finding code changes in {repo}")
     try:
         commits = list(repo.iter_commits("main"))
     except:
         commits = list(repo.iter_commits("master"))
         
+    print(f"Constructed list of {len(commits)} commits")
     code_changes = []
-    for c in commits:
+    for c_idx, c in enumerate(commits):
         if len(c.parents) == 0:
             continue
         diff = c.parents[0].diff(c, create_patch=True)
@@ -43,6 +45,8 @@ def find_code_changes(repo):
                     print(f"Error parsing diff for commit {c.hexsha} -- ignoring")
                 if len(code_changes) == 1000:
                     break
+        if c_idx % 100 == 0:
+            print(f"Processed {c_idx+1}/{len(commits)} commits. Found {len(code_changes)} relevant commits so far.")
     return code_changes
 
 
