@@ -126,6 +126,22 @@ def write_function_comparison_script(old_fct_extractor, new_fct_extractor, dest_
 
     # create code that calls and compares the two functions/methods
     main_code_template = """
+def different(val1, val2):
+    if type(val1) != type(val2):
+        return True
+    if type(val1) == list and type(val2) == list and len(val1) != len(val2):
+        return True
+    if type(val1) == dict and type(val2) == dict and len(val1) != len(val2):
+        return True
+    if type(val1) == set and type(val2) == set and len(val1) != len(val2):
+        return True
+    if type(val1) == tuple and type(val2) == tuple and len(val1) != len(val2):
+        return True
+    if type(val1) in [int, float, str, bool, type(None)] and type(val2) in [int, float, str, bool, type(None)]:
+        return val1 != val2
+    return False
+
+    
 if __name__ == "__main__":
     import pathlib
     p = str(pathlib.Path(__file__).parent.resolve())
@@ -136,10 +152,11 @@ if __name__ == "__main__":
     except Exception as e:
         print(p + ": Function(s) raised an exception: " + str(type(e)) + " -- " + str(e))
     else:
-        if val1 == val2:
-            print(p + ": Both functions returned the same value" + str(val1))
-        else:
+        if different(val1, val2):
             print(p + ": Functions returned different values: " + str(val1) + " vs. " + str(val2))
+        else:
+            print(p + ": Both functions returned the same value" + str(val1))
+
     """
 
     if old_fct_extractor.is_method:
