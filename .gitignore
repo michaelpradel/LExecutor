@@ -31,4 +31,4 @@ tmp
 pynguin-report
 flask_files.txt
 pyrightconfig.json
-out
+out*
