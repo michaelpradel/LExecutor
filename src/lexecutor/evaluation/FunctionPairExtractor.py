@@ -127,6 +127,8 @@ def write_function_comparison_script(old_fct_extractor, new_fct_extractor, dest_
     # create code that calls and compares the two functions/methods
     main_code_template = """
 def different(val1, val2):
+    if type(val1) == Wrapper1 and type(val2) == Wrapper2:
+        return False
     if type(val1) != type(val2):
         return True
     if type(val1) == list and type(val2) == list and len(val1) != len(val2):
