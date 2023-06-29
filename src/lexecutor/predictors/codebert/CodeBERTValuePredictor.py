@@ -5,6 +5,7 @@ from ..DLUtil import device
 from .CodeBERT import load_CodeBERT
 from .InputFactory import InputFactory
 from ...Logging import logger
+from transformers import pipeline
 import time
 import requests
 from requests.exceptions import ConnectionError
@@ -21,11 +22,12 @@ class CodeBERTValuePredictor(ValuePredictor):
         # load model
         self.tokenizer, self.model = load_CodeBERT()
         if params.value_abstraction == "fine-grained":
-            model_path = "data/codeBERT_models/jan5_5_projects/pytorch_model.bin"
+            model_path = "data/codeBERT_models/fine_grained/pytorch_model_epoch9.bin"
         elif params.value_abstraction == "coarse-grained-deterministic" or params.value_abstraction == "coarse-grained-randomized":
-            model_path = "data/codeBERT_models/jan5_5_projects/pytorch_model.bin"
+            model_path = "data/codeBERT_models/course_grained/pytorch_model_epoch9.bin"
         self.model.load_state_dict(t.load(
             model_path, map_location=device))
+        self.model.to(device)
         logger.info("CodeBERT model loaded")
 
         self.iids = IIDs(params.iids_file)
@@ -35,28 +37,24 @@ class CodeBERTValuePredictor(ValuePredictor):
     def _query_model(self, entry):
         # turn entry into vectors
         input_ids, _ = self.input_factory.entry_to_inputs(entry)
-        input_ids = [tensor.cpu() for tensor in input_ids]
+        input_ids = [tensor.to(device) for tensor in input_ids]
 
         # query the model and decode the result
         with t.no_grad():
             self.model.eval()
-            generated_ids = self.model.generate(
-                t.tensor(np.array([input_ids]), device=device))
 
-        predicted_value = self.tokenizer.decode(
-            generated_ids[0], skip_special_tokens=True)
+            fill_mask = pipeline('fill-mask', model=self.model, tokenizer=self.tokenizer, device=0, framework="pt")
 
-        if self.verbose:
-            if self.tokenizer.bos_token_id not in generated_ids or self.tokenizer.eos_token_id not in generated_ids[0]:
-                print(
-                    f"Warning: CodeBERT likely produced a garbage value: {predicted_value}")
+            # This is required because the fill-mask pipeline adds special tokens during encoding.
+            # If use skip_special_tokens=True, <mask> is discarded as well
+            INPUT = self.tokenizer.decode(input_ids)
+            INPUT = INPUT.replace("</s>", "")
+            INPUT = INPUT.replace("<s>", "")
+            INPUT = INPUT.replace("<pad>", "")
 
-        return predicted_value, restore_value(predicted_value)
-    
+            predictions = fill_mask(INPUT)
 
-
-
-        val_as_string = response["v"]
+        val_as_string = predictions[0]['token_str']
         val = restore_value(val_as_string)
 
         return val_as_string, val
