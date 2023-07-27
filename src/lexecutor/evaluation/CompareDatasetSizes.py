@@ -15,6 +15,8 @@ parser.add_argument(
 parser.add_argument("--train", action="store_true")
 parser.add_argument(
     "--in_dir", help="folder with training and validation produced with --prepare (pass when using --train)")
+parser.add_argument(
+    "--size", help="fix the index of the run, ranging from 0 (=smallest) to 9 (=largest) (optional, pass when using --train)")
 
 
 def load_data(tensor_files):
@@ -58,13 +60,16 @@ def store_data(increasing_train_data_subsets, validate_data, out_dir):
     print(f"Stored training and validation data into {out_dir}")
 
 
-def run_training_with_different_sizes(in_dir):
-    for idx in range(0, 10):
-        print(f"Training on subset {idx}")
-        stats_dir = f"{in_dir}/stats{idx}"
-        if not os.path.exists(stats_dir):
-            os.makedirs(stats_dir)
-        run(["python", "-m", "lexecutor.predictors.codet5.FineTune", "--train_tensors", f"{in_dir}/train{idx}.pt", "--validate_tensors", f"{in_dir}/validate.pt", "--output_dir", f"{in_dir}/model{idx}", "--stats_dir", stats_dir])
+def run_training_with_size(in_dir, idx):
+    print(f"Training on subset {idx}")
+    stats_dir = f"{in_dir}/stats{idx}"
+    if not os.path.exists(stats_dir):
+        os.makedirs(stats_dir)
+    run(["python", "-m", "lexecutor.predictors.codet5.FineTune",
+         "--train_tensors", f"{in_dir}/train{idx}.pt",
+         "--validate_tensors", f"{in_dir}/validate.pt",
+         "--output_dir", f"{in_dir}/model{idx}",
+         "--stats_dir", stats_dir])
 
 
 if __name__ == "__main__":
@@ -74,4 +79,8 @@ if __name__ == "__main__":
         increasing_train_data_subsets, validate_data = rearrange_data(all_data)
         store_data(increasing_train_data_subsets, validate_data, args.out_dir)
     elif args.train:
-        run_training_with_different_sizes(args.in_dir)
+        if args.size:
+            run_training_with_size(args.in_dir, args.size)
+        else:
+            for idx in range(0, 10):
+                run_training_with_size(args.in_dir, idx)
