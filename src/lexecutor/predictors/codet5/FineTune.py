@@ -20,6 +20,8 @@ parser.add_argument(
     "--validate_tensors", help=".pt files for validation", default="validate.pt")
 parser.add_argument(
     "--output_dir", help="directory to store models", required=True)
+parser.add_argument(
+    "--stats_dir", help="directory to store loss and accuracy results (default=current directory)", default=".")
 
 
 print_examples = True
@@ -179,7 +181,7 @@ if __name__ == "__main__":
                 'loss': [round(loss.item(), 4)],
                 'epoch': [epoch]
             })])
-            df_training_loss.to_csv('./training_loss.csv', index=False)
+            df_training_loss.to_csv(f"{args.stats_dir}/training_loss.csv", index=False)
 
         accuracy = evaluate(args.validate_tensors, model, tokenizer)[1]
 
@@ -188,7 +190,7 @@ if __name__ == "__main__":
             "epoch": [epoch],
             "val_accuracy": [accuracy]
         })])
-        df_validation_acc.to_csv('./validation_acc.csv', index=False)
+        df_validation_acc.to_csv(f"{args.stats_dir}/validation_acc.csv", index=False)
 
         save_model(model, args.output_dir, epoch)
 
