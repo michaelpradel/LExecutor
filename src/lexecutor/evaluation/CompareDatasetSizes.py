@@ -16,7 +16,7 @@ parser.add_argument("--train", action="store_true")
 parser.add_argument(
     "--in_dir", help="folder with training and validation produced with --prepare (pass when using --train)")
 parser.add_argument(
-    "--size", help="fix the index of the run, ranging from 0 (=smallest) to 9 (=largest) (optional, pass when using --train)")
+    "--size", help="fix the index of the run (optional; one index or comma-separated indices; pass when using --train)")
 
 
 def load_data(tensor_files):
@@ -80,7 +80,12 @@ if __name__ == "__main__":
         store_data(increasing_train_data_subsets, validate_data, args.out_dir)
     elif args.train:
         if args.size:
-            run_training_with_size(args.in_dir, args.size)
+            if "," in args.size:
+                sizes = [int(s) for s in args.size.split(",")]
+            else:
+                sizes = [int(args.size)]
         else:
-            for idx in range(0, 10):
-                run_training_with_size(args.in_dir, idx)
+            sizes = list(range(0, 10))
+        
+        for idx in sizes:
+            run_training_with_size(args.in_dir, idx)
