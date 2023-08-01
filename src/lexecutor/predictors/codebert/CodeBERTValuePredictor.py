@@ -1,3 +1,4 @@
+from pathlib import Path
 import torch as t
 import numpy as np
 from ..ValuePredictor import ValuePredictor
@@ -22,9 +23,10 @@ class CodeBERTValuePredictor(ValuePredictor):
         # load model
         self.tokenizer, self.model = load_CodeBERT()
         if params.value_abstraction == "fine-grained":
-            model_path = "data/codeBERT_models/fine_grained/pytorch_model_epoch9.bin"
+            model_path = "data/released_models/codebert_model_20232906_fine-grained.bin"
         elif params.value_abstraction == "coarse-grained-deterministic" or params.value_abstraction == "coarse-grained-randomized":
-            model_path = "data/codeBERT_models/course_grained/pytorch_model_epoch9.bin"
+            model_path = "data/released_models/codebert_model_20232906_coarse-grained.bin"
+        self._fetch_model(model_path)
         self.model.load_state_dict(t.load(
             model_path, map_location=device))
         self.model.to(device)
@@ -33,6 +35,18 @@ class CodeBERTValuePredictor(ValuePredictor):
         self.iids = IIDs(params.iids_file)
         self.stats = stats
         self.input_factory = InputFactory(self.iids, self.tokenizer)
+
+    def _fetch_model(self, model_path):
+        path_to_url = {
+            "data/released_models/codebert_model_20232906_fine-grained.bin": "https://github.com/michaelpradel/LExecutor/releases/download/Models_20230105/codebert_model_20232906_fine-grained.bin",
+            "data/released_models/codebert_model_20232906_coarse-grained.bin": "https://github.com/michaelpradel/LExecutor/releases/download/Models_20230105/codebert_model_20232906_coarse-grained.bin"
+        }
+        if Path(model_path).exists():
+            return
+        Path.mkdir(Path(model_path).parent, parents=True, exist_ok=True)
+        logger.info(f"Downloading model from {path_to_url[model_path]}")
+        request = requests.get(path_to_url[model_path], allow_redirects=True)
+        open(model_path, 'wb').write(request.content)
 
     def _query_model(self, entry):
         # turn entry into vectors

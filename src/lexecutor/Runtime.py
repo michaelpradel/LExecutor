@@ -51,6 +51,9 @@ elif mode == "PREDICT":
     from .predictors.codet5.CodeT5ValuePredictor import CodeT5ValuePredictor
     predictor = CodeT5ValuePredictor(runtime_stats)
 
+    # from .predictors.codebert.CodeBERTValuePredictor import CodeBERTValuePredictor
+    # predictor = CodeBERTValuePredictor(runtime_stats)
+
     # from .predictors.Type4PyValuePredictor import Type4PyValuePredictor
     # predictor = Type4PyValuePredictor(file, runtime_stats)
     
