@@ -20,6 +20,8 @@ parser.add_argument(
     "--validate_tensors", help=".pt files for validation", default="validate.pt")
 parser.add_argument(
     "--output_dir", help="directory to store models", required=True)
+parser.add_argument(
+    "--stats_dir", help="directory to store loss and accuracy results (default=current directory)", default=".")
 
 
 print_examples = True
@@ -28,12 +30,12 @@ print_examples = True
 def evaluate(validate_tensors_path, model, tokenizer):
     validate_dataset = TensorDataset(t.load(validate_tensors_path))
     validate_loader = DataLoader(
-        validate_dataset, batch_size=params.batch_size, drop_last=True)
+        validate_dataset, batch_size=params.batch_size_CodeT5, drop_last=True)
 
     logger.info("Starting evaluation")
     logger.info("  Num examples = {}".format(len(validate_dataset)))
     logger.info("  Num batches = {}".format(len(validate_loader)))
-    logger.info("  Batch size = {}".format(params.batch_size))
+    logger.info("  Batch size = {}".format(params.batch_size_CodeT5))
 
     k_max = 5
     k_to_all_accuracies = {k: [] for k in range(1, k_max+1)}
@@ -134,15 +136,15 @@ if __name__ == "__main__":
 
     train_dataset = TensorDataset(t.load(args.train_tensors))
     train_loader = DataLoader(
-        train_dataset, batch_size=params.batch_size, drop_last=True)
+        train_dataset, batch_size=params.batch_size_CodeT5, drop_last=True)
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
     logger.info(f"Starting training on {device}")
     logger.info("  Num examples = {}".format(len(train_dataset)))
-    logger.info("  Batch size = {}".format(params.batch_size))
+    logger.info("  Batch size = {}".format(params.batch_size_CodeT5))
     logger.info("  Batch num = {}".format(
-        len(train_dataset) / params.batch_size))
+        len(train_dataset) / params.batch_size_CodeT5))
     logger.info("  Num epoch = {}".format(params.epochs))
 
     if not os.path.exists(args.output_dir):
@@ -179,7 +181,7 @@ if __name__ == "__main__":
                 'loss': [round(loss.item(), 4)],
                 'epoch': [epoch]
             })])
-            df_training_loss.to_csv('./training_loss.csv', index=False)
+            df_training_loss.to_csv(f"{args.stats_dir}/training_loss.csv", index=False)
 
         accuracy = evaluate(args.validate_tensors, model, tokenizer)[1]
 
@@ -188,7 +190,7 @@ if __name__ == "__main__":
             "epoch": [epoch],
             "val_accuracy": [accuracy]
         })])
-        df_validation_acc.to_csv('./validation_acc.csv', index=False)
+        df_validation_acc.to_csv(f"{args.stats_dir}/validation_acc.csv", index=False)
 
         save_model(model, args.output_dir, epoch)
 

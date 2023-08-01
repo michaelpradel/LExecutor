@@ -30,9 +30,9 @@ class Hyperparams(object):
     # training
     epochs = 10
     # CodeT5
-    # batch_size = 50
+    batch_size_CodeT5 = 50
     # CodeBERT
-    batch_size = 13
+    batch_size_CodeBERT = 13
 
     # experiments
     dataset = "so_snippets"

@@ -8,7 +8,7 @@ Replace "flask" with the name of the repository you want to analyze.
 
 ## Instrument the code
 
-```python -m lexecutor.Instrument --files `find data/function_pairs/flask -name compare.py | xargs```
+```python -m lexecutor.Instrument --files `find data/function_pairs/flask -name compare.py | xargs` ```
 
 ## Run the instrumented code to compare its runtime behavior
 

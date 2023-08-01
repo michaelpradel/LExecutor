@@ -28,12 +28,12 @@ print_examples = True
 def evaluate(validate_tensors_path, model, tokenizer):
     validate_dataset = TensorDataset(t.load(validate_tensors_path))
     validate_loader = DataLoader(
-        validate_dataset, batch_size=params.batch_size, drop_last=True)
+        validate_dataset, batch_size=params.batch_size_CodeBERT, drop_last=True)
 
     logger.info("Starting evaluation")
     logger.info("  Num examples = {}".format(len(validate_dataset)))
     logger.info("  Num batches = {}".format(len(validate_loader)))
-    logger.info("  Batch size = {}".format(params.batch_size))
+    logger.info("  Batch size = {}".format(params.batch_size_CodeBERT))
 
     k_max = 5
     k_to_all_accuracies = {k: [] for k in range(1, k_max+1)}
@@ -137,15 +137,15 @@ if __name__ == "__main__":
 
     train_dataset = TensorDataset(t.load(args.train_tensors))
     train_loader = DataLoader(
-        train_dataset, batch_size=params.batch_size, drop_last=True)
+        train_dataset, batch_size=params.batch_size_CodeBERT, drop_last=True)
 
     optim = AdamW(model.parameters(), lr=1e-5)
 
     logger.info(f"Starting training on {device}")
     logger.info("  Num examples = {}".format(len(train_dataset)))
-    logger.info("  Batch size = {}".format(params.batch_size))
+    logger.info("  Batch size = {}".format(params.batch_size_CodeBERT))
     logger.info("  Batch num = {}".format(
-        len(train_dataset) / params.batch_size))
+        len(train_dataset) / params.batch_size_CodeBERT))
     logger.info("  Num epoch = {}".format(params.epochs))
 
     if not os.path.exists(args.output_dir):
