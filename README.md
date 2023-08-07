@@ -1,8 +1,10 @@
-# LExecutor
+# LExecutor: Learning-Guided Execution
+
+This repository contains the implementation of LExecutor and supplementary material for the paper "LExecutor: Learning-Guided Execution" (FSE'23).
 
 Paper (pre-print): https://arxiv.org/abs/2302.02343
 
-## Setup
+## Installation Guide
 
 Create and enter a virtual environment:
 
@@ -18,29 +20,17 @@ Locally install the package in development/editable mode:
 
 `pip install -e ./`
 
-Run the commands, e.g.,:
+## Datasets
 
-`python -m lexecutor.Instrument --help`
-
-Run the test suite of benchmark projects, e.g.,:
-
-`cd data/repos/pandas`
-`source myenv/bin/activate`
-`pytest pandas/core/arrays/boolean.py`
-
-## Fine-tune CodeT5 Model
-
-1. Prepare the dataset, see `python -m lexecutor.predictors.codet5.PrepareData --help`
-
-2. Run the training, see `python -m lexecutor.predictors.codet5.FineTune --help`
-
-## Use Predictor
+## LExecutor Usage Guide
 
 1. Set the LExecutor mode to PREDICT at Runtime.py
 2. Instrument the Python files that will be LExecuted
 3. Run the Python files instrumented in step 2
 
-## Running the Pynguin Baseline
+## Baselines Usage Guide
+
+### Pynguin
 
 Extract functions into individual files, see:
 
@@ -55,3 +45,11 @@ Create and enter a virtual environment for Python 3.10 (required by the newest P
 Run Pynguin on the extracted functions:
 
 `python -m lexecutor.evaluation.RunPyngiun --files dir_with_functions/*.py`
+
+## Fine-tuning Guide
+
+### CodeT5 Model
+
+1. Prepare the dataset, see `python -m lexecutor.predictors.codet5.PrepareData --help`
+
+2. Run the training, see `python -m lexecutor.predictors.codet5.FineTune --help`
