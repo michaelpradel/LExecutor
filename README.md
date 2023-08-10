@@ -20,15 +20,42 @@ Locally install the package in development/editable mode:
 
 `pip install -e ./`
 
-## Datasets
-
 ## LExecutor Usage Guide
 
-1. Set the LExecutor mode to PREDICT at Runtime.py
-2. Instrument the Python files that will be LExecuted
-3. Run the Python files instrumented in step 2
+1. Instrument the Python files that will be LExecuted
+2. Run the Python files instrumented in step 1
 
-## Baselines Usage Guide
+As a simple example, consider that the following code is in ./files/file.py. 
+
+```python
+if (not has_min_size(all_data)):
+    raise RuntimeError("not enough data")
+
+train_len = round(0.8 * len(all_data))
+
+logger.info(f"Extracting training data with {config_str}")
+
+train_data = all_data[0:train_len]
+```
+Then, to *LExecute* the code, do as follows:
+
+1. Instrument the code:
+`python -m lexecutor.Instrument --files ./files/file.py`
+
+2. Run the instrumented code:
+`python ./files/file.py`
+
+## Replication Guide
+
+### Datasets
+
+### Value-use events
+
+### Open-source functions
+
+### Stack Overflow snippets
+
+### Baselines
 
 ### Pynguin
 
