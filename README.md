@@ -20,7 +20,7 @@ Locally install the package in development/editable mode:
 
 `pip install -e ./`
 
-## LExecutor Usage Guide
+## Usage Guide
 
 1. Instrument the Python files that will be LExecuted
 2. Run the Python files instrumented in step 1
@@ -49,11 +49,30 @@ Then, to *LExecute* the code, do as follows:
 
 ### Datasets
 
-### Value-use events
+#### Value-use events
 
-### Open-source functions
+To gather a corpus of value-use events for training the neural model, we proceed as follows:
 
-### Stack Overflow snippets
+1. Set the LExecutor mode to RECORD at `Runtime.py`
+2. Execute `chmod +x get_traces.sh`
+3. Execute `get_traces.sh` giving the required arguments, e.g. `get_traces https://github.com/Textualize/rich rich tests`
+
+The output, i.e. the repositories and respective trace files, is stored in `./data/repos`.
+
+#### Open-source functions
+
+To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
+
+1. Execute `chmod +x get_function_bodies_dataset.sh`
+2. Execute get_function_bodies_dataset.sh
+
+The output, i.e. the repositories and respective randomly selected functions, is stored in `./data/repos` and `./popular_projects_snippets_dataset`, respectively.
+
+#### Stack Overflow snippets
+
+To gather a dataset of code snippets from Stack Overflow, we execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+
+The output, i.e. the code snippets from Stack Overflow, is stored in `./so_snippets_dataset`.
 
 ### Baselines
 
