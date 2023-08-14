@@ -55,9 +55,10 @@ To gather a corpus of value-use events for training the neural model, we proceed
 
 1. Set the LExecutor mode to RECORD at `./src/lexecutor/Runtime.py`
 2. Execute `chmod +x get_traces.sh`
-3. Execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
+3. For every considered project, execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
+4. To get the path of all the generated traces, run `find ./data/repos/ -type f -name "trace_*.h5" > traces.txt`
 
-The output is stored as follows: the repositories with instrumented files and trace files is stored in `./data/repos` and the instruction ids is stored in `./iids.json`.
+The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths is stored in `traces.txt`.
 
 #### Open-source functions
 
@@ -70,9 +71,13 @@ The output, i.e. the repositories and respective randomly selected functions, is
 
 #### Stack Overflow snippets
 
-To gather a dataset of code snippets from Stack Overflow, we execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+To gather a dataset of code snippets from Stack Overflow, we proceed as follows:
 
-The output, i.e. the code snippets from Stack Overflow, is stored in `./so_snippets_dataset`.
+1. Create a folder to store the code snippets with `mkdir so_snippets_dataset`
+2. Execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+3. To get the path of all the collected snippets, run `find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt`
+
+The output is stored as follows: the code snippets from Stack Overflow are stored in `./so_snippets_dataset` and their paths are stored in `so_snippets_dataset.txt`.
 
 ### Model training
 
