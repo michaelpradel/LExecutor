@@ -9,3 +9,4 @@ requests
 torch
 transformers
 GitPython
+beautifulsoup4
