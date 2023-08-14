@@ -64,7 +64,7 @@ The output is stored as follows: the repositories with instrumented files and tr
 To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
 
 1. Execute `chmod +x get_function_bodies_dataset.sh`
-2. Execute `get_function_bodies_dataset.sh`
+2. Execute `./get_function_bodies_dataset.sh`
 
 The output, i.e. the repositories and respective randomly selected functions, is stored in `./data/repos` and `./popular_projects_snippets_dataset`, respectively.
 
