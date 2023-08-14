@@ -5,8 +5,11 @@
 
 REPO_NAME=$(echo $1 | grep -o '[^/]*$')
 
+mkdir ./data
+mkdir ./data/repos
+
 # Download repo
-git -C ./data/repos clone $1 
+git -C ./data/repos clone $1
 
 # Install requirements
 cd ./data/repos/$REPO_NAME
@@ -16,6 +19,7 @@ python3 setup.py install
 # Rich
 pip install commonmark
 pip install pygments
+pip install attr
 # Requests
 pip install trustme
 
@@ -30,4 +34,5 @@ python3 -m lexecutor.Instrument --files $FILES_TO_INSTRUMENT --iids iids.json
 # Request
 # rm ./data/repos/$REPO_NAME/$3/conftest.py
 # Run tests
-pytest ./data/repos/$REPO_NAME/$3
+cd ./data/repos/$REPO_NAME
+pytest ./$3

@@ -53,9 +53,9 @@ Then, to *LExecute* the code, do as follows:
 
 To gather a corpus of value-use events for training the neural model, we proceed as follows:
 
-1. Set the LExecutor mode to RECORD at `Runtime.py`
+1. Set the LExecutor mode to RECORD at `./src/lexecutor/Runtime.py`
 2. Execute `chmod +x get_traces.sh`
-3. Execute `get_traces.sh` giving the required arguments, e.g. `get_traces https://github.com/Textualize/rich rich tests`
+3. Execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
 
 The output is stored as follows: the repositories with instrumented files and trace files is stored in `./data/repos` and the instruction ids is stored in `./iids.json`.
 
