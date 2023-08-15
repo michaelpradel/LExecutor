@@ -67,7 +67,9 @@ To gather a dataset of functions extracted from open-source Python projects, we 
 1. Execute `chmod +x get_function_bodies_dataset.sh`
 2. Execute `./get_function_bodies_dataset.sh`
 
-The output, i.e. the repositories and respective randomly selected functions, is stored in `./data/repos` and `./popular_projects_snippets_dataset`, respectively.
+The output contains two extra versions of each function to fit the considered baseline approaches: 1) for functions that are methods, we wrapp them in a `Wrapper` class, otherwise we would not be able run Pynguin on them; 2) we add a function invocation to each function for them to be executed. This is required to run the code inside each function when running the baseline predictor based on Type4Py.
+
+The output is stored as follows: the repositories are stored in `./data/repos`; the randomly selected functions are stored in `./popular_projects_snippets_dataset`; the paths to the files in each version of the dataset are stored in `popular_projects_function_bodies_dataset.txt`, `popular_projects_functions_dataset.txt` and `popular_projects_functions_with_invocation_dataset.txt`. Finally, auxiliary information useful to calculate line coverage afterwards are stored in `wrapp_info.csv` and `aux_data_functions_with_invocation_dataset.csv`.
 
 #### Stack Overflow snippets
 
