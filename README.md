@@ -47,11 +47,15 @@ Then, to *LExecute* the code, do as follows:
 
 ## Replication Guide
 
-### Datasets
+To reproduce results from the paper, follow these instructions:
 
-#### Value-use events
+First, install LExecutor using the instructions above.
 
-To gather a corpus of value-use events for training the neural model, we proceed as follows:
+### Accuracy of the Neural Model (RQ1)
+
+#### Value-use events dataset
+
+To gather a corpus of value-use events for training and evaluating the neural model, we proceed as follows:
 
 1. Set the LExecutor mode to RECORD at `./src/lexecutor/Runtime.py`
 2. Execute `chmod +x get_traces.sh`
@@ -60,32 +64,11 @@ To gather a corpus of value-use events for training the neural model, we proceed
 
 The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths is stored in `traces.txt`.
 
-#### Open-source functions
-
-To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
-
-1. Execute `chmod +x get_function_bodies_dataset.sh`
-2. Execute `./get_function_bodies_dataset.sh`
-
-The output contains two extra versions of each function to fit the considered baseline approaches: 1) for functions that are methods, we wrapp them in a `Wrapper` class, otherwise we would not be able run Pynguin on them; 2) we add a function invocation to each function for them to be executed. This is required to run the code inside each function when running the baseline predictor based on Type4Py.
-
-The output is stored as follows: the repositories are stored in `./data/repos`; the randomly selected functions are stored in `./popular_projects_snippets_dataset`; the paths to the files in each version of the dataset are stored in `popular_projects_function_bodies_dataset.txt`, `popular_projects_functions_dataset.txt` and `popular_projects_functions_with_invocation_dataset.txt`. Finally, auxiliary information useful to calculate line coverage afterwards are stored in `wrapp_info.csv` and `aux_data_functions_with_invocation_dataset.csv`.
-
-#### Stack Overflow snippets
-
-To gather a dataset of code snippets from Stack Overflow, we proceed as follows:
-
-1. Create a folder to store the code snippets with `mkdir so_snippets_dataset`
-2. Execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
-3. To get the path of all the collected snippets, run `find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt`
-
-The output is stored as follows: the code snippets from Stack Overflow are stored in `./so_snippets_dataset` and their paths are stored in `so_snippets_dataset.txt`.
-
-### Model training
+#### Model training and validation
 
 Our current implementation integrates two pre-trained models, CodeT5 and CodeBERT, which we fine-tune for our prediction task as follows.
 
-#### CodeT5
+##### CodeT5
 
 1. Prepare the dataset running `python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_suffix _codeT5_fine-grained`
 
@@ -97,7 +80,7 @@ Our current implementation integrates two pre-trained models, CodeT5 and CodeBER
 
 The output, i.e. the models for every epoch, training loss and validation accuracy, is stored in `./data/codeT5_models_fine-grained`.
 
-#### CodeBERT
+##### CodeBERT
 
 1. Prepare the dataset running `python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_suffix _codeBERT_fine-grained`
 
@@ -109,24 +92,84 @@ The output, i.e. the models for every epoch, training loss and validation accura
 
 The output, i.e. the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
 
-By default, we train and use the models based on the fine-grained abstraction of values. To fine-tune the models based on the coarse-grained abstraction of values, set `value_abstraction` to `coarse-grained-deterministic` or `coarse-grained-randomized` in `./src/LExecutor/Hyperparams.py`. Then, replace `fine-grained` by `coarse-grained` in the steps 1-3 above.   
+By default, we train and use the models based on the fine-grained abstraction of values. To fine-tune the models based on the coarse-grained abstraction of values, set `value_abstraction` to `coarse-grained-deterministic` or `coarse-grained-randomized` in `./src/LExecutor/Hyperparams.py`. Then, replace `fine-grained` by `coarse-grained` in the steps 1-3 above. 
 
-### Baselines
 
-### Pynguin
+### Effectiveness at Covering Code and Efficiency at Guiding Executions (RQ2 and RQ3)
 
-Extract functions into individual files, see:
+#### Datasets
 
-`python -m lexecutor.evaluation.FunctionExtractor --help`
+##### Open-source functions
 
-Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
+To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
 
-`python3.10 -m venv myenv_py3.10`
+1. Execute `chmod +x get_function_bodies_dataset.sh`
+2. Execute `./get_function_bodies_dataset.sh`
 
-`source myenv_3.10/bin/activate`
+The output contains two extra versions of each function to fit the considered baseline approaches: 1) for functions that are methods, we wrapp them in a `Wrapper` class, otherwise we would not be able run Pynguin on them; 2) we add a function invocation to each function for them to be executed. This is required to run the code inside each function when running the baseline predictor based on Type4Py.
 
-Run Pynguin on the extracted functions:
+The output is stored as follows: the repositories are stored in `./data/repos`; the randomly selected functions are stored in `./popular_projects_snippets_dataset`; the paths to the files in each version of the dataset are stored in `popular_projects_function_bodies_dataset.txt`, `popular_projects_functions_dataset.txt` and `popular_projects_functions_with_invocation_dataset.txt`. Finally, auxiliary information useful to calculate line coverage afterwards are stored in `wrapp_info.csv` and `aux_data_functions_with_invocation_dataset.csv`.
 
-`python -m lexecutor.evaluation.RunPyngiun --files dir_with_functions/*.py`
+##### Stack Overflow snippets
+
+To gather a dataset of code snippets from Stack Overflow, we proceed as follows:
+
+1. Create a folder to store the code snippets with `mkdir so_snippets_dataset`
+2. Execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+3. To get the path of all the collected snippets, run `find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt`
+
+The output is stored as follows: the code snippets from Stack Overflow are stored in `./so_snippets_dataset` and their paths are stored in `so_snippets_dataset.txt`.
+
+#### Data generation
+
+1. Set the dataset under evaluation at `Hyperparemeters.py`
+
+2. Calculate the total lines in each file on the dataset under evaluation, e.g. `python -m lexecutor.evaluation.CountTotalLines --files popular_projects_function_bodies_dataset.txt`
+
+3. Instrument the files in the dataset under evaluation, e.g. `python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.txt --iids iids.json`
+
+4. Execute each predictor/baseline on the dataset under evaluation as follows:
+
+   1. Set `Runtime.py` to use the desired predictor. Some predictors/baselines require additional steps:
+      - For the predictors based on CodeT5 and CodeBERT, the value abstraction must also be set at `Hyperparemeters.py`
+      - For the predictor based on Type4Py, make sure that the docker image containing Type4Py's pre-trained model is running according to [this tutorial](https://github.com/saltudelft/type4py/wiki/Type4Py's-Local-Model)
+      - For the Pynguin baseline, execute the following steps:
+           1. Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
+           
+           `python3.10 -m venv myenv_py3.10`
+
+           `source myenv_3.10/bin/activate`
+
+           2. Generate tests with Pynguin for the extracted functions:
+
+           `mkdir pynguin_tests`
+
+           `python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests`
+
+           3. Get the path of all the generated tests
+           
+           `find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt`
+
+           4. Set the predictor to `AsIs` and the file_type to `TESTE` in `Runtime.py`
+           
+   2. Create a folder to store the log files, e.g.:
+
+   `mkdir logs`
+
+   `mkdir logs/popular_projects_functions_dataset`
+
+   `mkdir logs/popular_projects_functions_dataset/RandomPredictor`
+
+   3. Execute `RunExperiments.py` with the required arguments, e.g. `python -m lexecutor.evaluation.RunExperiments --files popular_projects_functions_dataset.txt --log_dest_dir logs/popular_projects_functions_dataset/RandomPredictor`
+
+      For the Pynguin baseline, make sure to include `--tests` and give the path to the generated tests, i.e. `pynguin_tests.txt`, to `--files` when executing `RunExperiments.py`
+
+5. Process and combine the raw data generated
+
+`python -m lexecutor.evaluation.CombineData`
+
+#### Data analysis and plots generation
+TO DO: Add links to notebooks
+  
 
 
