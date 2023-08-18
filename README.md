@@ -23,6 +23,7 @@ Locally install the package in development/editable mode:
 ## Usage Guide
 
 1. Instrument the Python files that will be LExecuted
+
 2. Run the Python files instrumented in step 1
 
 As a simple example, consider that the following code is in ./files/file.py. 
@@ -58,8 +59,11 @@ First, install LExecutor using the instructions above.
 To gather a corpus of value-use events for training and evaluating the neural model, we proceed as follows:
 
 1. Set the LExecutor mode to RECORD at `./src/lexecutor/Runtime.py`
+
 2. Execute `chmod +x get_traces.sh`
+
 3. For every considered project, execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
+
 4. To get the path of all the generated traces, run `find ./data/repos/ -type f -name "trace_*.h5" > traces.txt`
 
 The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths are stored in `./traces.txt`.
@@ -99,6 +103,7 @@ By default, we train and use the models based on the fine-grained abstraction of
 To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
 
 1. Execute `chmod +x get_function_bodies_dataset.sh`
+
 2. Execute `./get_function_bodies_dataset.sh`
 
 The output contains two extra versions of each function to fit the considered baseline approaches: 1) for functions that are methods, we wrapp them in a `Wrapper` class, otherwise we would not be able run Pynguin on them; 2) we add a function invocation to each function for them to be executed. This is required to run the code inside each function when running the baseline predictor based on Type4Py.
@@ -110,7 +115,9 @@ The output is stored as follows: the repositories are stored in `./data/repos`; 
 To gather a dataset of code snippets from Stack Overflow, we proceed as follows:
 
 1. Create a folder to store the code snippets with `mkdir so_snippets_dataset`
+
 2. Execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+
 3. To get the path of all the collected snippets, run `find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt`
 
 The output is stored as follows: the code snippets from Stack Overflow are stored in `./so_snippets_dataset` and their paths are stored in `so_snippets_dataset.txt`.
