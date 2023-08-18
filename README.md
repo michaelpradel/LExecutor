@@ -174,5 +174,22 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 The code to get the plots for RQ2 and table content for RQ3 is available at `./src/notebooks/analyze_code_coverage_effectiveness_and_efficiency.ipynb`
   
+### Using LExecutor to Find Semantics-Changing Commits (RQ4)
+
+#### Pairs of old + new function from commits dataset
+
+To gather a corpus of pairs of old + new function from commits, we proceed as follows:
+
+1. Create a folder to store the function pairs for every considered project, e.g. `mkdir data/function_pairs && mkdir data/function_pairs/flask`
+
+2. For every considered project, execute `FunctionPairExtractor.py` providing the required arguments, e.g. `python -m lexecutor.evaluation.FunctionPairExtractor --repo data/repos_with_commit_history/flask/ --dest data/function_pairs/flask/`
+
+The output, i.e. the function pairs with code that invokes both functions and compares their return values, is stored in `compare.py` files under `data/function_pairs/`
+#### Finding semantics-changing commits
+
+1. Instrument the code in the `compare.py` files, `e.g. python -m lexecutor.Instrument --files `find data/function_pairs/flask -name compare.py | xargs\` `
+
+2. Run the instrumented code to compare its runtime behavior, e.g. `for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask`
+
 
 
