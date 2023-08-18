@@ -98,14 +98,10 @@ mkdir ./data/codeT5_models_fine-grained
 ```
 
 2. Prepare the dataset:
-```
-python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeT5_models_fine-grained
-```
+```python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeT5_models_fine-grained```
 
 3. Fine-tune the model:
-```
-python -m lexecutor.predictors.codet5.FineTune --train_tensors ./data/codeT5_models_fine-grained/train.pt --validate_tensors ./data/codeT5_models_fine-grained/validate.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained
-```
+```python -m lexecutor.predictors.codet5.FineTune --train_tensors ./data/codeT5_models_fine-grained/train.pt --validate_tensors ./data/codeT5_models_fine-grained/validate.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained```
 
 The output, i.e. the tensors, models for every epoch, training loss and validation accuracy, is stored in `./data/codeT5_models_fine-grained`.
 
@@ -117,14 +113,10 @@ mkdir ./data/codeBERT_models_fine-grained
 ```
 
 2. Prepare the dataset:
-```
-python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeBERT_models_fine-grained
-```
+```python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeBERT_models_fine-grained```
 
 3. Fine-tune the model:
-```
-python -m lexecutor.predictors.codeBERT.FineTune --train_tensors ./data/codeBERT_models_fine-grained/train.pt --validate_tensors ./data/codeBERT_models_fine-grained/validate.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained
-```
+```python -m lexecutor.predictors.codeBERT.FineTune --train_tensors ./data/codeBERT_models_fine-grained/train.pt --validate_tensors ./data/codeBERT_models_fine-grained/validate.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained```
 
 The output, i.e. the tensors, the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
 
