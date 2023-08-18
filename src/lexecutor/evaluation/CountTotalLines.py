@@ -3,6 +3,7 @@ import csv
 import argparse
 import pandas as pd
 from ..Util import gather_files
+from ..Hyperparams import Hyperparams as params
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -20,20 +21,20 @@ def count_lines(file_path):
 
 def save_total_lines(files, total_lines):
     # Create CSV file and add header if it doesn't exist
-    if not os.path.isfile('./total_lines.csv'):
+    if not os.path.isfile(f'./total_lines_{params.dataset}_dataset.csv'):
         columns = ["file", "total_lines"]
 
-        with open('./total_lines.csv', 'a') as csvFile:
+        with open(f'./total_lines_{params.dataset}_dataset.csv', 'a') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(columns)
             
-    df = pd.read_csv('./total_lines.csv')
+    df = pd.read_csv(f'./total_lines_{params.dataset}_dataset.csv')
     df_new_data = pd.DataFrame({
         'file': files,
         'total_lines': total_lines
     })
     df = pd.concat([df, df_new_data])
-    df.to_csv('./total_lines.csv', index=False)
+    df.to_csv(f'./total_lines_{params.dataset}_dataset.csv', index=False)
 
 if __name__ == "__main__":
     args = parser.parse_args()

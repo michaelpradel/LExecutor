@@ -19,6 +19,8 @@ parser.add_argument(
     "--traces", help="Trace file or .txt file(s) with all trace file paths to use",
     nargs="+", required=True)
 parser.add_argument(
+    "--output_dir", help="directory to store tensors", required=True)
+parser.add_argument(
     "--output_suffix", help="Suffix to append to output file names (if nothing given: train.pt, validate.pt)")
 
 
@@ -106,9 +108,9 @@ def gather_context_and_vectorize(entries, iids, tokenizer):
     return all_vectorized
 
 
-def store_tensors(train_tensors, validate_tensors, output_suffix):
-    train_path = f"train{output_suffix if output_suffix is not None else ''}.pt"
-    validate_path = f"validate{output_suffix if output_suffix is not None else ''}.pt"
+def store_tensors(train_tensors, validate_tensors, output_dir, output_suffix):
+    train_path = f"{output_dir}/train{output_suffix if output_suffix is not None else ''}.pt"
+    validate_path = f"{output_dir}/validate{output_suffix if output_suffix is not None else ''}.pt"
     t.save(train_tensors, train_path)
     t.save(validate_tensors, validate_path)
     logger.info(f"Stored tensors to {train_path} and {validate_path}")
@@ -130,4 +132,4 @@ if __name__ == "__main__":
     validate_tensors = gather_context_and_vectorize(
         validate_entries, iids, tokenizer)
 
-    store_tensors(train_tensors, validate_tensors, args.output_suffix)
+    store_tensors(train_tensors, validate_tensors, args.output_dir, args.output_suffix)

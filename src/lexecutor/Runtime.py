@@ -58,7 +58,10 @@ elif mode == "PREDICT":
     # predictor = Type4PyValuePredictor(file, runtime_stats)
     
     start_time = time.time()
-    predictor_name = predictor.__class__.__name__
+    if file_type == "TESTE":
+        predictor_name = "PynguinTests"
+    else:
+        predictor_name = predictor.__class__.__name__
         
     atexit.register(runtime_stats.save, file, predictor_name, start_time)
 elif mode == "REPLAY":

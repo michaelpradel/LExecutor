@@ -61,18 +61,31 @@ class RuntimeStats:
                 project_name = file.split("/")[2]
                 file_name = file.split("/")[4].split('.')[0]
 
+            if predictor_name == 'CodeT5ValuePredictor' or predictor_name == 'CodeBERTValuePredictor':
+                predictor_name = f'{predictor_name}_{param.value_abstraction}'
+
+            # Create destination dir if it doesn't exist
+            if not os.path.exists('./metrics'):
+                os.makedirs('./metrics')
+            if not os.path.exists(f'./metrics/{param.dataset}'):
+                os.makedirs(f'./metrics/{param.dataset}')
+            if not os.path.exists(f'./metrics/{param.dataset}/{predictor_name}'):
+                os.makedirs(f'./metrics/{param.dataset}/{predictor_name}')
+            if not os.path.exists(f'./metrics/{param.dataset}/{predictor_name}/raw'):
+                os.makedirs(f'./metrics/{param.dataset}/{predictor_name}/raw')
+
             # Create CSV file and add header if it doesn't exist
-            if not os.path.isfile(f'./metrics_{project_name}_{file_name}_{self.execution}.csv'):
+            if not os.path.isfile(f'./metrics/{param.dataset}/{predictor_name}/raw/metrics_{project_name}_{file_name}_{self.execution}.csv'):
                 columns = ['file', 'predictor', 'covered_iids',
                         'total_uses', 'guided_uses', 'executed_lines', 
                         'covered_lines', 'execution_time', 'random_predictions', 
                         'type4py_predictions', 'execution']
 
-                with open(f'./metrics_{project_name}_{file_name}_{self.execution}.csv', 'a') as csvFile:
+                with open(f'./metrics/{param.dataset}/{predictor_name}/raw/metrics_{project_name}_{file_name}_{self.execution}.csv', 'a') as csvFile:
                     writer = csv.writer(csvFile)
                     writer.writerow(columns)
 
-            df = pd.read_csv(f'./metrics_{project_name}_{file_name}_{self.execution}.csv')
+            df = pd.read_csv(f'./metrics/{param.dataset}/{predictor_name}/raw/metrics_{project_name}_{file_name}_{self.execution}.csv')
             df_new_data = pd.DataFrame({
                 'file': [file],
                 'predictor': [predictor_name],
@@ -87,7 +100,7 @@ class RuntimeStats:
                 'execution': [self.execution]
             })
             df = pd.concat([df, df_new_data])
-            df.to_csv(f'./metrics_{project_name}_{file_name}_{self.execution}.csv', index=False)
+            df.to_csv(f'./metrics/{param.dataset}/{predictor_name}/raw/metrics_{project_name}_{file_name}_{self.execution}.csv', index=False)
 
     def _save_event_trace(self):
         with open("trace.txt", "w") as fp:
