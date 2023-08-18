@@ -166,12 +166,13 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
       For the Pynguin baseline, make sure to include `--tests` and give the path to the generated tests, i.e. `pynguin_tests.txt`, to `--files` when executing `RunExperiments.py`
 
-5. Process and combine the raw data generated
+5. Process and combine the raw data generated:
 
       `python -m lexecutor.evaluation.CombineData`
 
 #### Data analysis and plots generation
-TO DO: Add links to notebooks
+
+The code to get the plots for RQ2 and table content for RQ3 is available at `./src/notebooks/analyze_code_coverage_effectiveness_and_efficiency.ipynb`
   
 
 
