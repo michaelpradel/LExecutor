@@ -69,11 +69,20 @@ To gather a corpus of value-use events for training and evaluating the neural mo
 
 1. Set the LExecutor mode to RECORD at `./src/lexecutor/Runtime.py`
 
-2. Execute `chmod +x get_traces.sh`
+2. Make `get_traces.sh` executable:
+```
+chmod +x get_traces.sh
+```
 
-3. For every considered project, execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
+3. For every considered project, execute `get_traces.sh` giving the required arguments, e.g.:
+```
+./get_traces.sh https://github.com/Textualize/rich rich tests
+```
 
-4. To get the path of all the generated traces, run `find ./data/repos/ -type f -name "trace_*.h5" > traces.txt`
+4. Get the path of all the generated traces:
+```
+find ./data/repos/ -type f -name "trace_*.h5" > traces.txt
+```
 
 The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths are stored in `./traces.txt`.
 
@@ -83,21 +92,39 @@ Our current implementation integrates two pre-trained models, CodeT5 and CodeBER
 
 ##### CodeT5
 
-1. Create a folder to store the output running `mkdir ./data/codeT5_models_fine-grained`
+1. Create a folder to store the output:
+```
+mkdir ./data/codeT5_models_fine-grained
+```
 
-2. Prepare the dataset running `python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeT5_models_fine-grained`
+2. Prepare the dataset:
+```
+python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeT5_models_fine-grained
+```
 
-3. Fine-tune the model executing `python -m lexecutor.predictors.codet5.FineTune --train_tensors ./data/codeT5_models_fine-grained/train.pt --validate_tensors ./data/codeT5_models_fine-grained/validate.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained`
+3. Fine-tune the model:
+```
+python -m lexecutor.predictors.codet5.FineTune --train_tensors ./data/codeT5_models_fine-grained/train.pt --validate_tensors ./data/codeT5_models_fine-grained/validate.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained
+```
 
 The output, i.e. the tensors, models for every epoch, training loss and validation accuracy, is stored in `./data/codeT5_models_fine-grained`.
 
 ##### CodeBERT
 
-1. Create a folder to store the output running `mkdir ./data/codeBERT_models_fine-grained`
+1. Create a folder to store the output:
+```
+mkdir ./data/codeBERT_models_fine-grained
+```
 
-2. Prepare the dataset running `python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeBERT_models_fine-grained`
+2. Prepare the dataset:
+```
+python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeBERT_models_fine-grained
+```
 
-3. Fine-tune the model executing `python -m lexecutor.predictors.codeBERT.FineTune --train_tensors ./data/codeBERT_models_fine-grained/train.pt --validate_tensors ./data/codeBERT_models_fine-grained/validate.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained`
+3. Fine-tune the model:
+```
+python -m lexecutor.predictors.codeBERT.FineTune --train_tensors ./data/codeBERT_models_fine-grained/train.pt --validate_tensors ./data/codeBERT_models_fine-grained/validate.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained
+```
 
 The output, i.e. the tensors, the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
 
