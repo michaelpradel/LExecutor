@@ -31,7 +31,7 @@ pip install -e ./
 
 2. Run the Python files instrumented in step 1
 
-As a simple example, consider that the following code is in ./files/file.py. 
+As a simple example, consider that the following code is in `./files/file.py`. 
 
 ```python
 if (not has_min_size(all_data)):
@@ -46,10 +46,14 @@ train_data = all_data[0:train_len]
 Then, to *LExecute* the code, do as follows:
 
 1. Instrument the code:
-`python -m lexecutor.Instrument --files ./files/file.py`
+```
+python -m lexecutor.Instrument --files ./files/file.py
+```
 
 2. Run the instrumented code:
-`python ./files/file.py`
+```
+python ./files/file.py
+```
 
 ## Replication Guide
 
