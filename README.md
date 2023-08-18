@@ -124,7 +124,7 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 #### Data generation
 
-1. Set the dataset under evaluation at `Hyperparemeters.py`
+1. Set the dataset under evaluation at `./src/LExecutor/Hyperparemeters.py`
 
 2. Calculate the total lines in each file on the dataset under evaluation, e.g. `python -m lexecutor.evaluation.CountTotalLines --files popular_projects_function_bodies_dataset.txt`
 
@@ -132,35 +132,35 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 4. Execute each predictor/baseline on the dataset under evaluation as follows:
 
-   1. Set `Runtime.py` to use the desired predictor. Some predictors/baselines require additional steps:
-      - For the predictors based on CodeT5 and CodeBERT, the value abstraction must also be set at `Hyperparemeters.py`
+   1. Set `./src/LExecutor/Runtime.py` to use the desired predictor. Some predictors/baselines require additional steps:
+      - For the predictors based on CodeT5 and CodeBERT, the value abstraction must also be set at `./src/LExecutor/Hyperparemeters.py`
       - For the predictor based on Type4Py, make sure that the docker image containing Type4Py's pre-trained model is running according to [this tutorial](https://github.com/saltudelft/type4py/wiki/Type4Py's-Local-Model)
       - For the Pynguin baseline, execute the following steps:
            1. Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
            
-           `python3.10 -m venv myenv_py3.10`
+               `python3.10 -m venv myenv_py3.10`
 
-           `source myenv_3.10/bin/activate`
+               `source myenv_3.10/bin/activate`
 
            2. Generate tests with Pynguin for the extracted functions:
 
-           `mkdir pynguin_tests`
+               `mkdir pynguin_tests`
 
-           `python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests`
+               `python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests`
 
            3. Get the path of all the generated tests
            
-           `find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt`
+               `find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt`
 
-           4. Set the predictor to `AsIs` and the file_type to `TESTE` in `Runtime.py`
+           4. Set the predictor to `AsIs` and the file_type to `TESTE` in `./src/LExecutor/Runtime.py`
            
    2. Create a folder to store the log files, e.g.:
 
-   `mkdir logs`
+      `mkdir logs`
 
-   `mkdir logs/popular_projects_functions_dataset`
+      `mkdir logs/popular_projects_functions_dataset`
 
-   `mkdir logs/popular_projects_functions_dataset/RandomPredictor`
+      `mkdir logs/popular_projects_functions_dataset/RandomPredictor`
 
    3. Execute `RunExperiments.py` with the required arguments, e.g. `python -m lexecutor.evaluation.RunExperiments --files popular_projects_functions_dataset.txt --log_dest_dir logs/popular_projects_functions_dataset/RandomPredictor`
 
@@ -168,7 +168,7 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 5. Process and combine the raw data generated
 
-`python -m lexecutor.evaluation.CombineData`
+      `python -m lexecutor.evaluation.CombineData`
 
 #### Data analysis and plots generation
 TO DO: Add links to notebooks
