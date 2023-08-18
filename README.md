@@ -62,7 +62,7 @@ To gather a corpus of value-use events for training and evaluating the neural mo
 3. For every considered project, execute `get_traces.sh` giving the required arguments, e.g. `./get_traces.sh https://github.com/Textualize/rich rich tests`
 4. To get the path of all the generated traces, run `find ./data/repos/ -type f -name "trace_*.h5" > traces.txt`
 
-The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths is stored in `traces.txt`.
+The output is stored as follows: the repositories with instrumented files and trace files are stored in `./data/repos`; the instruction ids is stored in `./iids.json`; the trace paths are stored in `./traces.txt`.
 
 #### Model training and validation
 
@@ -70,30 +70,25 @@ Our current implementation integrates two pre-trained models, CodeT5 and CodeBER
 
 ##### CodeT5
 
-1. Prepare the dataset running `python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_suffix _codeT5_fine-grained`
+1. Create a folder to store the output running `mkdir ./data/codeT5_models_fine-grained`
 
-   The output is stored in `./train_codeT5_fine-grained.pt` and `./validate_codeT5_fine-grained.pt`.
+2. Prepare the dataset running `python -m lexecutor.predictors.codet5.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeT5_models_fine-grained`
 
-2. Create a folder to store the output running `mkdir ./data/codeT5_models && mkdir ./data/codeT5_models_fine-grained`
+3. Fine-tune the model executing `python -m lexecutor.predictors.codet5.FineTune --train_tensors ./data/codeT5_models_fine-grained/train.pt --validate_tensors ./data/codeT5_models_fine-grained/validate.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained`
 
-3. Fine-tune the model executing `python -m lexecutor.predictors.codet5.FineTune --train_tensors train_codeT5_fine-grained.pt --validate_tensors validate_codeT5_fine-grained.pt --output_dir ./data/codeT5_models_fine-grained --stats_dir ./data/codeT5_models_fine-grained`
-
-The output, i.e. the models for every epoch, training loss and validation accuracy, is stored in `./data/codeT5_models_fine-grained`.
+The output, i.e. the tensors, models for every epoch, training loss and validation accuracy, is stored in `./data/codeT5_models_fine-grained`.
 
 ##### CodeBERT
 
-1. Prepare the dataset running `python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_suffix _codeBERT_fine-grained`
+1. Create a folder to store the output running `mkdir ./data/codeBERT_models_fine-grained`
 
-   The output is stored in `./train_codeBERT_fine-grained.pt` and `./validate_codeBERT_fine-grained.pt`.
+2. Prepare the dataset running `python -m lexecutor.predictors.codebert.PrepareData --iids iids.json --traces traces.txt --output_dir ./data/codeBERT_models_fine-grained`
 
-2. Create a folder to store the output running `mkdir ./data/codeBERT_models && mkdir ./data/codeBERT_models_fine-grained`
+3. Fine-tune the model executing `python -m lexecutor.predictors.codeBERT.FineTune --train_tensors ./data/codeBERT_models_fine-grained/train.pt --validate_tensors ./data/codeBERT_models_fine-grained/validate.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained`
 
-2. Fine-tune the model executing `python -m lexecutor.predictors.codeBERT.FineTune --train_tensors train_codeBERT_fine-grained.pt --validate_tensors validate_codeBERT_fine-grained.pt --output_dir ./data/codeBERT_models_fine-grained --stats_dir ./data/codeBERT_models_fine-grained`
-
-The output, i.e. the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
+The output, i.e. the tensors, the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
 
 By default, we train and use the models based on the fine-grained abstraction of values. To fine-tune the models based on the coarse-grained abstraction of values, set `value_abstraction` to `coarse-grained-deterministic` or `coarse-grained-randomized` in `./src/LExecutor/Hyperparams.py`. Then, replace `fine-grained` by `coarse-grained` in the steps 1-3 above. 
-
 
 ### Effectiveness at Covering Code and Efficiency at Guiding Executions (RQ2 and RQ3)
 
