@@ -1,5 +1,7 @@
 # LExecutor: Learning-Guided Execution
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8263493.svg)](https://doi.org/10.5281/zenodo.8263493)
+
 This repository contains the implementation of LExecutor and supplementary material for the paper "LExecutor: Learning-Guided Execution" (FSE'23).
 
 Paper (pre-print): https://arxiv.org/abs/2302.02343
