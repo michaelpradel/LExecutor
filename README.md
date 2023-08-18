@@ -152,9 +152,15 @@ By default, we train and use the models based on the fine-grained abstraction of
 
 To gather a dataset of functions extracted from open-source Python projects, we proceed as follows:
 
-1. Execute `chmod +x get_function_bodies_dataset.sh`
+1. Make `get_function_bodies_dataset.sh` executable:
+```
+chmod +x get_function_bodies_dataset.sh
+```
 
-2. Execute `./get_function_bodies_dataset.sh`
+2. Execute `get_function_bodies_dataset.sh`:
+```
+./get_function_bodies_dataset.sh
+```
 
 The output contains two extra versions of each function to fit the considered baseline approaches: 1) for functions that are methods, we wrapp them in a `Wrapper` class, otherwise we would not be able run Pynguin on them; 2) we add a function invocation to each function for them to be executed. This is required to run the code inside each function when running the baseline predictor based on Type4Py.
 
@@ -164,11 +170,20 @@ The output is stored as follows: the repositories are stored in `./data/repos`; 
 
 To gather a dataset of code snippets from Stack Overflow, we proceed as follows:
 
-1. Create a folder to store the code snippets with `mkdir so_snippets_dataset`
+1. Create a folder to store the code snippets:
+```
+mkdir so_snippets_dataset
+```
 
-2. Execute `python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset`
+2. Get the code snippets:
+```
+python get_stackoverflow_snippets_dataset.py --dest_dir so_snippets_dataset
+```
 
-3. To get the path of all the collected snippets, run `find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt`
+3. Get the path of all the collected snippets:
+```
+find ./so_snippets_dataset -type f -name "*.py" > so_snippets_dataset.txt
+```
 
 The output is stored as follows: the code snippets from Stack Overflow are stored in `./so_snippets_dataset` and their paths are stored in `so_snippets_dataset.txt`.
 
@@ -176,9 +191,15 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 1. Set the dataset under evaluation at `./src/LExecutor/Hyperparemeters.py`
 
-2. Calculate the total lines in each file on the dataset under evaluation, e.g. `python -m lexecutor.evaluation.CountTotalLines --files popular_projects_function_bodies_dataset.txt`
+2. Calculate the total lines in each file on the dataset under evaluation, e.g.:
+```
+python -m lexecutor.evaluation.CountTotalLines --files popular_projects_function_bodies_dataset.txt
+```
 
-3. Instrument the files in the dataset under evaluation, e.g. `python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.txt --iids iids.json`
+3. Instrument the files in the dataset under evaluation, e.g.:
+```
+python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.txt --iids iids.json
+```
 
 4. Execute each predictor/baseline on the dataset under evaluation as follows:
 
@@ -187,38 +208,44 @@ The output is stored as follows: the code snippets from Stack Overflow are store
       - For the predictor based on Type4Py, make sure that the docker image containing Type4Py's pre-trained model is running according to [this tutorial](https://github.com/saltudelft/type4py/wiki/Type4Py's-Local-Model)
       - For the Pynguin baseline, execute the following steps:
            1. Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
-           
-               `python3.10 -m venv myenv_py3.10`
-
-               `source myenv_3.10/bin/activate`
+               ```
+               python3.10 -m venv myenv_py3.10
+               source myenv_3.10/bin/activate
+               ```
 
            2. Generate tests with Pynguin for the extracted functions:
+               ```
+               mkdir pynguin_tests
+               python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests
+               ```
 
-               `mkdir pynguin_tests`
-
-               `python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests`
-
-           3. Get the path of all the generated tests
-           
-               `find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt`
+           3. Get the path of all the generated tests:
+               ```
+               find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt
+               ```
 
            4. Set the predictor to `AsIs` and the file_type to `TESTE` in `./src/LExecutor/Runtime.py`
            
    2. Create a folder to store the log files, e.g.:
+      ```
+      mkdir logs
+      mkdir logs/popular_projects_functions_dataset
+      mkdir logs/popular_projects_functions_dataset/RandomPredictor
+      ```
 
-      `mkdir logs`
-
-      `mkdir logs/popular_projects_functions_dataset`
-
-      `mkdir logs/popular_projects_functions_dataset/RandomPredictor`
-
-   3. Execute `RunExperiments.py` with the required arguments, e.g. `python -m lexecutor.evaluation.RunExperiments --files popular_projects_functions_dataset.txt --log_dest_dir logs/popular_projects_functions_dataset/RandomPredictor`
+   3. Execute `RunExperiments.py` with the required arguments, e.g.:
+      ```
+      python -m lexecutor.evaluation.RunExperiments \
+        --files popular_projects_functions_dataset.txt \
+        --log_dest_dir logs/popular_projects_functions_dataset/RandomPredictor
+      ```
 
       For the Pynguin baseline, make sure to include `--tests` and give the path to the generated tests, i.e. `pynguin_tests.txt`, to `--files` when executing `RunExperiments.py`
 
 5. Process and combine the raw data generated:
-
-      `python -m lexecutor.evaluation.CombineData`
+   ```
+   python -m lexecutor.evaluation.CombineData
+   ```
 
 #### Data analysis and plots generation
 
@@ -230,16 +257,30 @@ The code to get the plots for RQ2 and table content for RQ3 is available at `./s
 
 To gather a corpus of pairs of old + new function from commits, we proceed as follows:
 
-1. Create a folder to store the function pairs for every considered project, e.g. `mkdir data/function_pairs && mkdir data/function_pairs/flask`
+1. Create a folder to store the function pairs for every considered project, e.g.:
+```
+mkdir data/function_pairs && mkdir data/function_pairs/flask
+```
 
-2. For every considered project, execute `FunctionPairExtractor.py` providing the required arguments, e.g. `python -m lexecutor.evaluation.FunctionPairExtractor --repo data/repos_with_commit_history/flask/ --dest data/function_pairs/flask/`
+2. For every considered project, execute `FunctionPairExtractor.py` providing the required arguments, e.g.:
+```
+python -m lexecutor.evaluation.FunctionPairExtractor \
+  --repo data/repos_with_commit_history/flask/ \
+  --dest data/function_pairs/flask/
+```
 
 The output, i.e. the function pairs with code that invokes both functions and compares their return values, is stored in `compare.py` files under `data/function_pairs/`
 #### Finding semantics-changing commits
 
-1. Instrument the code in the `compare.py` files, `e.g. python -m lexecutor.Instrument --files `find data/function_pairs/flask -name compare.py | xargs\` `
+1. Instrument the code in the `compare.py` files, e.g.:
+```
+python -m lexecutor.Instrument --files `find data/function_pairs/flask -name compare.py | xargs`
+```
 
-2. Run the instrumented code to compare its runtime behavior, e.g. `for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask`
+2. Run the instrumented code to compare its runtime behavior, e.g.:
+```
+for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask
+```
 
 
 
