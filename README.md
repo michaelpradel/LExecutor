@@ -6,56 +6,10 @@ This repository contains the implementation of LExecutor and supplementary mater
 
 Paper (pre-print): https://arxiv.org/abs/2302.02343
 
-## Installation Guide
+## Getting Started Guide
 
-Create and enter a virtual environment:
-
-```
-virtualenv -p /usr/bin/python3.8 myenv
-source myenv/bin/activate
-```
-
-Install requirements:
-
-```
-pip install -r requirements.txt
-```
-
-Locally install the package in development/editable mode:
-
-```
-pip install -e ./
-```
-
-## Usage Guide
-
-1. Instrument the Python files that will be LExecuted
-
-2. Run the Python files instrumented in step 1
-
-As a simple example, consider that the following code is in `./files/file.py`. 
-
-```python
-if (not has_min_size(all_data)):
-    raise RuntimeError("not enough data")
-
-train_len = round(0.8 * len(all_data))
-
-logger.info(f"Extracting training data with {config_str}")
-
-train_data = all_data[0:train_len]
-```
-Then, to *LExecute* the code, do as follows:
-
-1. Instrument the code:
-```
-python -m lexecutor.Instrument --files ./files/file.py
-```
-
-2. Run the instrumented code:
-```
-python ./files/file.py
-```
+1. Check that your setup meets the [REQUIREMENTS.md](REQUIREMENTS.md).
+2. Follow the installation instructions in [INSTALL.md](INSTALL.md).
 
 ## Replication Guide
 
@@ -283,19 +237,6 @@ python -m lexecutor.Instrument --files `find data/function_pairs/flask -name com
 ```
 for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask
 ```
-
-## Requirements
-
-If you want to run our evaluation yourself, here is a rough list of the required software and hardware
-
-* OS: Ubuntu 18.04.6 LTS
-* Python 3.8
-* CST parser: https://github.com/Instagram/LibCST
-* Neural models:
-    * CodeT5: https://github.com/salesforce/CodeT5
-    * CodeBERT: https://github.com/microsoft/CodeBERT
-* NVIDIA Tesla GPU (P100, T100, or T4) with memory >= 16GB
-
 
 
 
