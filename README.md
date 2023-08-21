@@ -13,7 +13,7 @@ Paper (pre-print): https://arxiv.org/abs/2302.02343
 
 ## Replication Guide
 
-To reproduce the results from the paper, follow these instructions. The results of following the instructions are provided in the [artifact](https://zenodo.org/record/8263493), i.e., you can also inspect them there to skip some of the below steps.
+To reproduce the results from the paper, follow these instructions. The results of the following instructions are provided in the [artifact](https://zenodo.org/record/8263493), i.e., you can also inspect them there to skip some of the below steps.
 
 First, install LExecutor using the instructions above.
 
