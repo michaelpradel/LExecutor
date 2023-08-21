@@ -284,5 +284,18 @@ python -m lexecutor.Instrument --files `find data/function_pairs/flask -name com
 for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask
 ```
 
+## Requirements
+
+If you want to run our evaluation yourself, here is a rough list of the required software and hardware
+
+* OS: Ubuntu 18.04.6 LTS
+* Python 3.8
+* CST parser: https://github.com/Instagram/LibCST
+* Neural models:
+    * CodeT5: https://github.com/salesforce/CodeT5
+    * CodeBERT: https://github.com/microsoft/CodeBERT
+* NVIDIA Tesla GPU (P100, T100, or T4) with memory >= 16GB
+
+
 
 
