@@ -1,6 +1,6 @@
 # LExecutor: Learning-Guided Execution
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8263493.svg)](https://doi.org/10.5281/zenodo.8263493)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8270900.svg)](https://doi.org/10.5281/zenodo.8270900)
 
 This repository contains the implementation of LExecutor and supplementary material for the paper "LExecutor: Learning-Guided Execution" (FSE'23).
 
@@ -13,7 +13,7 @@ Paper (pre-print): https://arxiv.org/abs/2302.02343
 
 ## Replication Guide
 
-To reproduce the results from the paper, follow these instructions. The results of the following instructions are provided in the [artifact](https://zenodo.org/record/8263493), i.e., you can also inspect them there to skip some of the below steps.
+To reproduce the results from the paper, follow these instructions. The results of the following instructions are provided in the [artifact](https://zenodo.org/record/8270900), i.e., you can also inspect them there to skip some of the below steps.
 
 First, install LExecutor using the instructions above.
 
@@ -237,4 +237,3 @@ python -m lexecutor.Instrument --files `find data/function_pairs/flask -name com
 ```
 for f in `find data/function_pairs/flask -name compare.py | xargs`; do timeout 30 python $f; done > out_flask
 ```
-
