@@ -71,7 +71,7 @@ python ./files/file.py
 
 ## Replication Guide
 
-To reproduce results from the paper, follow these instructions:
+To reproduce the results from the paper, follow these instructions. The results of following the instructions are provided in the [artifact](https://zenodo.org/record/8263493), i.e., you can also inspect them there to skip some of the below steps.
 
 First, install LExecutor using the instructions above.
 
