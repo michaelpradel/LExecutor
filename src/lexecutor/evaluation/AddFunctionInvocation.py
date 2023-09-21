@@ -11,7 +11,6 @@ parser.add_argument(
 
 
 class TransformerVisitor(cst.CSTTransformer):
-    # TO DO: modify the following to add function invocation and save info to csv about lines to be removed
     def __init__(self):
         self.contains_wrapper = False
         self.lines_to_discard = 0
@@ -24,6 +23,8 @@ class TransformerVisitor(cst.CSTTransformer):
     def leave_FunctionDef(self, node, updated_node):
         self.function_name = updated_node.name.value
         self.function_parameters = updated_node.params.params
+        # Remove decorators by replacing them with an empty list
+        updated_node = updated_node.with_changes(decorators=[])
         return updated_node
 
     def leave_Module(self, node, updated_node):
@@ -116,7 +117,7 @@ if __name__ == "__main__":
     files = gather_files(args.files)
     
     for file in files:
-        with open(file + ".orig", "r") as fp:
+        with open(file, "r") as fp:
             src = fp.read()
         ast = cst.parse_module(src)
         ast_wrapper = cst.metadata.MetadataWrapper(ast)
