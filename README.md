@@ -226,6 +226,7 @@ python -m lexecutor.evaluation.FunctionPairExtractor \
 ```
 
 The output, i.e. the function pairs with code that invokes both functions and compares their return values, is stored in `compare.py` files under `data/function_pairs/`
+
 #### Finding semantics-changing commits
 
 1. Instrument the code in the `compare.py` files, e.g.:

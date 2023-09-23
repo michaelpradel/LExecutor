@@ -4,8 +4,15 @@ import torch as t
 from ..Hyperparams import Hyperparams as params
 from subprocess import run
 
-
-parser = argparse.ArgumentParser()
+description = """
+Trains LExecutor on increasingly large datasets.
+Usage:
+ 1) Prepare the traces by transforming them into tensors:
+    CompareDatasetSizes --prepare --tensors <.pt files> --out_dir <tensor folder>
+ 2) Train LExecutor on increasingly large datasets:
+    CompareDatasetSizes --train --in_dir <tensor folder> [--size <indices>]
+"""
+parser = argparse.ArgumentParser(description=description)
 parser.add_argument("--prepare", action="store_true")
 parser.add_argument(
     "--tensors", help=".pt files with data to use for training and validation (pass when using --prepare)", nargs="+")
