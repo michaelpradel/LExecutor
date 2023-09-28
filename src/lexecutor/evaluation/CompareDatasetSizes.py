@@ -1,5 +1,7 @@
 import os
+from os.path import join, exists
 import argparse
+import csv
 import torch as t
 from ..Hyperparams import Hyperparams as params
 from subprocess import run
@@ -11,6 +13,8 @@ Usage:
     CompareDatasetSizes --prepare --tensors <.pt files> --out_dir <tensor folder>
  2) Train LExecutor on increasingly large datasets:
     CompareDatasetSizes --train --in_dir <tensor folder> [--size <indices>]
+ 3) Produce raw results (to be used for plotting, etc.):
+    CompareDatasetSizes --stats --in_dir <tensor folder>
 """
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("--prepare", action="store_true")
@@ -23,6 +27,8 @@ parser.add_argument(
     "--in_dir", help="folder with training and validation produced with --prepare (pass when using --train)")
 parser.add_argument(
     "--size", help="fix the index of the run (optional; one index or comma-separated indices; pass when using --train)")
+parser.add_argument(
+    "--stats", help="summarize results of the experiment", action="store_true")
 
 
 def load_data(tensor_files):
@@ -78,6 +84,36 @@ def run_training_with_size(in_dir, idx):
          "--stats_dir", stats_dir])
 
 
+def print_stats(in_dir):
+    total_value_use_pairs = 0
+    
+    validation_file = f"{in_dir}/validate.pt"
+    nb_validation_pairs = len(load_data([validation_file]))
+    print(f"Validation pairs: {nb_validation_pairs}")
+    total_value_use_pairs = nb_validation_pairs
+    
+    train_sizes = []
+    accuracies = []
+    for i in range(10):
+        training_file = f"{in_dir}/train{i}.pt"
+        nb_training_pairs = len(load_data([training_file]))
+        stats_dir = f"{in_dir}/stats{i}"
+        accuracy_file = join(stats_dir, "validation_acc.csv")
+        if exists(accuracy_file):  # otherwise, experiment hasn't finished yet
+            with open(accuracy_file, "r") as fp:
+                accuracy_reader = csv.reader(fp)
+                rows = list(accuracy_reader)
+                if len(rows) == 6:
+                    # experiment has finished for this dataset size
+                    acc = rows[5][1]
+                    train_sizes.append(str(nb_training_pairs))
+                    accuracies.append(acc)
+                    total_value_use_pairs += nb_training_pairs
+
+    print(f"train_sizes = [{', '.join(train_sizes)}]")
+    print(f"accuracies = [{', '.join(accuracies)}]")
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.prepare:
@@ -95,3 +131,6 @@ if __name__ == "__main__":
         
         for idx in sizes:
             run_training_with_size(args.in_dir, idx)
+    elif args.stats:
+        print_stats(args.in_dir)
+
