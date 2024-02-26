@@ -98,7 +98,7 @@ python -m lexecutor.predictors.codeBERT.FineTune \
 
 The output, i.e. the tensors, the models for every epoch, training loss and validation accuracy, is stored in `./data/codeBERT_models_fine-grained`.
 
-By default, we train and use the models based on the fine-grained abstraction of values. To fine-tune the models based on the coarse-grained abstraction of values, set `value_abstraction` to `coarse-grained-deterministic` or `coarse-grained-randomized` in `./src/LExecutor/Hyperparams.py`. Then, replace `fine-grained` by `coarse-grained` in the steps 1-3 above. 
+By default, we train and use the models based on the fine-grained abstraction of values. To fine-tune the models based on the coarse-grained abstraction of values, set `value_abstraction` to `coarse-grained-deterministic` or `coarse-grained-randomized` in `./src/lexecutor/Hyperparams.py`. Then, replace `fine-grained` by `coarse-grained` in the steps 1-3 above. 
 
 ### Effectiveness at Covering Code and Efficiency at Guiding Executions (RQ2 and RQ3)
 
@@ -145,7 +145,7 @@ The output is stored as follows: the code snippets from Stack Overflow are store
 
 #### Data generation
 
-1. Set the dataset under evaluation at `./src/LExecutor/Hyperparemeters.py`
+1. Set the dataset under evaluation at `./src/lexecutor/Hyperparams.py`
 
 2. Calculate the total lines in each file on the dataset under evaluation, e.g.:
 ```
@@ -159,8 +159,8 @@ python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.
 
 4. Execute each predictor/baseline on the dataset under evaluation as follows:
 
-   1. Set `./src/LExecutor/Runtime.py` to use the desired predictor. Some predictors/baselines require additional steps:
-      - For the predictors based on CodeT5 and CodeBERT, the value abstraction must also be set at `./src/LExecutor/Hyperparemeters.py`
+   1. Set `./src/lexecutor/Runtime.py` to use the desired predictor. Some predictors/baselines require additional steps:
+      - For the predictors based on CodeT5 and CodeBERT, the value abstraction must also be set at `./src/lexecutor/Hyperparams.py`
       - For the predictor based on Type4Py, make sure that the docker image containing Type4Py's pre-trained model is running according to [this tutorial](https://github.com/saltudelft/type4py/wiki/Type4Py's-Local-Model)
       - For the Pynguin baseline, execute the following steps:
            1. Create and enter a virtual environment for Python 3.10 (required by the newest Pynguin version):
@@ -172,7 +172,7 @@ python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.
            2. Generate tests with Pynguin for the extracted functions:
                ```
                mkdir pynguin_tests
-               python -m lexecutor.evaluation.RunPyngiun --files popular_projects_functions_dataset.txt --dest pynguin_tests
+               python -m lexecutor.evaluation.RunPynguin --files popular_projects_functions_dataset.txt --dest pynguin_tests
                ```
 
            3. Get the path of all the generated tests:
@@ -180,7 +180,7 @@ python -m lexecutor.Instrument --files popular_projects_function_bodies_dataset.
                find ./pynguin_tests -type f -name "test_*.py" > pynguin_tests.txt
                ```
 
-           4. Set the predictor to `AsIs` and the file_type to `TESTE` in `./src/LExecutor/Runtime.py`
+           4. Set the predictor to `AsIs` and the file_type to `TESTE` in `./src/lexecutor/Runtime.py`
            
    2. Create a folder to store the log files, e.g.:
       ```
