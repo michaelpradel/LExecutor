@@ -35,8 +35,9 @@ class Hyperparams(object):
     batch_size_CodeBERT = 13
 
     # experiments
-    dataset = "so_snippets"
+    # dataset = "so_snippets"
     # dataset = "random_functions"
+    dataset = "other"
     number_executions = 10
 
     
